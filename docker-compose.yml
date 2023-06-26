@@ -12,3 +12,15 @@ services:
       interval: 10s
       timeout: 30s
       retries: 3
+
+  backend:
+     build: .
+     env_file:
+       - .env
+     depends_on:
+       db:
+         condition: service_healthy
+     ports:
+       - "${PORT}:${PORT}"
+     volumes:
+       - "./postgres/socket:${POSTGRES_SOCKET}"

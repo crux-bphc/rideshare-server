@@ -6,11 +6,8 @@ settings:
 
 dependencies:
   '@types/node':
-     specifier: ^16.11.10
-     version: 16.11.10
-  typescript:
-     specifier: 4.5.2
-     version: 4.5.2
+    specifier: ^16.11.10
+    version: 16.18.36
   body-parser:
     specifier: ^1.19.1
     version: 1.20.2
@@ -32,6 +29,9 @@ dependencies:
   typeorm:
     specifier: 0.3.17
     version: 0.3.17(pg@8.11.0)(ts-node@10.7.0)
+  typescript:
+    specifier: 4.5.2
+    version: 4.5.2
   zod:
     specifier: ^3.21.4
     version: 3.21.4
@@ -40,15 +40,9 @@ devDependencies:
   '@types/config':
     specifier: ^3.3.0
     version: 3.3.0
-  '@types/node':
-    specifier: ^16.11.10
-    version: 16.18.36
   ts-node:
     specifier: 10.7.0
     version: 10.7.0(@types/node@16.18.36)(typescript@4.5.2)
-  typescript:
-    specifier: 4.5.2
-    version: 4.5.2
 
 packages:
 
@@ -665,8 +659,8 @@ packages:
     resolution: {integrity: sha512-5DFkuoqlv1uYQKxy8omFBeJPQcdoE07Kv2sferDCrAq1ohOU+MSDswDIbnx3YAM60qIOnYa53wBhXW0EbMonrQ==}
     dev: false
 
-  /pg-cloudflare@1.1.0:
-    resolution: {integrity: sha512-tGM8/s6frwuAIyRcJ6nWcIvd3+3NmUKIs6OjviIm1HPPFEt5MzQDOTBQyhPWg/m0kCl95M6gA1JaIXtS8KovOA==}
+  /pg-cloudflare@1.1.1:
+    resolution: {integrity: sha512-xWPagP/4B6BgFO+EKz3JONXv3YDgvkbVrGw2mTo3D6tVDQRh1e7cqVGvyR3BE+eQgAvx1XhW/iEASj4/jCWl3Q==}
     requiresBuild: true
     dev: false
     optional: true
@@ -720,7 +714,7 @@ packages:
       pg-types: 2.2.0
       pgpass: 1.0.5
     optionalDependencies:
-      pg-cloudflare: 1.1.0
+      pg-cloudflare: 1.1.1
     dev: false
 
   /pgpass@1.0.5:

@@ -9,7 +9,7 @@ dependencies:
     specifier: ^16.11.10
     version: 16.18.36
   body-parser:
-    specifier: ^1.19.1
+    specifier: ^1.20.2
     version: 1.20.2
   config:
     specifier: ^3.3.9

@@ -23,7 +23,7 @@ export class Post {
     @Column({
         type: "enum",
         enum: Place,
-        default: Place.Campus,
+        nullable: false
     })
     fromPlace: Place
 
@@ -31,19 +31,21 @@ export class Post {
         type: "enum",
         enum: Place,
         default: Place.Airport,
+        nullable: false
     })
     toPlace: Place
 
     @Column({
         type: "int",
-        width: 3
+        width: 3,
+        nullable: false
     })
     seats: number
 
     @Column({
         type: "enum",
         enum: timeSlot,
-        default: timeSlot["12:00"],
+        nullable: false
     })
     departureTime: timeSlot
 
@@ -52,23 +54,27 @@ export class Post {
     participants: User[];
 
     @Column({
-        type: "bool"
+        type: "bool",
+        default: true
     })
     status: Boolean
 
     @Column({
-        type: 'timestamp'
+        type: 'timestamp',
+        nullable: false
     })
     createdAt: Date
 
     @Column({
-        type: 'timestamp'
+        type: 'timestamp',
+        nullable: false
     })
     updatedAt: Date
 
     @Column({
         type: "varchar2",
-        width: 200
+        width: 200,
+        nullable: true
     })
     description: string
 

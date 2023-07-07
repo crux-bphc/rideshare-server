@@ -1,7 +1,8 @@
 import {
     Entity,
     PrimaryGeneratedColumn,
-    Column
+    Column,
+    Index
 } from "typeorm";
 
 @Entity()
@@ -22,6 +23,7 @@ export class User {
     unique: true,
     nullable: false
   })
+  @Index()
   email: string;
 
   @Column({

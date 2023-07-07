@@ -4,7 +4,8 @@ import {
     Column,
     ManyToOne,
     ManyToMany,
-    JoinTable
+    JoinTable,
+    Index
 } from "typeorm"
 import { User } from "./User"
 import { timeSlot } from "../helpers/timeSlots"
@@ -63,6 +64,7 @@ export class Post {
         type: 'timestamp',
         nullable: false
     })
+    @Index()
     createdAt: Date
 
     @Column({

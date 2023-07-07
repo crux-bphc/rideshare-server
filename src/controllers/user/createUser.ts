@@ -7,12 +7,17 @@ export const createUser = async (req: Request, res: Response) => {
   try {
     const newUser = new User();
 
-    newUser.name = req.body.name;
-    newUser.email = req.body.email;
-    newUser.phNo = req.body.phNo;
-    newUser.batch = req.body.batch;
-
-    await userRepository.save(newUser);
+    await userRepository
+    .createQueryBuilder()
+    .insert()
+    .into(User)
+    .values([{
+      name: req.body.name,
+      email: req.body.email,
+      phNo: req.body.phNo,
+      batch: req.body.batch,
+    }])
+    .execute()
 
     res.status(200).json("Created user.");
 

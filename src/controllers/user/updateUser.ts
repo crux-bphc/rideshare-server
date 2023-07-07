@@ -3,22 +3,17 @@ import { userRepository } from "../../repositories/userRepository";
 
 export const updateUser = async (req: Request, res: Response) => {
   try {
-    const user = await userRepository.findOne({
-      where: {
-        id: req.params.id,
-      },
-    });
-
-    if (!user) {
-      return res.status(403).json({ message: "User doesn't exist" });
-    }
-
-    user.name = req.body.name;
-    user.email = req.body.email;
-    user.phNo = req.body.phNo;
-    user.batch = req.body.batch;
-
-    await userRepository.save(user);
+    const user = await userRepository
+    .createQueryBuilder("user")
+    .update()
+    .set({
+      name: req.body.name,
+      email: req.body.email,
+      phNo: req.body.phNo,
+      batch: req.body.batch,
+    })
+    .where("user.id = :id", { id: req.params.id })
+    .execute()
 
     res.status(200).json("Updated user.");
 

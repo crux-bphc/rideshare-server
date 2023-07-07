@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, ManyToMany, JoinTable } from "typeorm"
+import {
+    Entity,
+    PrimaryGeneratedColumn,
+    Column,
+    ManyToOne,
+    ManyToMany,
+    JoinTable
+} from "typeorm"
 import { User } from "./User"
 import { timeSlot } from "../helpers/timeSlots"
 import { Place } from "../helpers/places"

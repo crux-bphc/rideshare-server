@@ -1,18 +1,43 @@
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm"
+import {
+    Entity,
+    PrimaryGeneratedColumn,
+    Column,
+    Index
+} from "typeorm";
 
 @Entity()
 export class User {
+  @PrimaryGeneratedColumn("uuid")
+  id: string;
 
-    @PrimaryGeneratedColumn()
-    id: number
+  @Column({
+    type: "varchar2",
+    width: 100,
+    nullable: false
+  })
+  name: string;
 
-    @Column()
-    firstName: string
+  @Column({
+    type: "varchar2",
+    width: 100,
+    unique: true,
+    nullable: false
+  })
+  @Index()
+  email: string;
 
-    @Column()
-    lastName: string
+  @Column({
+    type: "int",
+    width: 14,
+    unique: true,
+    nullable: false
+  })
+  phNo: number;
 
-    @Column()
-    age: number
-
+  @Column({
+    type: "int",
+    width: 4,
+    nullable: false
+  })
+  batch: number;
 }

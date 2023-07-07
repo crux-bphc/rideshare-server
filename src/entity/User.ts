@@ -6,16 +6,28 @@ export class User {
     @PrimaryGeneratedColumn("uuid")
     id: string
 
-    @Column()
+    @Column({
+        type: "varchar2",
+        width: 100
+    })
     name: string
 
-    @Column()
+    @Column({
+        type: "varchar2",
+        width: 100
+    })
     email: string
 
-    @Column()
+    @Column({
+        type: "int",
+        width: 14
+    })
     phNo: number
 
-    @Column()
+    @Column({
+        type: "int",
+        width: 4
+    })
     batch: number
 
 }

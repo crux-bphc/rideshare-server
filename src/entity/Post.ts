@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm"
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, ManyToMany, JoinTable } from "typeorm"
 import { User } from "./User"
 import { timeSlot } from "../helpers/timeSlots"
 import { Place } from "../helpers/places"
@@ -10,34 +10,59 @@ export class Post {
     @PrimaryGeneratedColumn("uuid")
     id: string
 
-    @Column()
-    originalPoster: User
+    @ManyToOne(() => User)
+    originalPoster: User;
 
-    @Column()
+    @Column({
+        type: "enum",
+        enum: Place,
+        default: Place.Campus,
+    })
     fromPlace: Place
 
-    @Column()
+    @Column({
+        type: "enum",
+        enum: Place,
+        default: Place.Airport,
+    })
     toPlace: Place
 
-    @Column()
+    @Column({
+        type: "int",
+        width: 3
+    })
     seats: number
 
-    @Column()
+    @Column({
+        type: "enum",
+        enum: timeSlot,
+        default: timeSlot["12:00"],
+    })
     departureTime: timeSlot
 
-    @Column()
-    participants: User[]
+    @ManyToMany(() => User)
+    @JoinTable()
+    participants: User[];
 
-    @Column()
+    @Column({
+        type: "bool"
+    })
     status: Boolean
 
-    @Column()
+    @Column({
+        type: 'timestamp'
+    })
     createdAt: Date
 
-    @Column()
+    @Column({
+        type: 'timestamp'
+    })
     updatedAt: Date
 
-    @Column()
+    @Column({
+        type: "varchar2",
+        width: 200
+    })
     description: string
 
 }

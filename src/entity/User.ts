@@ -11,14 +11,14 @@ export class User {
   id: string;
 
   @Column({
-    type: "varchar2",
+    type: "varchar",
     width: 100,
     nullable: false
   })
   name: string;
 
   @Column({
-    type: "varchar2",
+    type: "varchar",
     width: 100,
     unique: true,
     nullable: false

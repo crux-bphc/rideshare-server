@@ -74,7 +74,7 @@ export class Post {
     updatedAt: Date
 
     @Column({
-        type: "varchar2",
+        type: "varchar",
         width: 200,
         nullable: true
     })

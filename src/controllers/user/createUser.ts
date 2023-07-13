@@ -5,7 +5,6 @@ import { User } from "../../entity/User";
 
 export const createUser = async (req: Request, res: Response) => {
   try {
-    const newUser = new User();
 
     await userRepository
     .createQueryBuilder()

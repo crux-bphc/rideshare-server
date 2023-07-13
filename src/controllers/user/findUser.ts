@@ -1,9 +1,10 @@
 import { Request, Response } from "express";
 import { userRepository } from "../../repositories/userRepository";
+import { User } from "../../entity/User";
 
 export const findUser = async (req: Request, res: Response) => {
   try {
-    const user = await userRepository
+    const user: User = await userRepository
     .createQueryBuilder("user")
     .where("user.id = :id", {id: req.params.id})
     .getOne()

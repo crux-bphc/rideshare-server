@@ -3,7 +3,7 @@ import { userRepository } from "../../repositories/userRepository";
 
 export const updateUser = async (req: Request, res: Response) => {
   try {
-    const user = await userRepository
+    await userRepository
     .createQueryBuilder("user")
     .update()
     .set({

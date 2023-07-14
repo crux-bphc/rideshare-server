@@ -38,6 +38,15 @@ const dataSchema = z.object({
           message: "email must be valid",
         }
       ),
+    
+    batch: z
+    .number({
+      invalid_type_error:"batch should be a number",
+      required_error:"batch is a required parameter"
+    })
+    .min(0, {
+      message:"batch must be valid"
+    }),
   }),
 });
 

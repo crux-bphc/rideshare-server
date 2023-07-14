@@ -7,7 +7,7 @@ import { findUser } from "../controllers/user/findUser"
 const userRouter = express.Router()
 
 userRouter.post("/create", createUserValidator ,createUser )
-userRouter.put("/update/:id", updateUser )
+userRouter.put("/update/:id", updateUserValidator ,updateUser )
 userRouter.get("/search/:id" , findUser )
 
 export { userRouter }

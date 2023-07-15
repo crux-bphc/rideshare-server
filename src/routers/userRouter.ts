@@ -1,13 +1,13 @@
 import * as express from "express"
 
-import { createUser } from "../controllers/user/createUser"
-import { updateUser } from "../controllers/user/updateUser"
+import { createUser,createUserValidator } from "../controllers/user/createUser"
+import { updateUser,updateUserValidator } from "../controllers/user/updateUser"
 import { findUser } from "../controllers/user/findUser"
 
 const userRouter = express.Router()
 
-userRouter.post("/create", createUser )
-userRouter.put("/update/:id", updateUser )
+userRouter.post("/create", createUserValidator ,createUser )
+userRouter.put("/update/:id", updateUserValidator ,updateUser )
 userRouter.get("/search/:id" , findUser )
 
 export { userRouter }

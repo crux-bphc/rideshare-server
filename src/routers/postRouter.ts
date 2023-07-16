@@ -5,7 +5,7 @@ import { updatePost } from "../controllers/post/updatePost"
 
 const postRouter = express.Router()
 
-postRouter.post("/create", createPost )
-postRouter.put("/update/:id", updatePost )
+postRouter.post("/create", createPost)
+postRouter.put("/update/:id", updatePost)
 
 export { postRouter }

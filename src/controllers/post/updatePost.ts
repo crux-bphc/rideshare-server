@@ -9,47 +9,47 @@ export const updatePost = async (req: Request, res: Response) => {
   try {
 
     const user: User = await userRepository
-    .createQueryBuilder("user")
-    .where("user.id = :id", {id: req.body.userId})
-    .getOne()
+      .createQueryBuilder("user")
+      .where("user.id = :id", { id: req.body.userId })
+      .getOne()
 
     if (!user) {
-        res.status(403).json({ message: "User id invalid" });
+      res.status(403).json({ message: "User id invalid" });
     }
 
-    const post : Post = await postRepository
-    .createQueryBuilder("post")
-    .where("post.id = :id", {id: req.params.id})
-    .getOne()
+    const post: Post = await postRepository
+      .createQueryBuilder("post")
+      .where("post.id = :id", { id: req.params.id })
+      .getOne()
 
     if (!post) {
-        res.status(403).json({ message: "Post id invalid" });
+      res.status(403).json({ message: "Post id invalid" });
     }
 
     if (user == post.originalPoster) {
 
-        const currentDateTime : Date = new Date();
+      const currentDateTime: Date = new Date();
 
-        await postRepository
+      await postRepository
         .createQueryBuilder("post")
         .update()
         .set({
-            fromPlace: req.body.fromPlace,
-            toPlace: req.body.toPlace,
-            seats: req.body.seats,
-            timeRangeStart: req.body.timeRangeStart,
-            timeRangeStop: req.body.timeRangeStop,
-            status: req.body.deletePost,
-            updatedAt: currentDateTime,
-            description: req.body.description
+          fromPlace: req.body.fromPlace,
+          toPlace: req.body.toPlace,
+          seats: req.body.seats,
+          timeRangeStart: req.body.timeRangeStart,
+          timeRangeStop: req.body.timeRangeStop,
+          status: req.body.deletePost,
+          updatedAt: currentDateTime,
+          description: req.body.description
         })
         .where("post.id = :id", { id: req.params.id })
         .execute()
 
-        res.status(200).json("Updated post.");
+      res.status(200).json("Updated post.");
 
     } else {
-        res.status(401).json("Unauthorized to edit this post.")
+      res.status(401).json("Unauthorized to edit this post.")
     }
 
   } catch (err) {

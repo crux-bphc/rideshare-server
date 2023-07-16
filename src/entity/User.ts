@@ -1,8 +1,8 @@
 import {
-    Entity,
-    PrimaryGeneratedColumn,
-    Column,
-    Index
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  Index
 } from "typeorm";
 
 @Entity()

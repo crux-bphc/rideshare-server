@@ -58,6 +58,10 @@ export class Post {
     @JoinTable()
     participants: User[];
 
+    @ManyToMany(() => User)
+    @JoinTable()
+    requestQueue: User[];
+
     @Column({
         type: "bool",
         default: true

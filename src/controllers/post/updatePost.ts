@@ -37,7 +37,8 @@ export const updatePost = async (req: Request, res: Response) => {
             fromPlace: req.body.fromPlace,
             toPlace: req.body.toPlace,
             seats: req.body.seats,
-            departureTime: req.body.departureTime,
+            timeRangeStart: req.body.timeRangeStart,
+            timeRangeStop: req.body.timeRangeStop,
             status: req.body.deletePost,
             updatedAt: currentDateTime,
             description: req.body.description

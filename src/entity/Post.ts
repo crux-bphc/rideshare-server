@@ -8,7 +8,6 @@ import {
     Index
 } from "typeorm"
 import { User } from "./User"
-import { timeSlot } from "../helpers/timeSlots"
 import { Place } from "../helpers/places"
 
 
@@ -44,11 +43,16 @@ export class Post {
     seats: number
 
     @Column({
-        type: "enum",
-        enum: timeSlot,
+        type: 'timestamp',
         nullable: false
     })
-    departureTime: timeSlot
+    timeRangeStart: Date
+
+    @Column({
+        type: 'timestamp',
+        nullable: false
+    })
+    timeRangeStop: Date
 
     @ManyToMany(() => User)
     @JoinTable()

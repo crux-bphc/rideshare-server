@@ -1,5 +1,5 @@
 export enum Place {
-    "Campus",
-    "Airport",
-    "Secunderabad Railway Station"
+  "Campus",
+  "Airport",
+  "Secunderabad Railway Station"
 }

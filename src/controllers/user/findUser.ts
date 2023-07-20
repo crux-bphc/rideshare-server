@@ -23,9 +23,9 @@ export const findUserValidator = validate(dataSchema);
 export const findUser = async (req: Request, res: Response) => {
   try {
     const user: User = await userRepository
-    .createQueryBuilder("user")
-    .where("user.id = :id", {id: req.params.id})
-    .getOne()
+      .createQueryBuilder("user")
+      .where("user.id = :id", { id: req.params.id })
+      .getOne()
 
     if (!user) {
       return res.status(403).json({ message: "User doesn't exist" });

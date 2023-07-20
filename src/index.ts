@@ -11,23 +11,23 @@ import { env } from "../config/server";
 
 AppDataSource.initialize().then(async () => {
 
-    // create express app
-    const app = express()
+  // create express app
+  const app = express()
 
-    app.use(bodyParser.json())
+  app.use(bodyParser.json())
 
-    app.use("/user" , userRouter)
-    app.use("/post", postRouter)
+  app.use("/user", userRouter)
+  app.use("/post", postRouter)
 
-    // start express server
-    app.listen(env.PORT)
+  // start express server
+  app.listen(env.PORT)
 
-    // Error handling
-    app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-        console.log(err);
-        res.status(err.status || 500).send(err.stack);
-      });
+  // Error handling
+  app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+    console.log(err);
+    res.status(err.status || 500).send(err.stack);
+  });
 
-    console.log(`Express server has started on port ${env.PORT}. Open http://localhost:${env.PORT}/user to see results`)
+  console.log(`Express server has started on port ${env.PORT}. Open http://localhost:${env.PORT}/user to see results`)
 
 }).catch(error => console.log(error))

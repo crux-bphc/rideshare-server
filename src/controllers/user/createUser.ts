@@ -7,22 +7,22 @@ import { z } from "zod";
 const dataSchema = z.object({
   body: z.object({
     name: z
-    .string({
-      invalid_type_error:"name should be a sting",
-      required_error:"name is a required paramater"
-    })
-    .min(0 , {
-      message:"name cannot be empty"
-    }),
+      .string({
+        invalid_type_error: "name should be a sting",
+        required_error: "name is a required paramater"
+      })
+      .min(0, {
+        message: "name cannot be empty"
+      }),
 
     phNo: z
-    .number({
-      invalid_type_error:"phNo should be a number",
-      required_error:"phNo is a required parameter"
-    })
-    .min(0, {
-      message:"phNo must be valid"
-    }),
+      .number({
+        invalid_type_error: "phNo should be a number",
+        required_error: "phNo is a required parameter"
+      })
+      .min(0, {
+        message: "phNo must be valid"
+      }),
 
     email: z
       .string({
@@ -38,15 +38,15 @@ const dataSchema = z.object({
           message: "email must be valid",
         }
       ),
-    
+
     batch: z
-    .number({
-      invalid_type_error:"batch should be a number",
-      required_error:"batch is a required parameter"
-    })
-    .min(0, {
-      message:"batch must be valid"
-    }),
+      .number({
+        invalid_type_error: "batch should be a number",
+        required_error: "batch is a required parameter"
+      })
+      .min(0, {
+        message: "batch must be valid"
+      }),
   }),
 });
 
@@ -56,16 +56,16 @@ export const createUser = async (req: Request, res: Response) => {
   try {
 
     await userRepository
-    .createQueryBuilder()
-    .insert()
-    .into(User)
-    .values([{
-      name: req.body.name,
-      email: req.body.email,
-      phNo: req.body.phNo,
-      batch: req.body.batch,
-    }])
-    .execute()
+      .createQueryBuilder()
+      .insert()
+      .into(User)
+      .values([{
+        name: req.body.name,
+        email: req.body.email,
+        phNo: req.body.phNo,
+        batch: req.body.batch,
+      }])
+      .execute()
 
     res.status(200).json("Created user.");
 

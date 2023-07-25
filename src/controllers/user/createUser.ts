@@ -67,10 +67,10 @@ export const createUser = async (req: Request, res: Response) => {
       }])
       .execute()
 
-    res.status(200).json("Created user.");
-
   } catch (err) {
-    res.send(500).json(err);
+    console.log("Error creating user:" , err.message)
+    return res.status(500).json({ message : "Internal Server Error"});
   }
 
+  return res.status(200).json({message : "Created user."});
 };

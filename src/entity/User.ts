@@ -2,9 +2,11 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  Index
+  Index,
+  ManyToMany
 } from "typeorm";
 
+import { Post } from "./Post"
 @Entity()
 export class User {
   @PrimaryGeneratedColumn("uuid")
@@ -40,4 +42,7 @@ export class User {
     nullable: false
   })
   batch: number;
+
+  @ManyToMany(() => Post , (trip) => trip.participantQueue)
+  tripRequests!: Post[]
 }

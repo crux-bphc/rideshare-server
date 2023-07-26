@@ -8,6 +8,6 @@ const postRouter = express.Router()
 
 postRouter.post("/create", createPost)
 postRouter.put("/update/:id", updatePost)
-postRouter.post("/join",createJoinRequest)
+postRouter.post("/join/:id",createJoinRequest)
 
 export { postRouter }

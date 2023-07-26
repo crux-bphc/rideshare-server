@@ -54,13 +54,13 @@ export class Post {
   })
   timeRangeStop: Date
 
-  @ManyToMany(() => User)
   @JoinTable()
+  @ManyToMany(() => User)
   participants: User[];
 
-  @ManyToMany(() => User)
   @JoinTable()
-  requestQueue: User[];
+  @ManyToMany(() => User , (user => user.tripRequests))
+  participantQueue: User[];
 
   @Column({
     type: "bool",

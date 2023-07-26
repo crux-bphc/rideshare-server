@@ -32,7 +32,7 @@ export const createPost = async (req: Request, res: Response) => {
         timeRangeStart: req.body.timeRangeStart,
         timeRangeStop: req.body.timeRangeStop,
         participants: [],
-        requestQueue: [],
+        participantQueue: [],
         status: true,
         createdAt: currentDateTime,
         updatedAt: currentDateTime,

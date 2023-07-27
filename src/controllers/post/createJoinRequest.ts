@@ -7,8 +7,37 @@ import { User } from "../../entity/User";
 import { z } from "zod";
 import { validate } from "../../helpers/zodValidateRequest";
 
+const dataSchema = z.object({
+    body: z.object({    
+        userId : z
+        .string({
+            invalid_type_error: "userId not a string",
+            required_error: "userId is a required parameter", 
+        })
+        .min(0, {
+            message: "userId must be a non-empty string",
+          })
+        .uuid({ message: "userId must be a valid uuid" }),
+    }),
+    params: z.object({
+        postId: z.object({    
+            postId : z
+            .string({
+                invalid_type_error: "postId not a string",
+                required_error: "postId is a required parameter", 
+            })
+            .min(0, {
+                message: "postId must be a non-empty string",
+              })
+            .uuid({ message: "postId must be a valid uuid" }),
+        })
+    })
+})
+
+export const createJoinRequestValidator = validate(dataSchema)
+
 export const createJoinRequest = async (req: Request , res: Response) => {
-    const postId = req.params.id;
+    const postId = req.params.postId;
     const userId = req.body.userId;
 
     let userObj : User | null = null;
@@ -16,28 +45,37 @@ export const createJoinRequest = async (req: Request , res: Response) => {
 
     try {
         postObj = await postRepository
-        .createQueryBuilder("post")
-        .where("post.id = :id", { id: postId })
-        .getOne()
+            .createQueryBuilder("post")
+            .leftJoinAndSelect("post.originalPoster", "originalPoster")
+            .where("post.id = :postId", { postId })
+            .getOne()
   
-        console.log(postObj)
+        if(!postObj){
+            return res.status(404).json({ message: "Post not found in DB" });
+        }
+        
     } catch (err : any) {
-        console.log("No Post Found. Error : " , err.message)
-
+        console.log("Error querying post in DB. Error :" , err.message)
         return res.status(500).json({ message: "Internal Server Error"})
     }
 
     try {
         userObj = await userRepository
             .createQueryBuilder("user")
-            .where("user.id = :userId" , {userId : userId})
+            .where("user.id = :userId" , { userId })
             .getOne()
-        
-        console.log(userObj)
-    } catch (err : any) {
-        console.log("No User Found. Error :" , err.message)
 
+        if(!userObj){
+            return res.status(404).json({ message: "User not found in DB" });
+        }
+
+    } catch (err : any) {
+        console.log("Error querying user in DB. Error :" , err.message)
         return res.status(500).json({ message: "Internal Server Error"})
+    }
+
+    if(postObj.originalPoster.id === userObj.id){
+        return res.status(405).json({ message: "OP cannot be added to the join queue" });
     }
 
     try {
@@ -50,9 +88,11 @@ export const createJoinRequest = async (req: Request , res: Response) => {
                 .add(userObj);
             }
         )
-    
+
     } catch (err : any) {
-    return res.json({ message: "User added to join queue" });
+        console.log("Error Adding User to Join Queue. Error :" , err.message)
+        return res.status(500).json({ message: "Internal Server Error"})
     }
+    return res.json({ message: "User Added to Join Queue" });
 }
 

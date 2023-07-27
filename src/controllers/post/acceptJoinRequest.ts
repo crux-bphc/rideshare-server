@@ -7,6 +7,44 @@ import { User } from "../../entity/User";
 import { z } from "zod";
 import { validate } from "../../helpers/zodValidateRequest";
 
+const dataSchema = z.object({
+    body: z.object({    
+        userId : z
+        .string({
+            invalid_type_error: "userId not a string",
+            required_error: "userId is a required parameter", 
+        })
+        .min(0, {
+            message: "userId must be a non-empty string",
+          })
+        .uuid({ message: "userId must be a valid uuid" }),
+
+        OP_userId : z
+        .string({
+            invalid_type_error: "userId not a string",
+            required_error: "userId is a required parameter", 
+        })
+        .min(0, {
+            message: "userId must be a non-empty string",
+          })
+        .uuid({ message: "userId must be a valid uuid" }),
+    }),
+    params: z.object({
+        postId: z.object({    
+            postId : z
+            .string({
+                invalid_type_error: "postId not a string",
+                required_error: "postId is a required parameter", 
+            })
+            .min(0, {
+                message: "postId must be a non-empty string",
+              })
+            .uuid({ message: "postId must be a valid uuid" }),
+        })
+    })
+})
+
+export const acceptJoinRequestValidator = validate(dataSchema)
 
 export const acceptJoinRequest = async (req: Request , res: Response) => {
     const postId = req.params.postId;

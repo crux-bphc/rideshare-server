@@ -14,7 +14,7 @@ export const createPost = async (req: Request, res: Response) => {
       .getOne()
 
     if (!user) {
-      res.status(403).json({ message: "User id invalid" });
+      return res.status(403).json({ message: "User id invalid" });
     }
     
     console.log(user)

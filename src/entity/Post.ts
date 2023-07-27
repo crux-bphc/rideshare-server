@@ -17,7 +17,7 @@ export class Post {
   @PrimaryGeneratedColumn("uuid")
   id: string
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User )
   originalPoster: User;
 
   @Column({
@@ -55,11 +55,11 @@ export class Post {
   timeRangeStop: Date
 
   @JoinTable()
-  @ManyToMany(() => User)
+  @ManyToMany(() => User, (user => user.posts))
   participants: User[];
 
   @JoinTable()
-  @ManyToMany(() => User , (user => user.tripRequests))
+  @ManyToMany(() => User , (user => user.postRequests))
   participantQueue: User[];
 
   @Column({
@@ -68,11 +68,11 @@ export class Post {
   })
   status: Boolean
 
+  @Index()
   @Column({
     type: 'timestamp',
     nullable: false
   })
-  @Index()
   createdAt: Date
 
   @Column({

@@ -2,9 +2,12 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  Index
+  Index,
+  ManyToMany,
+  OneToMany
 } from "typeorm";
 
+import { Post } from "./Post"
 @Entity()
 export class User {
   @PrimaryGeneratedColumn("uuid")
@@ -17,13 +20,13 @@ export class User {
   })
   name: string;
 
+  @Index()
   @Column({
     type: "varchar",
     width: 100,
     unique: true,
     nullable: false
   })
-  @Index()
   email: string;
 
   @Column({
@@ -40,4 +43,11 @@ export class User {
     nullable: false
   })
   batch: number;
+
+  @ManyToMany(() => Post , (post) => post.participantQueue)
+  postRequests!: Post[]
+
+  @ManyToMany(() => Post , (post) => post.participants)
+  posts!: Post[]
+
 }

@@ -20,7 +20,6 @@ const dataSchema = z.object({
         .uuid({ message: "userId must be a valid uuid" }),
     }),
     params: z.object({
-        postId: z.object({    
             postId : z
             .string({
                 invalid_type_error: "postId not a string",
@@ -30,7 +29,6 @@ const dataSchema = z.object({
                 message: "postId must be a non-empty string",
               })
             .uuid({ message: "postId must be a valid uuid" }),
-        })
     })
 })
 

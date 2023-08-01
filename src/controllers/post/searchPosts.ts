@@ -2,6 +2,96 @@ import { Request, Response } from "express";
 import { Post } from "../../entity/Post";
 import { postRepository } from "../../repositories/postRepository";
 import { Place } from "../../helpers/places";
+import { z } from "zod";
+import { validate } from "../../helpers/zodValidateRequest";
+
+const dataSchema = z.object({
+  body: z.object({
+    fromPlace: z
+      .nativeEnum(Place, {
+        invalid_type_error: "fromPlace must be a valid enum of the defined places"
+      })
+      .optional(),
+
+    toPlace: z
+      .nativeEnum(Place, {
+        invalid_type_error: "toPlace must be a valid enum of the defined places"
+      })
+      .optional(),
+
+    startTime: z
+    .coerce.date({
+      invalid_type_error: "startTime must be a Date() object"
+    })
+    .optional(),
+
+    endTime: z
+    .coerce.date({
+      invalid_type_error: "endTime must be a Date() object"
+    })
+    .optional(),
+
+    availableSeats: z
+    .number({
+      invalid_type_error: "availableSeats must be an integer"
+    })
+    .int({
+      message: "availableSeats must be an integer"
+    })
+    .nonnegative({
+      message: "availableSeats must be non-negative"
+    })
+    .optional(),
+
+    activePosts: z
+    .boolean({
+      invalid_type_error: "activePosts must be a boolean"
+    })
+    .optional(),
+
+    startAtPost: z
+    .number({
+      invalid_type_error: "startAtPost must be an integer"
+    })
+    .int({
+      message: "startAtPost must be an integer"
+    })
+    .positive({
+      message: "startAtPost must be positive"
+    })
+    .optional(),
+
+    endAtPost: z
+    .number({
+      invalid_type_error: "endAtPost must be an integer"
+    })
+    .int({
+      message: "endAtPost must be an integer"
+    })
+    .positive({
+      message: "endAtPost must be positive"
+    })
+    .optional(),
+
+    orderBy: z
+      .number({
+        invalid_type_error: "orderBy must be an integer"
+      })
+      .int({
+        message: "orderBy must be an integer"
+      })
+      .gte(-3, {
+        message: "orderBy must be an integer in the range [-3,3]"
+      })
+      .lte(3, {
+        message: "orderBy must be an integer in the range [-3,3]"
+      })
+      .optional()
+
+  })
+})
+
+export const searchPostValidator = validate(dataSchema)
 
 let orderingBy: object = {
   1: "post.createdAt",

@@ -13,7 +13,7 @@ postRouter.post("/create",createPost)
 postRouter.put("/update/:id",updatePost)
 postRouter.post("/join/:postId",createJoinRequestValidator ,createJoinRequest)
 postRouter.post("/accept/:postId",acceptJoinRequestValidator , acceptJoinRequest)
-postRouter.post("/find/:postId",findPostValidator,findPost)
-postRouter.post("/search",searchPosts)
+postRouter.get("/find/:postId",findPostValidator,findPost)
+postRouter.get("/search",searchPosts)
 
 export { postRouter }

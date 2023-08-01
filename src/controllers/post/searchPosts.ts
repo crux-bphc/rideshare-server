@@ -89,6 +89,9 @@ const dataSchema = z.object({
       .optional()
 
   })
+  .refine(data => new Date(data.startTime) < new Date(data.endTime),
+    "startTime must occur before endTime",
+  )
 })
 
 export const searchPostValidator = validate(dataSchema)

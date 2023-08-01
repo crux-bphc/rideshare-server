@@ -9,11 +9,11 @@ import { searchPosts, searchPostValidator } from "../controllers/post/searchPost
 
 const postRouter = express.Router()
 
-postRouter.post("/create",createPostValidator,createPost)
-postRouter.put("/update/:id",updatePostValidator,updatePost)
-postRouter.post("/join/:postId",createJoinRequestValidator ,createJoinRequest)
-postRouter.post("/accept/:postId",acceptJoinRequestValidator , acceptJoinRequest)
-postRouter.get("/find/:postId",findPostValidator,findPost)
-postRouter.get("/search",searchPostValidator,searchPosts)
+postRouter.post("/create", createPostValidator, createPost)
+postRouter.put("/update/:id", updatePostValidator, updatePost)
+postRouter.post("/join/:postId", createJoinRequestValidator, createJoinRequest)
+postRouter.post("/accept/:postId", acceptJoinRequestValidator, acceptJoinRequest)
+postRouter.get("/find/:postId", findPostValidator, findPost)
+postRouter.get("/search", searchPostValidator, searchPosts)
 
 export { postRouter }

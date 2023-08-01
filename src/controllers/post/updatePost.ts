@@ -38,21 +38,18 @@ const dataSchema = z.object({
     fromPlace: z
       .nativeEnum(Place, {
         invalid_type_error: "fromPlace must be a valid enum of the defined places",
-        // required_error: "fromPlace is a required parameter",
       })
       .optional(),
 
     toPlace: z
       .nativeEnum(Place, {
         invalid_type_error: "toPlace must be a valid enum of the defined places",
-        // required_error: "toPlace is a required parameter",
       })
       .optional(),
 
     seats: z
       .number({
         invalid_type_error: "seats must be a number",
-        // required_error: "seats is a required parameter",
       })
       .int({
         message: "seats must be an integer",
@@ -65,7 +62,6 @@ const dataSchema = z.object({
     timeRangeStart: z
       .coerce.date({
         invalid_type_error: "timeRangeStart must be a Date() object",
-        // required_error: "timeRangeStart is a required parameter",
       })
       .min(new Date(), {
         message: "timeRangeStart must occur after the time of updating"
@@ -75,7 +71,6 @@ const dataSchema = z.object({
     timeRangeStop: z
       .coerce.date({
         invalid_type_error: "timeRangeStop must be a Date() object",
-        // required_error: "timeRangeStop is a required parameter",
       })
       .min(new Date(), {
         message: "timeRangeStop must occur after the time of updating"
@@ -89,9 +84,9 @@ const dataSchema = z.object({
       .optional(),
 
   })
-  .refine(data => ((((!data.timeRangeStart && !data.timeRangeStop) || ((data.timeRangeStop && data.timeRangeStart) && (new Date(data.timeRangeStart) < new Date(data.timeRangeStop)))))),
-    "if one of timeRangeStart or timeRangeStop is filled, the other must be filled too; timeRangeStart must occur before timeRangeStop"
-  )
+    .refine(data => ((((!data.timeRangeStart && !data.timeRangeStop) || ((data.timeRangeStop && data.timeRangeStart) && (new Date(data.timeRangeStart) < new Date(data.timeRangeStop)))))),
+      "if one of timeRangeStart or timeRangeStop is filled, the other must be filled too; timeRangeStart must occur before timeRangeStop"
+    )
 })
 
 export const updatePostValidator = validate(dataSchema)

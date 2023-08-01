@@ -70,9 +70,9 @@ const dataSchema = z.object({
       .optional(),
 
   })
-  .refine(data => new Date(data.timeRangeStart) < new Date(data.timeRangeStop),
-    "timeRangeStart must occur before timeRangeStop",
-  )
+    .refine(data => new Date(data.timeRangeStart) < new Date(data.timeRangeStop),
+      "timeRangeStart must occur before timeRangeStop",
+    )
 })
 
 export const createPostValidator = validate(dataSchema)
@@ -113,9 +113,9 @@ export const createPost = async (req: Request, res: Response) => {
       .execute()
 
   } catch (err) {
-    console.log("Error creating post:" , err.message)
-    return res.status(500).json({ message : "Internal Server Error"});
+    console.log("Error creating post:", err.message)
+    return res.status(500).json({ message: "Internal Server Error" });
   }
 
-  return res.status(200).json({message : "Created post."});
+  return res.status(200).json({ message: "Created post." });
 };

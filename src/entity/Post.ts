@@ -17,7 +17,7 @@ export class Post {
   @PrimaryGeneratedColumn("uuid")
   id: string
 
-  @ManyToOne(() => User )
+  @ManyToOne(() => User)
   originalPoster: User;
 
   @Column({
@@ -59,7 +59,7 @@ export class Post {
   participants: User[];
 
   @JoinTable()
-  @ManyToMany(() => User , (user => user.postRequests))
+  @ManyToMany(() => User, (user => user.postRequests))
   participantQueue: User[];
 
   @Column({

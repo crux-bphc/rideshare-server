@@ -44,10 +44,10 @@ export class User {
   })
   batch: number;
 
-  @ManyToMany(() => Post , (post) => post.participantQueue)
+  @ManyToMany(() => Post, (post) => post.participantQueue)
   postRequests!: Post[]
 
-  @ManyToMany(() => Post , (post) => post.participants)
+  @ManyToMany(() => Post, (post) => post.participants)
   posts!: Post[]
 
 }

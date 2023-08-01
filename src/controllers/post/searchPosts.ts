@@ -20,58 +20,58 @@ const dataSchema = z.object({
       .optional(),
 
     startTime: z
-    .coerce.date({
-      invalid_type_error: "startTime must be a Date() object"
-    })
-    .optional(),
+      .coerce.date({
+        invalid_type_error: "startTime must be a Date() object"
+      })
+      .optional(),
 
     endTime: z
-    .coerce.date({
-      invalid_type_error: "endTime must be a Date() object"
-    })
-    .optional(),
+      .coerce.date({
+        invalid_type_error: "endTime must be a Date() object"
+      })
+      .optional(),
 
     availableSeats: z
-    .number({
-      invalid_type_error: "availableSeats must be an integer"
-    })
-    .int({
-      message: "availableSeats must be an integer"
-    })
-    .nonnegative({
-      message: "availableSeats must be non-negative"
-    })
-    .optional(),
+      .number({
+        invalid_type_error: "availableSeats must be an integer"
+      })
+      .int({
+        message: "availableSeats must be an integer"
+      })
+      .nonnegative({
+        message: "availableSeats must be non-negative"
+      })
+      .optional(),
 
     activePosts: z
-    .boolean({
-      invalid_type_error: "activePosts must be a boolean"
-    })
-    .optional(),
+      .boolean({
+        invalid_type_error: "activePosts must be a boolean"
+      })
+      .optional(),
 
     startAtPost: z
-    .number({
-      invalid_type_error: "startAtPost must be an integer"
-    })
-    .int({
-      message: "startAtPost must be an integer"
-    })
-    .positive({
-      message: "startAtPost must be positive"
-    })
-    .optional(),
+      .number({
+        invalid_type_error: "startAtPost must be an integer"
+      })
+      .int({
+        message: "startAtPost must be an integer"
+      })
+      .positive({
+        message: "startAtPost must be positive"
+      })
+      .optional(),
 
     endAtPost: z
-    .number({
-      invalid_type_error: "endAtPost must be an integer"
-    })
-    .int({
-      message: "endAtPost must be an integer"
-    })
-    .positive({
-      message: "endAtPost must be positive"
-    })
-    .optional(),
+      .number({
+        invalid_type_error: "endAtPost must be an integer"
+      })
+      .int({
+        message: "endAtPost must be an integer"
+      })
+      .positive({
+        message: "endAtPost must be positive"
+      })
+      .optional(),
 
     orderBy: z
       .number({
@@ -89,9 +89,9 @@ const dataSchema = z.object({
       .optional()
 
   })
-  .refine(data => new Date(data.startTime) < new Date(data.endTime),
-    "startTime must occur before endTime",
-  )
+    .refine(data => new Date(data.startTime) < new Date(data.endTime),
+      "startTime must occur before endTime",
+    )
 })
 
 export const searchPostValidator = validate(dataSchema)
@@ -126,7 +126,7 @@ export const searchPosts = async (req: Request, res: Response) => {
   let orderBy: number = req.body.orderBy || 1;
 
   let searchFilter: string = "post.seats >= :availableSeats"
-  let searchObj: object = {"availableSeats": availableSeats}
+  let searchObj: object = { "availableSeats": availableSeats }
 
   if (activePosts != null) {
     searchFilter = searchFilter + " AND post.status = :activePosts";
@@ -162,14 +162,14 @@ export const searchPosts = async (req: Request, res: Response) => {
       .leftJoinAndSelect("post.originalPoster", "originalPoster")
       .leftJoinAndSelect("post.participants", "participants")
       .where(searchFilter, searchObj)
-      .orderBy(orderingBy[Math.abs(orderBy)], orderingAlong[Math.sign(orderBy)+1])
+      .orderBy(orderingBy[Math.abs(orderBy)], orderingAlong[Math.sign(orderBy) + 1])
       .skip(startAtPost - 1)
       .take(endAtPost - startAtPost + 1)
       .getMany()
 
   } catch (err: any) {
-    console.log("Error while searching DB for posts." , err.message)
-    return res.status(500).json({ message : "Internal Server Error"});
+    console.log("Error while searching DB for posts.", err.message)
+    return res.status(500).json({ message: "Internal Server Error" });
   }
 
   res.status(200).json(posts);

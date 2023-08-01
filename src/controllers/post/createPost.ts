@@ -23,12 +23,14 @@ const dataSchema = z.object({
 
     fromPlace: z
       .nativeEnum(Place, {
-        invalid_type_error: "fromPlace must be a valid enum of the defined places"
+        invalid_type_error: "fromPlace must be a valid enum of the defined places",
+        required_error: "fromPlace is a required parameter",
       }),
 
     toPlace: z
       .nativeEnum(Place, {
-        invalid_type_error: "toPlace must be a valid enum of the defined places"
+        invalid_type_error: "toPlace must be a valid enum of the defined places",
+        required_error: "toPlace is a required parameter",
       }),
 
     seats: z
@@ -45,7 +47,8 @@ const dataSchema = z.object({
 
     timeRangeStart: z
       .coerce.date({
-        invalid_type_error: "timeRangeStart must be a Date() object"
+        invalid_type_error: "timeRangeStart must be a Date() object",
+        required_error: "timeRangeStart is a required parameter",
       })
       .min(new Date(), {
         message: "timeRangeStart must occur after the time of posting"
@@ -53,7 +56,8 @@ const dataSchema = z.object({
 
     timeRangeStop: z
       .coerce.date({
-        invalid_type_error: "timeRangeStop must be a Date() object"
+        invalid_type_error: "timeRangeStop must be a Date() object",
+        required_error: "timeRangeStop is a required parameter",
       })
       .min(new Date(), {
         message: "timeRangeStop must occur after the time of posting"

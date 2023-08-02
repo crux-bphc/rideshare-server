@@ -89,7 +89,7 @@ const dataSchema = z.object({
       .optional()
 
   })
-    .refine(data => new Date(data.startTime) < new Date(data.endTime),
+    .refine(data => (!(data.startTime && data.endTime) || (new Date(data.startTime) < new Date(data.endTime))),
       "startTime must occur before endTime",
     )
 })

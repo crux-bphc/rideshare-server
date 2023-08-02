@@ -69,6 +69,9 @@ export const createUser = async (req: Request, res: Response) => {
 
   } catch (err) {
     console.log("Error creating user:", err.message)
+    if (err.message .substring(0,46) == "duplicate key value violates unique constraint") {
+      return res.status(400).json({ message: "Email or Phone Number already exists" })
+    }
     return res.status(500).json({ message: "Internal Server Error" });
   }
 

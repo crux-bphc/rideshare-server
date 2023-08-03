@@ -129,7 +129,7 @@ export const searchPosts = async (req: Request, res: Response) => {
   let searchObj: object = {}
 
   if (availableSeats != null) {
-    searchFilter = searchFilter + " AND post.seats >= :availableSeats";
+    searchFilter = searchFilter + " AND (post.seats - (SELECT COUNT(participant) FROM UNNEST(post.participants) AS participant)) >= :availableSeats";
     searchObj["availableSeats"] = availableSeats;
   }
 

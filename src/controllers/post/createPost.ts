@@ -89,7 +89,6 @@ export const createPost = async (req: Request, res: Response) => {
       return res.status(403).json({ message: "User not found!" });
     }
 
-    console.log(user)
     const currentDateTime: Date = new Date();
 
     await postRepository
@@ -113,7 +112,7 @@ export const createPost = async (req: Request, res: Response) => {
       .execute()
 
   } catch (err) {
-    console.log("Error creating post:", err.message)
+    // console.log("Error creating post:", err.message)
     return res.status(500).json({ message: "Internal Server Error" });
   }
 

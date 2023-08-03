@@ -80,7 +80,7 @@ export const createUser = async (req: Request, res: Response) => {
       .execute()
 
   } catch (err) {
-    console.log("Error creating user:", err.message)
+    // console.log("Error creating user:", err.message)
     if (err.code == "23505") {
       return res.status(400).json({ message: "Email or Phone Number already exists" })
     }

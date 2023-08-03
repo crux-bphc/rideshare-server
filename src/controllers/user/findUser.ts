@@ -37,7 +37,7 @@ export const findUser = async (req: Request, res: Response) => {
     }
 
   } catch (err: any) {
-    console.log("Error while querying for User. Error : ", err.message)
+    // console.log("Error while querying for User. Error : ", err.message)
     res.status(500).json({ message: "Internal Server Error" });
   }
   return res.status(200).json(userObj);

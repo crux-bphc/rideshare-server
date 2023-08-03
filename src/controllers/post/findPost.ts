@@ -43,7 +43,7 @@ export const findPost = async (req: Request, res: Response) => {
 
   }
   catch (err: any) {
-    console.log("Error while querying DB for post. ", err.message)
+    // console.log("Error while querying DB for post. ", err.message)
     res.status(500).json({ message: "Internal Server Error" });
   }
 

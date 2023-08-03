@@ -177,7 +177,7 @@ export const searchPosts = async (req: Request, res: Response) => {
       .getMany()
 
   } catch (err: any) {
-    console.log("Error while searching DB for posts.", err.message)
+    // console.log("Error while searching DB for posts.", err.message)
     return res.status(500).json({ message: "Internal Server Error" });
   }
 

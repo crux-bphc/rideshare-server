@@ -85,7 +85,7 @@ export const acceptJoinRequest = async (req: Request, res: Response) => {
         .getOne()
     }
     catch (err: any) {
-      console.log("Error while querying for User. Error : ", err.message)
+      // console.log("Error while querying for User. Error : ", err.message)
       res.status(500).json({ message: "Internal Server Error" });
     }
 
@@ -100,14 +100,14 @@ export const acceptJoinRequest = async (req: Request, res: Response) => {
         }
       )
     } catch (err: any) {
-      console.log("Error adding User to Participant List. Error :", err.message)
+      // console.log("Error adding User to Participant List. Error :", err.message)
       return res.status(500).json({ message: "Internal Server Error" })
     }
 
-    console.log(userObj)
+    // console.log(userObj)
   }
   catch (err: any) {
-    console.log("Error while accepting join request. ", err.message)
+    // console.log("Error while accepting join request. ", err.message)
     res.status(500).json({ message: "Internal Server Error" });
   }
 

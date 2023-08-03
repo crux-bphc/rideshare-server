@@ -8,6 +8,6 @@ const userRouter = express.Router()
 
 userRouter.post("/create", createUserValidator, createUser)
 userRouter.put("/update/:id", updateUserValidator, updateUser)
-userRouter.get("/search",findUserValidator ,findUser)
+userRouter.get("/search", findUserValidator, findUser)
 
 export { userRouter }

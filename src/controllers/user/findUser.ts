@@ -22,23 +22,23 @@ export const findUserValidator = validate(dataSchema);
 
 export const findUser = async (req: Request, res: Response) => {
 
-  let userObj : User | null = null;
-  
+  let userObj: User | null = null;
+
   try {
     userObj = await userRepository
-                .createQueryBuilder("user")
-                .where("user.id = :id", { id: req.query.id})
-                .leftJoinAndSelect("user.postRequests", "postRequests")
-                .leftJoinAndSelect("user.posts", "posts")
-                .getOne()
+      .createQueryBuilder("user")
+      .where("user.id = :id", { id: req.query.id })
+      .leftJoinAndSelect("user.postRequests", "postRequests")
+      .leftJoinAndSelect("user.posts", "posts")
+      .getOne()
 
     if (!userObj) {
       return res.status(404).json({ message: "User not found in DB" });
     }
-    
-  } catch(err : any){
+
+  } catch (err: any) {
     console.log("Error while querying for User. Error : ", err.message)
     res.status(500).json({ message: "Internal Server Error" });
-}
+  }
   return res.status(200).json(userObj);
 };

@@ -115,7 +115,7 @@ export const searchPosts = async (req: Request, res: Response) => {
   let startTime: Date | null = req.body.startTime; // Renders trips whose timeRange is within or after startTime
   let endTime: Date | null = req.body.endTime; // Renders trips whose timeRange is within or before endTime
   // Use 1 or more here, to show only those posts which have available seats. leaving empty renders all posts without checking seats
-  let availableSeats: number = req.body.availableSeats || 0;
+  let availableSeats: number | null = req.body.availableSeats;
   // true renders posts whose trips are yet to start. false renders trips which have started/finished in the past. leaving empty renders all posts regardless.
   let activePosts: boolean | null = req.body.activePosts;
   // Pagination - both numbers inclusive
@@ -125,8 +125,13 @@ export const searchPosts = async (req: Request, res: Response) => {
   // the corresponding negative numbers renders posts in descending order
   let orderBy: number = req.body.orderBy || 1;
 
-  let searchFilter: string = "post.seats >= :availableSeats"
-  let searchObj: object = { "availableSeats": availableSeats }
+  let searchFilter: string = ""
+  let searchObj: object = {}
+
+  if (availableSeats != null) {
+    searchFilter = searchFilter + " AND post.seats >= :availableSeats";
+    searchObj["availableSeats"] = availableSeats;
+  }
 
   if (activePosts != null) {
     searchFilter = searchFilter + " AND post.status = :activePosts";
@@ -151,6 +156,10 @@ export const searchPosts = async (req: Request, res: Response) => {
   if (endTime != null) {
     searchFilter = searchFilter + " AND post.timeRangeStart <= :endTime";
     searchObj["endTime"] = endTime;
+  }
+
+  if (searchFilter.length > 0) {
+    searchFilter = searchFilter.substring(5,searchFilter.length);
   }
 
   let posts: Post[] = [];

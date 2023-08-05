@@ -7,7 +7,6 @@ import { validate } from "../../helpers/zodValidateRequest";
 
 const dataSchema = z.object({
   params: z.object({
-    postId: z.object({
       postId: z
         .string({
           invalid_type_error: "postId not a string",
@@ -19,7 +18,6 @@ const dataSchema = z.object({
         .uuid({ message: "postId must be a valid uuid" }),
     })
   })
-})
 
 export const findPostValidator = validate(dataSchema)
 

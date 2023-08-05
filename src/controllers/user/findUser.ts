@@ -32,9 +32,12 @@ export const findUser = async (req: Request, res: Response) => {
   try {
     userObj = await userRepository
       .createQueryBuilder("user")
-      .where("user.email = :email", { id: req.body.email })
       .leftJoinAndSelect("user.postRequests", "postRequests")
       .leftJoinAndSelect("user.posts", "posts")
+      .leftJoinAndSelect('posts.participantQueue', 'participantQueue')
+      .leftJoinAndSelect("posts.originalPoster", "originalPoster")
+      .leftJoinAndSelect("posts.participants", "participants")
+      .where("user.email = :email", { email: req.body.email })
       .getOne()
 
     if (!userObj) {
@@ -42,8 +45,8 @@ export const findUser = async (req: Request, res: Response) => {
     }
 
   } catch (err: any) {
-    // console.log("Error while querying for User. Error : ", err.message)
-    res.status(500).json({ message: "Internal Server Error" });
+    console.log("Error while querying for User. Error : ", err.message)
+    return res.status(500).json({ message: "Internal Server Error" });
   }
-  return res.status(200).json(userObj);
-};
+  return res.json(userObj);
+}

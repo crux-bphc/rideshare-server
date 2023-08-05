@@ -90,6 +90,16 @@ export const acceptJoinRequest = async (req: Request, res: Response) => {
     }
 
     try {
+      //Remove user from participantQueue
+      await postRepository.manager.transaction(async (transactionalEntityManager) => {
+        await transactionalEntityManager
+          .createQueryBuilder()
+          .relation(Post, "participantQueue")
+          .of(postObj)
+          .remove(userObj);
+      });
+    
+      //Add user to participants list
       await postRepository.manager.transaction(
         async (transactionalEntityManager) => {
           await transactionalEntityManager

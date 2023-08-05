@@ -67,7 +67,7 @@ export const createUserValidator = validate(dataSchema);
 export const createUser = async (req: Request, res: Response) => {
   try {
 
-    await userRepository
+    const newUser = await userRepository
       .createQueryBuilder()
       .insert()
       .into(User)
@@ -77,7 +77,12 @@ export const createUser = async (req: Request, res: Response) => {
         phNo: req.body.phNo,
         batch: req.body.batch,
       }])
+      .returning("*")
       .execute()
+
+      const user = newUser.generatedMaps[0] as User;
+
+      return res.status(200).json({ message: "Created user." , user});
 
   } catch (err) {
     // console.log("Error creating user:", err.message)
@@ -87,5 +92,4 @@ export const createUser = async (req: Request, res: Response) => {
     return res.status(500).json({ message: "Internal Server Error" });
   }
 
-  return res.status(200).json({ message: "Created user." });
 };

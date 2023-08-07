@@ -125,7 +125,7 @@ export const createPost = async (req: Request, res: Response) => {
       }
     )
 
-  return res.status(200).json({ message: "Created post." , post});
+  return res.status(201).json({ message: "Created post." , post});
 
   } catch (err) {
     console.log("Error creating post:", err.message)

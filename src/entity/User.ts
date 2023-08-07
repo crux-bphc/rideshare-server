@@ -31,7 +31,7 @@ export class User {
 
   @Column({
     type: "int8",
-    width: 14,
+    width: 10,
     unique: true,
     nullable: false
   })

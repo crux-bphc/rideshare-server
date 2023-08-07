@@ -7,7 +7,6 @@ import { validate } from "../../helpers/zodValidateRequest";
 
 const dataSchema = z.object({
   params: z.object({
-    postId: z.object({
       postId: z
         .string({
           invalid_type_error: "postId not a string",
@@ -19,7 +18,6 @@ const dataSchema = z.object({
         .uuid({ message: "postId must be a valid uuid" }),
     })
   })
-})
 
 export const findPostValidator = validate(dataSchema)
 
@@ -43,7 +41,7 @@ export const findPost = async (req: Request, res: Response) => {
 
   }
   catch (err: any) {
-    console.log("Error while querying DB for post. ", err.message)
+    // console.log("Error while querying DB for post. ", err.message)
     res.status(500).json({ message: "Internal Server Error" });
   }
 

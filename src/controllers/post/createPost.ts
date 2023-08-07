@@ -80,24 +80,23 @@ export const createPostValidator = validate(dataSchema)
 export const createPost = async (req: Request, res: Response) => {
   try {
 
-    const user: User = await userRepository
+    const userObj: User = await userRepository
       .createQueryBuilder("user")
       .where("user.id = :id", { id: req.body.userId })
       .getOne()
 
-    if (!user) {
+    if (!userObj) {
       return res.status(403).json({ message: "User not found!" });
     }
 
-    console.log(user)
     const currentDateTime: Date = new Date();
 
-    await postRepository
+    const newPost = await postRepository
       .createQueryBuilder()
       .insert()
       .into(Post)
       .values([{
-        originalPoster: user,
+        originalPoster: userObj,
         fromPlace: req.body.fromPlace,
         toPlace: req.body.toPlace,
         seats: req.body.seats,
@@ -110,12 +109,26 @@ export const createPost = async (req: Request, res: Response) => {
         updatedAt: currentDateTime,
         description: req.body.description
       }])
+      .returning("*")
       .execute()
+
+      const post = newPost.generatedMaps[0] as Post;
+
+    //Add the OP User to the particpant list
+    await postRepository.manager.transaction(
+      async (transactionalEntityManager) => {
+        await transactionalEntityManager
+          .createQueryBuilder()
+          .relation(Post, "participants")
+          .of(post)
+          .add(userObj);
+      }
+    )
+
+  return res.status(201).json({ message: "Created post." , post});
 
   } catch (err) {
     console.log("Error creating post:", err.message)
     return res.status(500).json({ message: "Internal Server Error" });
   }
-
-  return res.status(200).json({ message: "Created post." });
 };

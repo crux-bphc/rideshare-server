@@ -30,8 +30,8 @@ export class User {
   email: string;
 
   @Column({
-    type: "int",
-    width: 14,
+    type: "int8",
+    width: 10,
     unique: true,
     nullable: false
   })

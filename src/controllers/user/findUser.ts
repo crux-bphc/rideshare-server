@@ -5,16 +5,21 @@ import { User } from "../../entity/User";
 import { z } from "zod";
 
 const dataSchema = z.object({
-  query: z.object({
-    id: z
+  body: z.object({
+    email: z
       .string({
-        invalid_type_error: "id not a string",
-        required_error: "id is a required path parameter",
+        invalid_type_error: "email should be a string",
+        required_error: "email is a required parameter",
       })
       .min(0, {
-        message: "id must be a non-empty string",
+        message: "email cannot be empty",
       })
-      .uuid({ message: "id must be a valid uuid" }),
+      .regex(
+        /^([A-Z0-9_+-]+\.?)*[A-Z0-9_+-]@([A-Z0-9][A-Z0-9\-]*\.)+[A-Z]{2,}$/i,
+        {
+          message: "email must be valid",
+        }
+      ),
   }),
 })
 
@@ -27,9 +32,12 @@ export const findUser = async (req: Request, res: Response) => {
   try {
     userObj = await userRepository
       .createQueryBuilder("user")
-      .where("user.id = :id", { id: req.query.id })
       .leftJoinAndSelect("user.postRequests", "postRequests")
       .leftJoinAndSelect("user.posts", "posts")
+      .leftJoinAndSelect('posts.participantQueue', 'participantQueue')
+      .leftJoinAndSelect("posts.originalPoster", "originalPoster")
+      .leftJoinAndSelect("posts.participants", "participants")
+      .where("user.email = :email", { email: req.body.email })
       .getOne()
 
     if (!userObj) {
@@ -38,7 +46,7 @@ export const findUser = async (req: Request, res: Response) => {
 
   } catch (err: any) {
     console.log("Error while querying for User. Error : ", err.message)
-    res.status(500).json({ message: "Internal Server Error" });
+    return res.status(500).json({ message: "Internal Server Error" });
   }
-  return res.status(200).json(userObj);
-};
+  return res.json(userObj);
+}

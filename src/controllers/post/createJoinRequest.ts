@@ -53,7 +53,7 @@ export const createJoinRequest = async (req: Request, res: Response) => {
     }
 
   } catch (err: any) {
-    console.log("Error querying post in DB. Error :", err.message)
+    // console.log("Error querying post in DB. Error :", err.message)
     return res.status(500).json({ message: "Internal Server Error" })
   }
 
@@ -68,12 +68,12 @@ export const createJoinRequest = async (req: Request, res: Response) => {
     }
 
   } catch (err: any) {
-    console.log("Error querying user in DB. Error :", err.message)
+    // console.log("Error querying user in DB. Error :", err.message)
     return res.status(500).json({ message: "Internal Server Error" })
   }
 
   if (postObj.originalPoster.id === userObj.id) {
-    return res.status(405).json({ message: "OP cannot be added to the join queue" });
+    return res.status(400).json({ message: "OP cannot be added to the join queue" });
   }
 
   try {
@@ -88,8 +88,8 @@ export const createJoinRequest = async (req: Request, res: Response) => {
     )
 
   } catch (err: any) {
-    console.log("Error Adding User to Join Queue. Error :", err.message)
+    // console.log("Error Adding User to Join Queue. Error :", err.message)
     return res.status(500).json({ message: "Internal Server Error" })
   }
-  return res.json({ message: "User Added to Join Queue" });
+  return res.status(200).json({ message: "User Added to Join Queue" });
 }

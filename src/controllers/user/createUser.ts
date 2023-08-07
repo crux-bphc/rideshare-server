@@ -20,7 +20,13 @@ const dataSchema = z.object({
         invalid_type_error: "phNo should be a number",
         required_error: "phNo is a required parameter"
       })
-      .min(0, {
+      .int({
+        message: "phNo must be an integer"
+      })
+      .gte(0, {
+        message: "phNo must be valid"
+      })
+      .lte(99999999999999, {
         message: "phNo must be valid"
       }),
 
@@ -44,7 +50,13 @@ const dataSchema = z.object({
         invalid_type_error: "batch should be a number",
         required_error: "batch is a required parameter"
       })
+      .int({
+        message: "batch must be an integer"
+      })
       .min(0, {
+        message: "batch must be valid"
+      })
+      .max(9999, {
         message: "batch must be valid"
       }),
   }),
@@ -55,7 +67,7 @@ export const createUserValidator = validate(dataSchema);
 export const createUser = async (req: Request, res: Response) => {
   try {
 
-    await userRepository
+    const newUser = await userRepository
       .createQueryBuilder()
       .insert()
       .into(User)
@@ -65,15 +77,19 @@ export const createUser = async (req: Request, res: Response) => {
         phNo: req.body.phNo,
         batch: req.body.batch,
       }])
+      .returning("*")
       .execute()
 
+      const user = newUser.generatedMaps[0] as User;
+
+      return res.status(201).json({ message: "Created user." , user});
+
   } catch (err) {
-    console.log("Error creating user:", err.message)
-    if (err.message .substring(0,46) == "duplicate key value violates unique constraint") {
+    // console.log("Error creating user:", err.message)
+    if (err.code == "23505") {
       return res.status(400).json({ message: "Email or Phone Number already exists" })
     }
     return res.status(500).json({ message: "Internal Server Error" });
   }
 
-  return res.status(200).json({ message: "Created user." });
 };

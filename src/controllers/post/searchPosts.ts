@@ -129,7 +129,7 @@ export const searchPosts = async (req: Request, res: Response) => {
   let searchObj: object = {}
 
   if (availableSeats != null) {
-    searchFilter = searchFilter + " AND post.seats >= :availableSeats";
+    searchFilter = searchFilter + " AND (post.seats - (SELECT COUNT(participant) FROM UNNEST(post.participants) AS participant)) >= :availableSeats";
     searchObj["availableSeats"] = availableSeats;
   }
 
@@ -177,7 +177,7 @@ export const searchPosts = async (req: Request, res: Response) => {
       .getMany()
 
   } catch (err: any) {
-    console.log("Error while searching DB for posts.", err.message)
+    // console.log("Error while searching DB for posts.", err.message)
     return res.status(500).json({ message: "Internal Server Error" });
   }
 

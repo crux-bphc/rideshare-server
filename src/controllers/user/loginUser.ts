@@ -27,7 +27,7 @@ export const loginUserValidator = validate(dataSchema);
 
 export const findUserValidator = validate(dataSchema);
 
-export const findUser = async (req: Request, res: Response) => {
+export const loginUser = async (req: Request, res: Response) => {
 
   let userObj: User | null = null;
 
@@ -45,5 +45,5 @@ export const findUser = async (req: Request, res: Response) => {
     console.log("Error while querying for User. Error : ", err.message)
     return res.status(500).json({ message: "Internal Server Error" });
   }
-  return res.json(userObj);
+  return res.json(userObj.id);
 }

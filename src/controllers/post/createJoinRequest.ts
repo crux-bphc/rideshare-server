@@ -45,6 +45,7 @@ export const createJoinRequest = async (req: Request, res: Response) => {
     postObj = await postRepository
       .createQueryBuilder("post")
       .leftJoinAndSelect("post.originalPoster", "originalPoster")
+      .leftJoinAndSelect("post.participants", "participants")
       .where("post.id = :postId", { postId })
       .getOne()
 
@@ -72,8 +73,15 @@ export const createJoinRequest = async (req: Request, res: Response) => {
     return res.status(500).json({ message: "Internal Server Error" })
   }
 
+  //Check if the sent userId is the OP's userId
   if (postObj.originalPoster.id === userObj.id) {
     return res.status(400).json({ message: "OP cannot be added to the join queue" });
+  }
+
+  //Check if the sent user is a participant already
+  const participantIds = new Set(postObj.participants.map(user => user.id));
+  if (participantIds.has(userId)) {
+    return res.status(400).json({ message: "The user is already a participant" });
   }
 
   try {

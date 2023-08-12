@@ -33,10 +33,13 @@ export const findUser = async (req: Request, res: Response) => {
     userObj = await userRepository
       .createQueryBuilder("user")
       .leftJoinAndSelect("user.postRequests", "postRequests")
+      .leftJoinAndSelect("postRequests.participantQueue", "postReqParticipantQueue")
+      .leftJoinAndSelect("postRequests.originalPoster", "postReqOriginalPoster")
+      .leftJoinAndSelect("postRequests.participants", "postReqParticipants")
       .leftJoinAndSelect("user.posts", "posts")
-      .leftJoinAndSelect('posts.participantQueue', 'participantQueue')
-      .leftJoinAndSelect("posts.originalPoster", "originalPoster")
-      .leftJoinAndSelect("posts.participants", "participants")
+      .leftJoinAndSelect("posts.participantQueue", "postParticipantQueue")
+      .leftJoinAndSelect("posts.originalPoster", "postOriginalPoster")
+      .leftJoinAndSelect("posts.participants", "postParticipants")
       .where("user.email = :email", { email: req.body.email })
       .getOne()
 

@@ -4,12 +4,21 @@ import {
   createUser,
   createUserValidator,
 } from "../controllers/user/createUser";
+
 import {
   updateUser,
   updateUserValidator,
 } from "../controllers/user/updateUser";
-import { findUser, findUserValidator } from "../controllers/user/findUser";
-import { loginUser, loginUserValidator } from "../controllers/user/loginUser";
+
+import { 
+    findUser, 
+    findUserValidator 
+} from "../controllers/user/findUser";
+
+import { 
+    loginUser, 
+    loginUserValidator 
+} from "../controllers/user/loginUser";
 
 import { isLoggedIn } from "../middleware/auth";
 

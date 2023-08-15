@@ -82,7 +82,7 @@ export const acceptJoinRequest = async (req: Request, res: Response) => {
     try {
       userObj = await userRepository
         .createQueryBuilder("user")
-        .where("user.id = :userEmail", { userEmail })
+        .where("user.email = :userEmail", { userEmail })
         .getOne();
     } catch (err: any) {
       // console.log("Error while querying for User. Error : ", err.message)

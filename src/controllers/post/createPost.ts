@@ -70,7 +70,7 @@ export const createPost = async (req: Request, res: Response) => {
 
     const userObj: User = await userRepository
       .createQueryBuilder("user")
-      .where("user.id = :id", { id: req.body.userId }) 
+      .where("user.id = :id", { id: req.token.userId }) 
       .getOne()
 
     if (!userObj) {

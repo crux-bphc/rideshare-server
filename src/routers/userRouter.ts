@@ -15,7 +15,7 @@ import {
     findUserValidator 
 } from "../controllers/user/findUser";
 
-import { 
+import {  
     loginUser, 
     loginUserValidator 
 } from "../controllers/user/loginUser";

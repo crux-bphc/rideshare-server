@@ -67,10 +67,10 @@ export const createPostValidator = validate(dataSchema)
 
 export const createPost = async (req: Request, res: Response) => {
   try {
-    
+
     const userObj: User = await userRepository
       .createQueryBuilder("user")
-      .where("user.email = :email", { id: req.token.email }) 
+      .where("user.email = :email", { email: req.token.email }) 
       .getOne()
 
     if (!userObj) {

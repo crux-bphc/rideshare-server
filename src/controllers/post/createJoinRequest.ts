@@ -25,7 +25,7 @@ export const createJoinRequestValidator = validate(dataSchema)
 
 export const createJoinRequest = async (req: Request, res: Response) => {
   const postId = req.params.postId;
-  const userId = req.token.userId;
+  const userEmail = req.token.userId;
 
   let userObj: User | null = null;
   let postObj: Post | null = null;
@@ -49,7 +49,7 @@ export const createJoinRequest = async (req: Request, res: Response) => {
   try {
     userObj = await userRepository
       .createQueryBuilder("user")
-      .where("user.id = :userId", { userId })
+      .where("user.email = :userEmail", { userEmail })
       .getOne()
 
     if (!userObj) {

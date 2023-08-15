@@ -9,18 +9,6 @@ import { validate } from "../../helpers/zodValidateRequest";
 
 const dataSchema = z.object({
   body: z.object({
-    userId: z
-      .string({
-        invalid_type_error: "userId not a string",
-        required_error: "userId is a required parameter",
-      })
-      .min(0, {
-        message: "userId must be a non-empty string",
-      })
-      .uuid({
-        message: "userId must be a valid uuid"
-      }),
-
     fromPlace: z
       .nativeEnum(Place, {
         invalid_type_error: "fromPlace must be a valid enum of the defined places",
@@ -82,7 +70,7 @@ export const createPost = async (req: Request, res: Response) => {
 
     const userObj: User = await userRepository
       .createQueryBuilder("user")
-      .where("user.id = :id", { id: req.body.userId })
+      .where("user.id = :id", { id: req.body.userId }) 
       .getOne()
 
     if (!userObj) {

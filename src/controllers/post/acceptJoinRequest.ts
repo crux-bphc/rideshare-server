@@ -36,7 +36,7 @@ export const acceptJoinRequestValidator = validate(dataSchema)
 
 export const acceptJoinRequest = async (req: Request, res: Response) => {
   const postId = req.params.postId;
-  const OP_userId = req.body.OP_userId; //auth temp replacement
+  const OP_email = req.token.email;
   const userId = req.body.userId
 
   let userObj: User | null = null;
@@ -59,7 +59,7 @@ export const acceptJoinRequest = async (req: Request, res: Response) => {
       return res.status(405).json({ message: "Post participant count is full" });
     }
 
-    if (OP_userId !== postObj.originalPoster.id)
+    if (OP_email !== postObj.originalPoster.email)
       return res.status(403).json({ message: "User is not the OP" });
 
     const participantQueueIds = new Set(postObj.participantQueue.map(user => user.id));

@@ -25,7 +25,7 @@ export const createJoinRequestValidator = validate(dataSchema)
 
 export const createJoinRequest = async (req: Request, res: Response) => {
   const postId = req.params.postId;
-  const userEmail = req.token.userId;
+  const userEmail = req.token.email;
 
   let userObj: User | null = null;
   let postObj: Post | null = null;

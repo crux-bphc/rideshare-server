@@ -9,15 +9,20 @@ import { validate } from "../../helpers/zodValidateRequest";
 
 const dataSchema = z.object({
   body: z.object({
-    userId: z
+    userEmail: z
       .string({
-        invalid_type_error: "userId not a string",
-        required_error: "userId is a required parameter",
+        invalid_type_error: "email should be a string",
+        required_error: "email is a required parameter",
       })
       .min(0, {
-        message: "userId must be a non-empty string",
+        message: "email cannot be empty",
       })
-      .uuid({ message: "userId must be a valid uuid" }),
+      .regex(
+        /^([A-Z0-9_+-]+\.?)*[A-Z0-9_+-]@([A-Z0-9][A-Z0-9\-]*\.)+[A-Z]{2,}$/i,
+        {
+          message: "email must be valid",
+        }
+      ),
   }),
   params: z.object({
     postId: z
@@ -29,26 +34,26 @@ const dataSchema = z.object({
         message: "postId must be a non-empty string",
       })
       .uuid({ message: "postId must be a valid uuid" }),
-  })
-})
+  }),
+});
 
-export const acceptJoinRequestValidator = validate(dataSchema)
+export const acceptJoinRequestValidator = validate(dataSchema);
 
 export const acceptJoinRequest = async (req: Request, res: Response) => {
   const postId = req.params.postId;
   const OP_email = req.token.email;
-  const userId = req.body.userId
+  const userEmail = req.body.userEmail;
 
   let userObj: User | null = null;
   let postObj: Post | null = null;
 
   try {
     postObj = await postRepository
-      .createQueryBuilder('post')
-      .leftJoinAndSelect('post.participantQueue', 'participantQueue')
+      .createQueryBuilder("post")
+      .leftJoinAndSelect("post.participantQueue", "participantQueue")
       .leftJoinAndSelect("post.originalPoster", "originalPoster")
       .leftJoinAndSelect("post.participants", "participants")
-      .where('post.id = :id', { id: postId })
+      .where("post.id = :id", { id: postId })
       .getOne();
 
     if (!postObj) {
@@ -56,39 +61,46 @@ export const acceptJoinRequest = async (req: Request, res: Response) => {
     }
 
     if (postObj.participants.length >= postObj.seats) {
-      return res.status(405).json({ message: "Post participant count is full" });
+      return res
+        .status(405)
+        .json({ message: "Post participant count is full" });
     }
 
     if (OP_email !== postObj.originalPoster.email)
       return res.status(403).json({ message: "User is not the OP" });
 
-    const participantQueueIds = new Set(postObj.participantQueue.map(user => user.id));
+    const participantQueueEmails = new Set(
+      postObj.participantQueue.map((user) => user.email)
+    );
 
-    if (!participantQueueIds.has(userId)) {
-      return res.status(404).json({ message: "User not found in trip's join queue" });
+    if (!participantQueueEmails.has(userEmail)) {
+      return res
+        .status(404)
+        .json({ message: "User not found in trip's join queue" });
     }
 
     try {
       userObj = await userRepository
         .createQueryBuilder("user")
-        .where("user.id = :id", { id: userId })
-        .getOne()
-    }
-    catch (err: any) {
+        .where("user.id = :userEmail", { userEmail })
+        .getOne();
+    } catch (err: any) {
       // console.log("Error while querying for User. Error : ", err.message)
       res.status(500).json({ message: "Internal Server Error" });
     }
 
     try {
       //Remove user from participantQueue
-      await postRepository.manager.transaction(async (transactionalEntityManager) => {
-        await transactionalEntityManager
-          .createQueryBuilder()
-          .relation(Post, "participantQueue")
-          .of(postObj)
-          .remove(userObj);
-      });
-    
+      await postRepository.manager.transaction(
+        async (transactionalEntityManager) => {
+          await transactionalEntityManager
+            .createQueryBuilder()
+            .relation(Post, "participantQueue")
+            .of(postObj)
+            .remove(userObj);
+        }
+      );
+
       //Add user to participants list
       await postRepository.manager.transaction(
         async (transactionalEntityManager) => {
@@ -98,18 +110,17 @@ export const acceptJoinRequest = async (req: Request, res: Response) => {
             .of(postObj)
             .add(userObj);
         }
-      )
+      );
     } catch (err: any) {
       // console.log("Error adding User to Participant List. Error :", err.message)
-      return res.status(500).json({ message: "Internal Server Error" })
+      return res.status(500).json({ message: "Internal Server Error" });
     }
 
     // console.log(userObj)
-  }
-  catch (err: any) {
+  } catch (err: any) {
     // console.log("Error while accepting join request. ", err.message)
     res.status(500).json({ message: "Internal Server Error" });
   }
 
   return res.json({ message: "User added to participant list" });
-}
+};

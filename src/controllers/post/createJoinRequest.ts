@@ -8,17 +8,6 @@ import { z } from "zod";
 import { validate } from "../../helpers/zodValidateRequest";
 
 const dataSchema = z.object({
-  body: z.object({
-    userId: z
-      .string({
-        invalid_type_error: "userId not a string",
-        required_error: "userId is a required parameter",
-      })
-      .min(0, {
-        message: "userId must be a non-empty string",
-      })
-      .uuid({ message: "userId must be a valid uuid" }),
-  }),
   params: z.object({
     postId: z
       .string({
@@ -36,7 +25,7 @@ export const createJoinRequestValidator = validate(dataSchema)
 
 export const createJoinRequest = async (req: Request, res: Response) => {
   const postId = req.params.postId;
-  const userId = req.body.userId;
+  const userId = req.token.userId;
 
   let userObj: User | null = null;
   let postObj: Post | null = null;

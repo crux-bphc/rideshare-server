@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { postRepository } from "../../repositories/postRepository";
-import { Post } from "../../entity/Post";
+import { rideRepository } from "../../repositories/rideRepository";
+import { Ride } from "../../entity/Ride";
 import { userRepository } from "../../repositories/userRepository";
 import { User } from "../../entity/User";
 
@@ -9,40 +9,40 @@ import { validate } from "../../helpers/zodValidateRequest";
 
 const dataSchema = z.object({
   params: z.object({
-    postId: z
+    rideId: z
       .string({
-        invalid_type_error: "postId not a string",
-        required_error: "postId is a required parameter",
+        invalid_type_error: "rideId not a string",
+        required_error: "rideId is a required parameter",
       })
       .min(0, {
-        message: "postId must be a non-empty string",
+        message: "rideId must be a non-empty string",
       })
-      .uuid({ message: "postId must be a valid uuid" }),
+      .uuid({ message: "rideId must be a valid uuid" }),
   })
 })
 
 export const createJoinRequestValidator = validate(dataSchema)
 
 export const createJoinRequest = async (req: Request, res: Response) => {
-  const postId = req.params.postId;
+  const rideId = req.params.rideId;
   const userEmail = req.token.email;
 
   let userObj: User | null = null;
-  let postObj: Post | null = null;
+  let rideObj: Ride | null = null;
 
   try {
-    postObj = await postRepository
-      .createQueryBuilder("post")
-      .leftJoinAndSelect("post.originalPoster", "originalPoster")
-      .where("post.id = :postId", { postId })
+    rideObj = await rideRepository
+      .createQueryBuilder("ride")
+      .leftJoinAndSelect("ride.originalPoster", "originalPoster")
+      .where("ride.id = :rideId", { rideId })
       .getOne()
 
-    if (!postObj) {
-      return res.status(404).json({ message: "Post not found in DB" });
+    if (!rideObj) {
+      return res.status(404).json({ message: "Ride not found in DB" });
     }
 
   } catch (err: any) {
-    // console.log("Error querying post in DB. Error :", err.message)
+    // console.log("Error querying ride in DB. Error :", err.message)
     return res.status(500).json({ message: "Internal Server Error" })
   }
 
@@ -61,17 +61,17 @@ export const createJoinRequest = async (req: Request, res: Response) => {
     return res.status(500).json({ message: "Internal Server Error" })
   }
 
-  if (postObj.originalPoster.id === userObj.id) {
+  if (rideObj.originalPoster.id === userObj.id) {
     return res.status(400).json({ message: "OP cannot be added to the join queue" });
   }
 
   try {
-    await postRepository.manager.transaction(
+    await rideRepository.manager.transaction(
       async (transactionalEntityManager) => {
         await transactionalEntityManager
           .createQueryBuilder()
-          .relation(Post, "participantQueue")
-          .of(postObj)
+          .relation(Ride, "participantQueue")
+          .of(rideObj)
           .add(userObj);
       }
     )

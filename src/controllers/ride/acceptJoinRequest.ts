@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { postRepository } from "../../repositories/postRepository";
-import { Post } from "../../entity/Post";
+import { rideRepository } from "../../repositories/rideRepository";
+import { Ride } from "../../entity/Ride";
 import { userRepository } from "../../repositories/userRepository";
 import { User } from "../../entity/User";
 
@@ -25,52 +25,52 @@ const dataSchema = z.object({
       ),
   }),
   params: z.object({
-    postId: z
+    rideId: z
       .string({
-        invalid_type_error: "postId not a string",
-        required_error: "postId is a required parameter",
+        invalid_type_error: "rideId not a string",
+        required_error: "rideId is a required parameter",
       })
       .min(0, {
-        message: "postId must be a non-empty string",
+        message: "rideId must be a non-empty string",
       })
-      .uuid({ message: "postId must be a valid uuid" }),
+      .uuid({ message: "rideId must be a valid uuid" }),
   }),
 });
 
 export const acceptJoinRequestValidator = validate(dataSchema);
 
 export const acceptJoinRequest = async (req: Request, res: Response) => {
-  const postId = req.params.postId;
+  const rideId = req.params.rideId;
   const OP_email = req.token.email;
   const userEmail = req.body.userEmail;
 
   let userObj: User | null = null;
-  let postObj: Post | null = null;
+  let rideObj: Ride | null = null;
 
   try {
-    postObj = await postRepository
-      .createQueryBuilder("post")
-      .leftJoinAndSelect("post.participantQueue", "participantQueue")
-      .leftJoinAndSelect("post.originalPoster", "originalPoster")
-      .leftJoinAndSelect("post.participants", "participants")
-      .where("post.id = :id", { id: postId })
+    rideObj = await rideRepository
+      .createQueryBuilder("ride")
+      .leftJoinAndSelect("ride.participantQueue", "participantQueue")
+      .leftJoinAndSelect("ride.originalPoster", "originalPoster")
+      .leftJoinAndSelect("ride.participants", "participants")
+      .where("ride.id = :id", { id: rideId })
       .getOne();
 
-    if (!postObj) {
-      return res.status(404).json({ message: "Post not found in DB" });
+    if (!rideObj) {
+      return res.status(404).json({ message: "Ride not found in DB" });
     }
 
-    if (postObj.participants.length >= postObj.seats) {
+    if (rideObj.participants.length >= rideObj.seats) {
       return res
         .status(405)
-        .json({ message: "Post participant count is full" });
+        .json({ message: "Ride participant count is full" });
     }
 
-    if (OP_email !== postObj.originalPoster.email)
+    if (OP_email !== rideObj.originalPoster.email)
       return res.status(403).json({ message: "User is not the OP" });
 
     const participantQueueEmails = new Set(
-      postObj.participantQueue.map((user) => user.email)
+      rideObj.participantQueue.map((user) => user.email)
     );
 
     if (!participantQueueEmails.has(userEmail)) {
@@ -91,23 +91,23 @@ export const acceptJoinRequest = async (req: Request, res: Response) => {
 
     try {
       //Remove user from participantQueue
-      await postRepository.manager.transaction(
+      await rideRepository.manager.transaction(
         async (transactionalEntityManager) => {
           await transactionalEntityManager
             .createQueryBuilder()
-            .relation(Post, "participantQueue")
-            .of(postObj)
+            .relation(Ride, "participantQueue")
+            .of(rideObj)
             .remove(userObj);
         }
       );
 
       //Add user to participants list
-      await postRepository.manager.transaction(
+      await rideRepository.manager.transaction(
         async (transactionalEntityManager) => {
           await transactionalEntityManager
             .createQueryBuilder()
-            .relation(Post, "participants")
-            .of(postObj)
+            .relation(Ride, "participants")
+            .of(rideObj)
             .add(userObj);
         }
       );

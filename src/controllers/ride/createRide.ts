@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { postRepository } from "../../repositories/postRepository";
-import { Post } from "../../entity/Post";
+import { rideRepository } from "../../repositories/rideRepository";
+import { Ride } from "../../entity/Ride";
 import { userRepository } from "../../repositories/userRepository";
 import { User } from "../../entity/User";
 import { Place } from "../../helpers/places";
@@ -63,9 +63,9 @@ const dataSchema = z.object({
     )
 })
 
-export const createPostValidator = validate(dataSchema)
+export const createRideValidator = validate(dataSchema)
 
-export const createPost = async (req: Request, res: Response) => {
+export const createRide = async (req: Request, res: Response) => {
   try {
 
     const userObj: User = await userRepository
@@ -79,10 +79,10 @@ export const createPost = async (req: Request, res: Response) => {
 
     const currentDateTime: Date = new Date();
 
-    const newPost = await postRepository
+    const newRide = await rideRepository
       .createQueryBuilder()
       .insert()
-      .into(Post)
+      .into(Ride)
       .values([{
         originalPoster: userObj,
         fromPlace: req.body.fromPlace,
@@ -100,23 +100,23 @@ export const createPost = async (req: Request, res: Response) => {
       .returning("*")
       .execute()
 
-      const post = newPost.generatedMaps[0] as Post;
+      const ride = newRide.generatedMaps[0] as Ride;
 
     //Add the OP User to the particpant list
-    await postRepository.manager.transaction(
+    await rideRepository.manager.transaction(
       async (transactionalEntityManager) => {
         await transactionalEntityManager
           .createQueryBuilder()
-          .relation(Post, "participants")
-          .of(post)
+          .relation(Ride, "participants")
+          .of(ride)
           .add(userObj);
       }
     )
 
-  return res.status(201).json({ message: "Created post." , post});
+  return res.status(201).json({ message: "Created ride." , ride});
 
   } catch (err) {
-    console.log("Error creating post:", err.message)
+    console.log("Error creating ride:", err.message)
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };

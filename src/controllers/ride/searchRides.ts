@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { Post } from "../../entity/Post";
-import { postRepository } from "../../repositories/postRepository";
+import { Ride } from "../../entity/Ride";
+import { rideRepository } from "../../repositories/rideRepository";
 import { Place } from "../../helpers/places";
 import { z } from "zod";
 import { validate } from "../../helpers/zodValidateRequest";
@@ -43,33 +43,33 @@ const dataSchema = z.object({
       })
       .optional(),
 
-    activePosts: z
+    activeRides: z
       .boolean({
-        invalid_type_error: "activePosts must be a boolean"
+        invalid_type_error: "activeRides must be a boolean"
       })
       .optional(),
 
-    startAtPost: z
+    startAtRide: z
       .number({
-        invalid_type_error: "startAtPost must be an integer"
+        invalid_type_error: "startAtRide must be an integer"
       })
       .int({
-        message: "startAtPost must be an integer"
+        message: "startAtRide must be an integer"
       })
       .positive({
-        message: "startAtPost must be positive"
+        message: "startAtRide must be positive"
       })
       .optional(),
 
-    endAtPost: z
+    endAtRide: z
       .number({
-        invalid_type_error: "endAtPost must be an integer"
+        invalid_type_error: "endAtRide must be an integer"
       })
       .int({
-        message: "endAtPost must be an integer"
+        message: "endAtRide must be an integer"
       })
       .positive({
-        message: "endAtPost must be positive"
+        message: "endAtRide must be positive"
       })
       .optional(),
 
@@ -94,12 +94,12 @@ const dataSchema = z.object({
     )
 })
 
-export const searchPostValidator = validate(dataSchema)
+export const searchRideValidator = validate(dataSchema)
 
 let orderingBy: object = {
-  1: "post.createdAt",
-  2: "post.timeRangeStart",
-  3: "post.seats",
+  1: "ride.createdAt",
+  2: "ride.timeRangeStart",
+  3: "ride.seats",
 }
 
 let orderingAlong: object = {
@@ -108,53 +108,53 @@ let orderingAlong: object = {
   2: "DESC",
 }
 
-export const searchPosts = async (req: Request, res: Response) => {
+export const searchRides = async (req: Request, res: Response) => {
 
   let fromPlace: Place | null = req.body.fromPlace;
   let toPlace: Place | null = req.body.toPlace;
   let startTime: Date | null = req.body.startTime; // Renders trips whose timeRange is within or after startTime
   let endTime: Date | null = req.body.endTime; // Renders trips whose timeRange is within or before endTime
-  // Use 1 or more here, to show only those posts which have available seats. leaving empty renders all posts without checking seats
+  // Use 1 or more here, to show only those rides which have available seats. leaving empty renders all rides without checking seats
   let availableSeats: number | null = req.body.availableSeats;
-  // true renders posts whose trips are yet to start. false renders trips which have started/finished in the past. leaving empty renders all posts regardless.
-  let activePosts: boolean | null = req.body.activePosts;
+  // true renders rides whose trips are yet to start. false renders trips which have started/finished in the past. leaving empty renders all rides regardless.
+  let activeRides: boolean | null = req.body.activeRides;
   // Pagination - both numbers inclusive
-  let startAtPost: number = req.body.startAtPost || 1;
-  let endAtPost: number = req.body.endAtPost || 10;
-  // orderBy = 1 renders posts sorted by time of posting. orderBy = 2 renders posts sorted by time of departure. orderBy = 3 renders posts sorted by number of seats available.
-  // the corresponding negative numbers renders posts in descending order
+  let startAtRide: number = req.body.startAtRide || 1;
+  let endAtRide: number = req.body.endAtRide || 10;
+  // orderBy = 1 renders rides sorted by time of posting. orderBy = 2 renders rides sorted by time of departure. orderBy = 3 renders rides sorted by number of seats available.
+  // the corresponding negative numbers renders rides in descending order
   let orderBy: number = req.body.orderBy || 1;
 
   let searchFilter: string = ""
   let searchObj: object = {}
 
   if (availableSeats != null) {
-    searchFilter = searchFilter + " AND (post.seats - (SELECT COUNT(participant) FROM UNNEST(post.participants) AS participant)) >= :availableSeats";
+    searchFilter = searchFilter + " AND (ride.seats - (SELECT COUNT(participant) FROM UNNEST(ride.participants) AS participant)) >= :availableSeats";
     searchObj["availableSeats"] = availableSeats;
   }
 
-  if (activePosts != null) {
-    searchFilter = searchFilter + " AND post.status = :activePosts";
-    searchObj["activePosts"] = activePosts;
+  if (activeRides != null) {
+    searchFilter = searchFilter + " AND ride.status = :activeRides";
+    searchObj["activeRides"] = activeRides;
   }
 
   if (fromPlace != null) {
-    searchFilter = searchFilter + " AND post.fromPlace = :fromPlace";
+    searchFilter = searchFilter + " AND ride.fromPlace = :fromPlace";
     searchObj["fromPlace"] = fromPlace;
   }
 
   if (toPlace != null) {
-    searchFilter = searchFilter + " AND post.toPlace = :toPlace";
+    searchFilter = searchFilter + " AND ride.toPlace = :toPlace";
     searchObj["toPlace"] = toPlace;
   }
 
   if (startTime != null) {
-    searchFilter = searchFilter + " AND post.timeRangeStop >= :startTime";
+    searchFilter = searchFilter + " AND ride.timeRangeStop >= :startTime";
     searchObj["startTime"] = startTime;
   }
 
   if (endTime != null) {
-    searchFilter = searchFilter + " AND post.timeRangeStart <= :endTime";
+    searchFilter = searchFilter + " AND ride.timeRangeStart <= :endTime";
     searchObj["endTime"] = endTime;
   }
 
@@ -162,25 +162,25 @@ export const searchPosts = async (req: Request, res: Response) => {
     searchFilter = searchFilter.substring(5,searchFilter.length);
   }
 
-  let posts: Post[] = [];
+  let rides: Ride[] = [];
 
   try {
-    posts = await postRepository
-      .createQueryBuilder('post')
-      .leftJoinAndSelect('post.participantQueue', 'participantQueue')
-      .leftJoinAndSelect("post.originalPoster", "originalPoster")
-      .leftJoinAndSelect("post.participants", "participants")
+    rides = await rideRepository
+      .createQueryBuilder('ride')
+      .leftJoinAndSelect('ride.participantQueue', 'participantQueue')
+      .leftJoinAndSelect("ride.originalPoster", "originalPoster")
+      .leftJoinAndSelect("ride.participants", "participants")
       .where(searchFilter, searchObj)
       .orderBy(orderingBy[Math.abs(orderBy)], orderingAlong[Math.sign(orderBy) + 1])
-      .skip(startAtPost - 1)
-      .take(endAtPost - startAtPost + 1)
+      .skip(startAtRide - 1)
+      .take(endAtRide - startAtRide + 1)
       .getMany()
 
   } catch (err: any) {
-    // console.log("Error while searching DB for posts.", err.message)
+    // console.log("Error while searching DB for rides.", err.message)
     return res.status(500).json({ message: "Internal Server Error" });
   }
 
-  res.status(200).json(posts);
+  res.status(200).json(rides);
 
 }

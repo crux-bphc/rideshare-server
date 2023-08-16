@@ -4,7 +4,7 @@ import { Request, Response, NextFunction } from "express"
 import { AppDataSource } from "./data-source"
 
 import { userRouter } from "./routers/userRouter"
-import { postRouter } from "./routers/postRouter"
+import { rideRouter } from "./routers/rideRouter"
 
 import "dotenv/config";
 import { env } from "../config/server";
@@ -17,7 +17,7 @@ AppDataSource.initialize().then(async () => {
   app.use(bodyParser.json())
 
   app.use("/user", userRouter)
-  app.use("/post", postRouter)
+  app.use("/ride", rideRouter)
 
   // start express server
   app.listen(env.PORT)

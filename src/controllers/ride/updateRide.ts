@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { postRepository } from "../../repositories/postRepository";
-import { Post } from "../../entity/Post";
+import { rideRepository } from "../../repositories/rideRepository";
+import { Ride } from "../../entity/Ride";
 import { userRepository } from "../../repositories/userRepository";
 import { User } from "../../entity/User";
 import { Place } from "../../helpers/places";
@@ -11,14 +11,14 @@ const dataSchema = z.object({
   params: z.object({
     id: z
       .string({
-        invalid_type_error: "postId not a string",
-        required_error: "postId is a required parameter",
+        invalid_type_error: "rideId not a string",
+        required_error: "rideId is a required parameter",
       })
       .min(0, {
-        message: "postId must be a non-empty string",
+        message: "rideId must be a non-empty string",
       })
       .uuid({
-        message: "postId must be a valid uuid"
+        message: "rideId must be a valid uuid"
       }),
 
   }),
@@ -89,9 +89,9 @@ const dataSchema = z.object({
     )
 })
 
-export const updatePostValidator = validate(dataSchema)
+export const updateRideValidator = validate(dataSchema)
 
-export const updatePost = async (req: Request, res: Response) => {
+export const updateRide = async (req: Request, res: Response) => {
   try {
 
     const user: User = await userRepository
@@ -103,21 +103,21 @@ export const updatePost = async (req: Request, res: Response) => {
       res.status(403).json({ message: "User id invalid" });
     }
 
-    const post: Post = await postRepository
-      .createQueryBuilder("post")
-      .where("post.id = :id", { id: req.params.id })
+    const ride: Ride = await rideRepository
+      .createQueryBuilder("ride")
+      .where("ride.id = :id", { id: req.params.id })
       .getOne()
 
-    if (!post) {
-      res.status(403).json({ message: "Post id invalid" });
+    if (!ride) {
+      res.status(403).json({ message: "Ride id invalid" });
     }
 
-    if (user == post.originalPoster) {
+    if (user == ride.originalPoster) {
 
       const currentDateTime: Date = new Date();
 
-      await postRepository
-        .createQueryBuilder("post")
+      await rideRepository
+        .createQueryBuilder("ride")
         .update()
         .set({
           fromPlace: req.body.fromPlace,
@@ -125,17 +125,17 @@ export const updatePost = async (req: Request, res: Response) => {
           seats: req.body.seats,
           timeRangeStart: req.body.timeRangeStart,
           timeRangeStop: req.body.timeRangeStop,
-          status: req.body.deletePost,
+          status: req.body.deleteRide,
           updatedAt: currentDateTime,
           description: req.body.description
         })
-        .where("post.id = :id", { id: req.params.id })
+        .where("ride.id = :id", { id: req.params.id })
         .execute()
 
-      res.status(200).json("Updated post.");
+      res.status(200).json("Updated ride.");
 
     } else {
-      res.status(401).json("Unauthorized to edit this post.")
+      res.status(401).json("Unauthorized to edit this ride.")
     }
 
   } catch (err) {

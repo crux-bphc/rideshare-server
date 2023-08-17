@@ -12,7 +12,7 @@ import { Place } from "../helpers/places"
 
 
 @Entity()
-export class Post {
+export class Ride {
 
   @PrimaryGeneratedColumn("uuid")
   id: string
@@ -55,11 +55,11 @@ export class Post {
   timeRangeStop: Date
 
   @JoinTable()
-  @ManyToMany(() => User, (user => user.posts))
+  @ManyToMany(() => User, (user => user.rides))
   participants: User[];
 
   @JoinTable()
-  @ManyToMany(() => User, (user => user.postRequests))
+  @ManyToMany(() => User, (user => user.rideRequests))
   participantQueue: User[];
 
   @Column({

@@ -7,7 +7,7 @@ import {
   OneToMany
 } from "typeorm";
 
-import { Post } from "./Post"
+import { Ride } from "./Ride"
 @Entity()
 export class User {
   @PrimaryGeneratedColumn("uuid")
@@ -44,10 +44,10 @@ export class User {
   })
   batch: number;
 
-  @ManyToMany(() => Post, (post) => post.participantQueue)
-  postRequests!: Post[]
+  @ManyToMany(() => Ride, (ride) => ride.participantQueue)
+  rideRequests!: Ride[]
 
-  @ManyToMany(() => Post, (post) => post.participants)
-  posts!: Post[]
+  @ManyToMany(() => Ride, (ride) => ride.participants)
+  rides!: Ride[]
 
 }

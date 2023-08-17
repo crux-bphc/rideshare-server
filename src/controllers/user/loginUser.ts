@@ -3,6 +3,7 @@ import { userRepository } from "../../repositories/userRepository";
 import { validate } from "../../helpers/zodValidateRequest";
 import { User } from "../../entity/User";
 import { z } from "zod";
+import { generateToken } from "../../helpers/tokenHelper";
 
 const dataSchema = z.object({
   body: z.object({
@@ -21,32 +22,27 @@ const dataSchema = z.object({
         }
       ),
   }),
-})
+});
 
-export const findUserValidator = validate(dataSchema);
+export const loginUserValidator = validate(dataSchema);
 
-export const findUser = async (req: Request, res: Response) => {
-
+export const loginUser = async (req: Request, res: Response) => {
   let userObj: User | null = null;
 
   try {
     userObj = await userRepository
       .createQueryBuilder("user")
-      .leftJoinAndSelect("user.rideRequests", "rideRequests")
-      .leftJoinAndSelect("user.rides", "rides")
-      .leftJoinAndSelect('rides.participantQueue', 'participantQueue')
-      .leftJoinAndSelect("rides.originalPoster", "originalPoster")
-      .leftJoinAndSelect("rides.participants", "participants")
       .where("user.email = :email", { email: req.body.email })
-      .getOne()
+      .getOne();
 
     if (!userObj) {
       return res.status(404).json({ message: "User not found in DB" });
     }
-
   } catch (err: any) {
-    console.log("Error while querying for User. Error : ", err.message)
+    console.log("Error while querying for User. Error : ", err.message);
     return res.status(500).json({ message: "Internal Server Error" });
   }
-  return res.json(userObj);
-}
+
+  const token = generateToken(userObj);
+  return res.json(token);
+};

@@ -84,8 +84,8 @@ const dataSchema = z.object({
       .optional(),
 
   })
-    .refine(data => ((((!data.timeRangeStart && !data.timeRangeStop) || ((data.timeRangeStop && data.timeRangeStart) && (new Date(data.timeRangeStart) < new Date(data.timeRangeStop)))))),
-      "if one of timeRangeStart or timeRangeStop is filled, the other must be filled too; timeRangeStart must occur before timeRangeStop"
+    .refine(data => ((((!data.timeRangeStart && !data.timeRangeStop) || ((data.timeRangeStop && data.timeRangeStart) && (new Date(data.timeRangeStart) <= new Date(data.timeRangeStop)))))),
+      "if one of timeRangeStart or timeRangeStop is filled, the other must be filled too; timeRangeStart must not occur after timeRangeStop"
     )
 })
 

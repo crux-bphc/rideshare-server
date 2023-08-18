@@ -6,7 +6,7 @@ import { z } from "zod";
 import { validate } from "../../helpers/zodValidateRequest";
 
 const dataSchema = z.object({
-  body: z.object({
+  query: z.object({
     fromPlace: z
       .nativeEnum(Place, {
         invalid_type_error: "fromPlace must be a valid enum of the defined places"
@@ -110,20 +110,20 @@ let orderingAlong: object = {
 
 export const searchRides = async (req: Request, res: Response) => {
 
-  let fromPlace: Place | null = req.body.fromPlace;
-  let toPlace: Place | null = req.body.toPlace;
-  let startTime: Date | null = req.body.startTime; // Renders trips whose timeRange is within or after startTime
-  let endTime: Date | null = req.body.endTime; // Renders trips whose timeRange is within or before endTime
+  let fromPlace: Place | null = req.query.fromPlace;
+  let toPlace: Place | null = req.query.toPlace;
+  let startTime: Date | null = req.query.startTime; // Renders trips whose timeRange is within or after startTime
+  let endTime: Date | null = req.query.endTime; // Renders trips whose timeRange is within or before endTime
   // Use 1 or more here, to show only those rides which have available seats. leaving empty renders all rides without checking seats
-  let availableSeats: number | null = req.body.availableSeats;
+  let availableSeats: number | null = req.query.availableSeats;
   // true renders rides whose trips are yet to start. false renders trips which have started/finished in the past. leaving empty renders all rides regardless.
-  let activeRides: boolean | null = req.body.activeRides;
+  let activeRides: boolean | null = req.query.activeRides;
   // Pagination - both numbers inclusive
-  let startAtRide: number = req.body.startAtRide || 1;
-  let endAtRide: number = req.body.endAtRide || 10;
+  let startAtRide: number = req.query.startAtRide || 1;
+  let endAtRide: number = req.query.endAtRide || 10;
   // orderBy = 1 renders rides sorted by time of posting. orderBy = 2 renders rides sorted by time of departure. orderBy = 3 renders rides sorted by number of seats available.
   // the corresponding negative numbers renders rides in descending order
-  let orderBy: number = req.body.orderBy || 1;
+  let orderBy: number = req.query.orderBy || 1;
 
   let searchFilter: string = ""
   let searchObj: object = {}

@@ -8,5 +8,6 @@ export const serverSchema = z.object({
     POSTGRES_SOCKET: z.string().min(1),
     // PROD_URL: z.string().url().min(1),
     PORT: z.coerce.number().default(3000),
-    JWT_SECRET : z.string().min(8)
+    JWT_SECRET : z.string().min(8),
+    PGPORT: z.coerce.number().default(5432),
   });

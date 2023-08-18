@@ -5,7 +5,7 @@ import { User } from "../../entity/User";
 import { z } from "zod";
 
 const dataSchema = z.object({
-  body: z.object({
+  params: z.object({
     email: z
       .string({
         invalid_type_error: "email should be a string",
@@ -30,6 +30,11 @@ export const findUser = async (req: Request, res: Response) => {
   let userObj: User | null = null;
 
   try {
+
+    // Once tokens work, match ID with user email inside DB 
+    // return full user details if they match (or if no email is passed)
+    // In case they don't match, return limited details about the user
+
     userObj = await userRepository
       .createQueryBuilder("user")
       .leftJoinAndSelect("user.rideRequests", "rideRequests")
@@ -37,7 +42,7 @@ export const findUser = async (req: Request, res: Response) => {
       .leftJoinAndSelect('rides.participantQueue', 'participantQueue')
       .leftJoinAndSelect("rides.originalPoster", "originalPoster")
       .leftJoinAndSelect("rides.participants", "participants")
-      .where("user.email = :email", { email: req.body.email })
+      .where("user.email = :email", { email: req.params.email })
       .getOne()
 
     if (!userObj) {

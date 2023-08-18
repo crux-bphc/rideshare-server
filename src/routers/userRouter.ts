@@ -26,7 +26,7 @@ const userRouter = express.Router();
 
 userRouter.post("/create", createUserValidator, createUser);
 userRouter.put("/update/:id", updateUserValidator, isLoggedIn, updateUser);
-userRouter.get("/search", findUserValidator, findUser);
+userRouter.get("/find/:email", findUserValidator, findUser);
 userRouter.post("/login", loginUserValidator, loginUser);
 
 export { userRouter };

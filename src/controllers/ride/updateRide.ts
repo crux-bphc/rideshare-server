@@ -23,17 +23,20 @@ const dataSchema = z.object({
 
   }),
   body: z.object({
-    userId: z
+    email: z
       .string({
-        invalid_type_error: "userId not a string",
-        required_error: "userId is a required parameter",
+        invalid_type_error: "email should be a string",
+        required_error: "email is a required parameter",
       })
       .min(0, {
-        message: "userId must be a non-empty string",
+        message: "email cannot be empty",
       })
-      .uuid({
-        message: "userId must be a valid uuid"
-      }),
+      .regex(
+        /^([A-Z0-9_+-]+\.?)*[A-Z0-9_+-]@([A-Z0-9][A-Z0-9\-]*\.)+[A-Z]{2,}$/i,
+        {
+          message: "email must be valid",
+        }
+      ),
 
     fromPlace: z
       .nativeEnum(Place, {
@@ -96,11 +99,11 @@ export const updateRide = async (req: Request, res: Response) => {
 
     const user: User = await userRepository
       .createQueryBuilder("user")
-      .where("user.id = :id", { id: req.body.userId })
+      .where("user.email = :email", { email: req.body.email })
       .getOne()
 
     if (!user) {
-      res.status(403).json({ message: "User id invalid" });
+      res.status(403).json({ message: "User not found!" });
     }
 
     const ride: Ride = await rideRepository

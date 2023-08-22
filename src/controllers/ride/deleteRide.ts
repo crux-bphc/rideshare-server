@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 import { rideRepository } from "../../repositories/rideRepository";
 import { Ride } from "../../entity/Ride";
-
+import { userRepository } from "../../repositories/userRepository";
+import { User } from "../../entity/User";
 import { z } from "zod";
 import { validate } from "../../helpers/zodValidateRequest";
 
@@ -23,15 +24,18 @@ export const deleteRideValidator = validate(dataSchema)
 
 export const deleteRide = async (req: Request, res: Response) => {
   const rideId = req.params.id;
+  const userEmail = req.token.email;
+
+  const userObj: User = await userRepository
+    .createQueryBuilder("user")
+    .where("user.email = :email", { email: userEmail })
+    .getOne()
 
   let rideObj: Ride | null = null;
 
   try {
     rideObj = await rideRepository
       .createQueryBuilder('ride')
-      .leftJoinAndSelect('ride.participantQueue', 'participantQueue')
-      .leftJoinAndSelect("ride.originalPoster", "originalPoster")
-      .leftJoinAndSelect("ride.participants", "participants")
       .where('ride.id = :id', { id: rideId })
       .getOne();
 
@@ -39,18 +43,23 @@ export const deleteRide = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Ride not found in DB" });
     }
 
-    await rideRepository
-      .createQueryBuilder('ride')
-      .delete()
-      .from(Ride)
-      .where('ride.id = :id', { id: rideId })
-      .execute();
+    if (userObj == rideObj.originalPoster) {
+
+      await rideRepository
+        .createQueryBuilder('ride')
+        .delete()
+        .from(Ride)
+        .where('ride.id = :id', { id: rideId })
+        .execute();
+
+      return res.json({message: "Ride deleted."});
+
+    } else {
+      res.status(401).json("Unauthorized to edit this ride.")
+    }
 
   }
   catch (err: any) {
-    // console.log("Error while querying DB for ride. ", err.message)
     res.status(500).json({ message: "Internal Server Error" });
   }
-
-  return res.json({message: "Ride deleted."});
 }

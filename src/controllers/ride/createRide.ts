@@ -61,6 +61,9 @@ const dataSchema = z.object({
     .refine(data => new Date(data.timeRangeStart) <= new Date(data.timeRangeStop),
       "timeRangeStart must not occur after timeRangeStop",
     )
+    .refine(data => ((data.fromPlace == null && data.toPlace == null) || (data.fromPlace != data.toPlace)),
+      "fromPlace and toPlace cannot be the same"
+    )
 })
 
 export const createRideValidator = validate(dataSchema)

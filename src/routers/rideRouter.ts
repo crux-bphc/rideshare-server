@@ -35,6 +35,11 @@ import {
   deleteRideValidator
 } from "../controllers/ride/deleteRide";
 
+import {
+  rejectRequest,
+  rejectRequestValidator,
+} from "../controllers/ride/rejectRequest";
+
 import { isLoggedIn } from "../middleware/auth";
 
 const rideRouter = express.Router();
@@ -46,5 +51,6 @@ rideRouter.post("/accept/:id", acceptRequestValidator,isLoggedIn,acceptRequest);
 rideRouter.get("/find/:id", findRideValidator,isLoggedIn ,findRide);
 rideRouter.get("/search", searchRideValidator,isLoggedIn ,searchRides);
 rideRouter.delete("/delete/:id", deleteRideValidator, isLoggedIn, deleteRide);
+rideRouter.post("/reject/:id", rejectRequestValidator, isLoggedIn, rejectRequest);
 
 export { rideRouter };

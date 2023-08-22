@@ -40,6 +40,11 @@ import {
   rejectRequestValidator,
 } from "../controllers/ride/rejectRequest";
 
+import {
+  revokeRequest,
+  revokeRequestValidator,
+} from "../controllers/ride/revokeRequest";
+
 import { isLoggedIn } from "../middleware/auth";
 
 const rideRouter = express.Router();
@@ -52,5 +57,6 @@ rideRouter.get("/find/:id", findRideValidator,isLoggedIn ,findRide);
 rideRouter.get("/search", searchRideValidator,isLoggedIn ,searchRides);
 rideRouter.delete("/delete/:id", deleteRideValidator, isLoggedIn, deleteRide);
 rideRouter.post("/reject/:id", rejectRequestValidator, isLoggedIn, rejectRequest);
+rideRouter.delete("/revoke/:id", revokeRequestValidator, isLoggedIn, revokeRequest)
 
 export { rideRouter };

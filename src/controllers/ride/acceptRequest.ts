@@ -37,9 +37,9 @@ const dataSchema = z.object({
   }),
 });
 
-export const acceptJoinRequestValidator = validate(dataSchema);
+export const acceptRequestValidator = validate(dataSchema);
 
-export const acceptJoinRequest = async (req: Request, res: Response) => {
+export const acceptRequest = async (req: Request, res: Response) => {
   const rideId = req.params.id;
   const OP_email = req.token.email;
   const userEmail = req.body.userEmail;

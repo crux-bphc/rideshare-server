@@ -21,9 +21,9 @@ const dataSchema = z.object({
   })
 })
 
-export const createJoinRequestValidator = validate(dataSchema)
+export const createRequestValidator = validate(dataSchema)
 
-export const createJoinRequest = async (req: Request, res: Response) => {
+export const createRequest = async (req: Request, res: Response) => {
   const rideId = req.params.id;
   const userEmail = req.token.email;
 

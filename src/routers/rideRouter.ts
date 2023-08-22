@@ -11,14 +11,14 @@ import {
 } from "../controllers/ride/updateRide";
 
 import {
-  createJoinRequest,
-  createJoinRequestValidator,
-} from "../controllers/ride/createJoinRequest";
+  createRequest,
+  createRequestValidator,
+} from "../controllers/ride/createRequest";
 
 import {
-  acceptJoinRequest,
-  acceptJoinRequestValidator,
-} from "../controllers/ride/acceptJoinRequest";
+  acceptRequest,
+  acceptRequestValidator,
+} from "../controllers/ride/acceptRequest";
 
 import { 
     findRide, 
@@ -41,8 +41,8 @@ const rideRouter = express.Router();
 
 rideRouter.post("/create", createRideValidator,isLoggedIn ,createRide);
 rideRouter.put("/update/:id", updateRideValidator,isLoggedIn ,updateRide);
-rideRouter.get("/join/:id", createJoinRequestValidator,isLoggedIn ,createJoinRequest);
-rideRouter.post("/accept/:id", acceptJoinRequestValidator,isLoggedIn,acceptJoinRequest);
+rideRouter.get("/join/:id", createRequestValidator,isLoggedIn ,createRequest);
+rideRouter.post("/accept/:id", acceptRequestValidator,isLoggedIn,acceptRequest);
 rideRouter.get("/find/:id", findRideValidator,isLoggedIn ,findRide);
 rideRouter.get("/search", searchRideValidator,isLoggedIn ,searchRides);
 rideRouter.delete("/delete/:id", deleteRideValidator, isLoggedIn, deleteRide);

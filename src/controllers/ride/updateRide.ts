@@ -97,6 +97,8 @@ export const updateRideValidator = validate(dataSchema)
 export const updateRide = async (req: Request, res: Response) => {
   try {
 
+    const rideId = req.params.id;
+
     const user: User = await userRepository
       .createQueryBuilder("user")
       .where("user.email = :email", { email: req.body.email })
@@ -108,7 +110,7 @@ export const updateRide = async (req: Request, res: Response) => {
 
     const ride: Ride = await rideRepository
       .createQueryBuilder("ride")
-      .where("ride.id = :id", { id: req.params.id })
+      .where("ride.id = :id", { id: rideId })
       .getOne()
 
     if (!ride) {
@@ -132,7 +134,7 @@ export const updateRide = async (req: Request, res: Response) => {
           updatedAt: currentDateTime,
           description: req.body.description
         })
-        .where("ride.id = :id", { id: req.params.id })
+        .where("ride.id = :id", { id: rideId })
         .execute()
 
       res.status(200).json("Updated ride.");

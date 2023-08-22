@@ -25,22 +25,22 @@ const dataSchema = z.object({
       ),
   }),
   params: z.object({
-    rideId: z
+    id: z
       .string({
-        invalid_type_error: "rideId not a string",
-        required_error: "rideId is a required parameter",
+        invalid_type_error: "id not a string",
+        required_error: "id is a required parameter",
       })
       .min(0, {
-        message: "rideId must be a non-empty string",
+        message: "id must be a non-empty string",
       })
-      .uuid({ message: "rideId must be a valid uuid" }),
+      .uuid({ message: "id must be a valid uuid" }),
   }),
 });
 
 export const acceptJoinRequestValidator = validate(dataSchema);
 
 export const acceptJoinRequest = async (req: Request, res: Response) => {
-  const rideId = req.params.rideId;
+  const rideId = req.params.id;
   const OP_email = req.token.email;
   const userEmail = req.body.userEmail;
 

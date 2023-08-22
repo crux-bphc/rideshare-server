@@ -7,7 +7,7 @@ import { validate } from "../../helpers/zodValidateRequest";
 
 const dataSchema = z.object({
   params: z.object({
-      rideId: z
+      id: z
         .string({
           invalid_type_error: "rideId not a string",
           required_error: "rideId is a required parameter",
@@ -22,7 +22,7 @@ const dataSchema = z.object({
 export const findRideValidator = validate(dataSchema)
 
 export const findRide = async (req: Request, res: Response) => {
-  const rideId = req.params.rideId;
+  const rideId = req.params.id;
 
   let rideObj: Ride | null = null;
 

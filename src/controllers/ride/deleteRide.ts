@@ -22,7 +22,7 @@ const dataSchema = z.object({
 export const deleteRideValidator = validate(dataSchema)
 
 export const deleteRide = async (req: Request, res: Response) => {
-  const id = req.params.id;
+  const rideId = req.params.id;
 
   let rideObj: Ride | null = null;
 
@@ -32,7 +32,7 @@ export const deleteRide = async (req: Request, res: Response) => {
       .leftJoinAndSelect('ride.participantQueue', 'participantQueue')
       .leftJoinAndSelect("ride.originalPoster", "originalPoster")
       .leftJoinAndSelect("ride.participants", "participants")
-      .where('ride.id = :id', { id: id })
+      .where('ride.id = :id', { id: rideId })
       .getOne();
 
     if (!rideObj) {
@@ -43,7 +43,7 @@ export const deleteRide = async (req: Request, res: Response) => {
       .createQueryBuilder('ride')
       .delete()
       .from(Ride)
-      .where('ride.id = :id', { id: id })
+      .where('ride.id = :id', { id: rideId })
       .execute();
 
   }

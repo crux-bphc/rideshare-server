@@ -41,9 +41,9 @@ const rideRouter = express.Router();
 
 rideRouter.post("/create", createRideValidator,isLoggedIn ,createRide);
 rideRouter.put("/update/:id", updateRideValidator,isLoggedIn ,updateRide);
-rideRouter.get("/join/:rideId", createJoinRequestValidator,isLoggedIn ,createJoinRequest);
-rideRouter.post("/accept/:rideId", acceptJoinRequestValidator,isLoggedIn,acceptJoinRequest);
-rideRouter.get("/find/:rideId", findRideValidator,isLoggedIn ,findRide);
+rideRouter.get("/join/:id", createJoinRequestValidator,isLoggedIn ,createJoinRequest);
+rideRouter.post("/accept/:id", acceptJoinRequestValidator,isLoggedIn,acceptJoinRequest);
+rideRouter.get("/find/:id", findRideValidator,isLoggedIn ,findRide);
 rideRouter.get("/search", searchRideValidator,isLoggedIn ,searchRides);
 rideRouter.delete("/delete/:id", deleteRideValidator, isLoggedIn, deleteRide);
 

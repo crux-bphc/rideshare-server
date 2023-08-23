@@ -82,5 +82,5 @@ export const revokeRequest = async (req: Request, res: Response) => {
   } catch (err: any) {
     return res.status(500).json({ message: "Internal Server Error" })
   }
-  return res.status(200).json({ message: "User Added to Join Queue" });
+  return res.status(200).json({ message: "User removed from Participant Queue" });
 }

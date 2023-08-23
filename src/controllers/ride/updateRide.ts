@@ -98,9 +98,17 @@ const dataSchema = z.object({
 export const updateRideValidator = validate(dataSchema)
 
 export const updateRide = async (req: Request, res: Response) => {
-  try {
 
-    const rideId = req.params.id;
+  const rideId = req.params.id;
+  const email = req.body.email;
+  let fromPlace = req.body.fromPlace;
+  let toPlace = req.body.toPlace;
+  let seats = req.body.seats;
+  let timeRangeStart = req.body.timeRangeStart;
+  let timeRangeStop = req.body.timeRangeStop;
+  let description = req.body.description;
+
+  try {
 
     const user: User = await userRepository
       .createQueryBuilder("user")
@@ -118,6 +126,30 @@ export const updateRide = async (req: Request, res: Response) => {
 
     if (!ride) {
       res.status(403).json({ message: "Ride id invalid" });
+    }
+
+    if (fromPlace == null) {
+      fromPlace = ride.fromPlace;
+    }
+
+    if (toPlace == null) {
+      toPlace = ride.toPlace;
+    }
+
+    if (seats == null) {
+      seats = ride.seats;
+    }
+
+    if (timeRangeStart == null) {
+      timeRangeStart = ride.timeRangeStart;
+    }
+
+    if (timeRangeStop == null) {
+      timeRangeStop = ride.timeRangeStop;
+    }
+
+    if (description == null) {
+      description = ride.description;
     }
 
     if (user == ride.originalPoster) {

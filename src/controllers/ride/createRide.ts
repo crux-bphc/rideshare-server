@@ -69,6 +69,9 @@ const dataSchema = z.object({
 export const createRideValidator = validate(dataSchema)
 
 export const createRide = async (req: Request, res: Response) => {
+
+  const description: string = (req.body.description != null) ? req.body.description : "";
+
   try {
 
     const userObj: User = await userRepository
@@ -98,7 +101,7 @@ export const createRide = async (req: Request, res: Response) => {
         status: true,
         createdAt: currentDateTime,
         updatedAt: currentDateTime,
-        description: req.body.description
+        description: description,
       }])
       .returning("*")
       .execute()

@@ -23,21 +23,6 @@ const dataSchema = z.object({
 
   }),
   body: z.object({
-    email: z
-      .string({
-        invalid_type_error: "email should be a string",
-        required_error: "email is a required parameter",
-      })
-      .min(0, {
-        message: "email cannot be empty",
-      })
-      .regex(
-        /^([A-Z0-9_+-]+\.?)*[A-Z0-9_+-]@([A-Z0-9][A-Z0-9\-]*\.)+[A-Z]{2,}$/i,
-        {
-          message: "email must be valid",
-        }
-      ),
-
     fromPlace: z
       .nativeEnum(Place, {
         invalid_type_error: "fromPlace must be a valid enum of the defined places",
@@ -100,7 +85,7 @@ export const updateRideValidator = validate(dataSchema)
 export const updateRide = async (req: Request, res: Response) => {
 
   const rideId = req.params.id;
-  const email = req.body.email;
+  const userId = req.token._id;
   let fromPlace = req.body.fromPlace;
   let toPlace = req.body.toPlace;
   let seats = req.body.seats;
@@ -108,51 +93,52 @@ export const updateRide = async (req: Request, res: Response) => {
   let timeRangeStop = req.body.timeRangeStop;
   let description = req.body.description;
 
+  const userObj: User = await userRepository
+    .createQueryBuilder("user")
+    .where("user.id = :id", { id: userId })
+    .getOne()
+
+  if (!userObj) {
+    res.status(403).json({ message: "User not found!" });
+  }
+
+  const rideObj: Ride = await rideRepository
+    .createQueryBuilder("ride")
+    .leftJoinAndSelect("ride.originalPoster", "originalPoster")
+    .where("ride.id = :id", { id: rideId })
+    .getOne()
+
+  if (!rideObj) {
+    res.status(403).json({ message: "Ride id invalid" });
+  }
+
+  if (fromPlace == null) {
+    fromPlace = rideObj.fromPlace;
+  }
+
+  if (toPlace == null) {
+    toPlace = rideObj.toPlace;
+  }
+
+  if (seats == null) {
+    seats = rideObj.seats;
+  }
+
+  if (timeRangeStart == null) {
+    timeRangeStart = rideObj.timeRangeStart;
+  }
+
+  if (timeRangeStop == null) {
+    timeRangeStop = rideObj.timeRangeStop;
+  }
+
+  if (description == null) {
+    description = rideObj.description;
+  }
+
   try {
 
-    const user: User = await userRepository
-      .createQueryBuilder("user")
-      .where("user.email = :email", { email: req.body.email })
-      .getOne()
-
-    if (!user) {
-      res.status(403).json({ message: "User not found!" });
-    }
-
-    const ride: Ride = await rideRepository
-      .createQueryBuilder("ride")
-      .where("ride.id = :id", { id: rideId })
-      .getOne()
-
-    if (!ride) {
-      res.status(403).json({ message: "Ride id invalid" });
-    }
-
-    if (fromPlace == null) {
-      fromPlace = ride.fromPlace;
-    }
-
-    if (toPlace == null) {
-      toPlace = ride.toPlace;
-    }
-
-    if (seats == null) {
-      seats = ride.seats;
-    }
-
-    if (timeRangeStart == null) {
-      timeRangeStart = ride.timeRangeStart;
-    }
-
-    if (timeRangeStop == null) {
-      timeRangeStop = ride.timeRangeStop;
-    }
-
-    if (description == null) {
-      description = ride.description;
-    }
-
-    if (user == ride.originalPoster) {
+    if (userObj.id == rideObj.originalPoster.id) {
 
       const currentDateTime: Date = new Date();
 

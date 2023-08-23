@@ -19,7 +19,8 @@ const dataSchema = z.object({
         {
           message: "email must be valid",
         }
-      ),
+      )
+      .optional(),
   }),
 })
 
@@ -31,22 +32,32 @@ export const findUser = async (req: Request, res: Response) => {
 
   try {
 
-    // Once tokens work, match ID with user email inside DB 
-    // return full user details if they match (or if no email is passed)
-    // In case they don't match, return limited details about the user
+    if (req.params.email == null || req.token.email == req.params.email) {
 
-    userObj = await userRepository
-      .createQueryBuilder("user")
-      .leftJoinAndSelect("user.rideRequests", "rideRequests")
-      .leftJoinAndSelect("rideRequests.participantQueue", "requestParticipantQueue")
-      .leftJoinAndSelect("rideRequests.originalPoster", "requestOriginalPoster")
-      .leftJoinAndSelect("rideRequests.participants", "requestParticipants")
-      .leftJoinAndSelect("user.rides", "rides")
-      .leftJoinAndSelect("rides.participantQueue", "rideParticipantQueue")
-      .leftJoinAndSelect("rides.originalPoster", "rideOriginalPoster")
-      .leftJoinAndSelect("rides.participants", "rideParticipants")
-      .where("user.email = :email", { email: req.params.email })
-      .getOne()
+      userObj = await userRepository
+        .createQueryBuilder("user")
+        .leftJoinAndSelect("user.rideRequests", "rideRequests")
+        .leftJoinAndSelect("rideRequests.participantQueue", "requestParticipantQueue")
+        .leftJoinAndSelect("rideRequests.originalPoster", "requestOriginalPoster")
+        .leftJoinAndSelect("rideRequests.participants", "requestParticipants")
+        .leftJoinAndSelect("user.rides", "rides")
+        .leftJoinAndSelect("rides.participantQueue", "rideParticipantQueue")
+        .leftJoinAndSelect("rides.originalPoster", "rideOriginalPoster")
+        .leftJoinAndSelect("rides.participants", "rideParticipants")
+        .where("user.id = :id", { id: req.token._id })
+        .getOne()
+
+    } else {
+
+      userObj = await userRepository
+        .createQueryBuilder("user")
+        .leftJoinAndSelect("user.rides", "rides")
+        .leftJoinAndSelect("rides.originalPoster", "rideOriginalPoster")
+        .leftJoinAndSelect("rides.participants", "rideParticipants")
+        .where("user.email = :email", { email: req.params.email })
+        .getOne()
+
+    }
 
     if (!userObj) {
       return res.status(404).json({ message: "User not found in DB" });

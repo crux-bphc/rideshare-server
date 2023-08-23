@@ -76,7 +76,7 @@ export const createRide = async (req: Request, res: Response) => {
 
     const userObj: User = await userRepository
       .createQueryBuilder("user")
-      .where("user.email = :email", { email: req.token.email }) 
+      .where("user.id = :id", { id: req.token._id }) 
       .getOne()
 
     if (!userObj) {

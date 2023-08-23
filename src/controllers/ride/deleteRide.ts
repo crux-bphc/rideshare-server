@@ -26,16 +26,12 @@ export const deleteRide = async (req: Request, res: Response) => {
   const rideId = req.params.id;
   const userId = req.token._id;
 
-  const userObj: User = await userRepository
-    .createQueryBuilder("user")
-    .where("user.id = :id", { id: userId })
-    .getOne()
-
   let rideObj: Ride | null = null;
 
   try {
     rideObj = await rideRepository
       .createQueryBuilder('ride')
+      .leftJoinAndSelect("ride.originalPoster", "originalPoster")
       .where('ride.id = :id', { id: rideId })
       .getOne();
 
@@ -43,7 +39,7 @@ export const deleteRide = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Ride not found in DB" });
     }
 
-    if (userObj == rideObj.originalPoster) {
+    if (userId == rideObj.originalPoster.id) {
 
       await rideRepository
         .createQueryBuilder('ride')

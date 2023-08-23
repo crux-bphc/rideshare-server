@@ -60,7 +60,7 @@ export const acceptRequest = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Ride not found in DB" });
     }
 
-    if (rideObj.participants.length >= rideObj.seats) {
+    if (rideObj.seats <= 0) {
       return res
         .status(405)
         .json({ message: "Ride participant count is full" });
@@ -111,6 +111,17 @@ export const acceptRequest = async (req: Request, res: Response) => {
             .add(userObj);
         }
       );
+
+      //Update available number of seats
+      await rideRepository
+        .createQueryBuilder("ride")
+        .update()
+        .set({
+          seats: rideObj.seats - 1,
+        })
+        .where("ride.id = :id", { id: rideId })
+        .execute()
+
     } catch (err: any) {
       // console.log("Error adding User to Participant List. Error :", err.message)
       return res.status(500).json({ message: "Internal Server Error" });

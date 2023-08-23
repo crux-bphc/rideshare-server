@@ -146,8 +146,7 @@ export const searchRides = async (req: Request, res: Response) => {
   let searchObj: object = {}
 
   if (availableSeats != null) {
-    searchFilter = searchFilter + " AND ((ride.seats) - (SELECT COUNT(participant) FROM UNNEST(participants) AS participant))) >= :availableSeats";
-    // searchFilter = searchFilter + " AND (ride.seats - ride.participantCount) >= :availableSeats"
+    searchFilter = searchFilter + " AND (ride.seats >= :availableSeats)";
     searchObj["availableSeats"] = availableSeats;
   }
 

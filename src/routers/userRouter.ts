@@ -25,7 +25,7 @@ import { isLoggedIn } from "../middleware/auth";
 const userRouter = express.Router();
 
 userRouter.post("/create", createUserValidator, createUser);
-userRouter.put("/update/:email", updateUserValidator, isLoggedIn, updateUser);
+userRouter.put("/update", updateUserValidator, isLoggedIn, updateUser);
 userRouter.get("/find/:email", findUserValidator, findUser);
 userRouter.post("/login", loginUserValidator, loginUser);
 

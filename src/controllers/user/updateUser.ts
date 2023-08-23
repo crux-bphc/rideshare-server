@@ -5,23 +5,6 @@ import { z } from "zod";
 import { User } from "../../entity/User";
 
 const dataSchema = z.object({
-  params: z.object({
-    email: z
-      .string({
-        invalid_type_error: "email should be a string",
-        required_error: "email is a required parameter",
-      })
-      .min(0, {
-        message: "email cannot be empty",
-      })
-      .regex(
-        /^([A-Z0-9_+-]+\.?)*[A-Z0-9_+-]@([A-Z0-9][A-Z0-9\-]*\.)+[A-Z]{2,}$/i,
-        {
-          message: "email must be valid",
-        }
-      ),
-  }),
-
   body: z.object({
     name: z
       .string({
@@ -78,7 +61,7 @@ export const updateUser = async (req: Request, res: Response) => {
 
     userObj = await userRepository
       .createQueryBuilder("user")
-      .where("user.email = :email", { email: req.params.email })
+      .where("user.id = :id", { id: req.token._id })
       .getOne()
 
     if (!userObj) {
@@ -105,7 +88,7 @@ export const updateUser = async (req: Request, res: Response) => {
         phNo: updatePhNo,
         batch: updateBatch,
       })
-      .where("email = :email", { email: req.params.email })
+      .where("id = :id", { id: req.token._id })
       .execute()
 
     res.status(200).json("Updated user.");

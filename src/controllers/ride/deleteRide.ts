@@ -24,11 +24,11 @@ export const deleteRideValidator = validate(dataSchema)
 
 export const deleteRide = async (req: Request, res: Response) => {
   const rideId = req.params.id;
-  const userEmail = req.token.email;
+  const userId = req.token._id;
 
   const userObj: User = await userRepository
     .createQueryBuilder("user")
-    .where("user.email = :email", { email: userEmail })
+    .where("user.id = :id", { id: userId })
     .getOne()
 
   let rideObj: Ride | null = null;

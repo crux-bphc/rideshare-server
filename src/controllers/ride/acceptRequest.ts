@@ -41,7 +41,7 @@ export const acceptRequestValidator = validate(dataSchema);
 
 export const acceptRequest = async (req: Request, res: Response) => {
   const rideId = req.params.id;
-  const OP_email = req.token.email;
+  const op_userId = req.token._id;
   const userEmail = req.body.userEmail;
 
   let userObj: User | null = null;
@@ -66,7 +66,7 @@ export const acceptRequest = async (req: Request, res: Response) => {
         .json({ message: "Ride participant count is full" });
     }
 
-    if (OP_email !== rideObj.originalPoster.email)
+    if (op_userId !== rideObj.originalPoster.id)
       return res.status(403).json({ message: "User is not the OP" });
 
     const participantQueueEmails = new Set(

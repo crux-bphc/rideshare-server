@@ -25,7 +25,7 @@ export const createRequestValidator = validate(dataSchema)
 
 export const createRequest = async (req: Request, res: Response) => {
   const rideId = req.params.id;
-  const userEmail = req.token.email;
+  const userId = req.token._id;
 
   let userObj: User | null = null;
   let rideObj: Ride | null = null;
@@ -49,7 +49,7 @@ export const createRequest = async (req: Request, res: Response) => {
   try {
     userObj = await userRepository
       .createQueryBuilder("user")
-      .where("user.email = :userEmail", { userEmail })
+      .where("user.id = :userId", { userId })
       .getOne()
 
     if (!userObj) {

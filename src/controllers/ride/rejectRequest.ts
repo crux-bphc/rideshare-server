@@ -41,7 +41,7 @@ export const rejectRequestValidator = validate(dataSchema);
 
 export const rejectRequest = async (req: Request, res: Response) => {
   const rideId = req.params.id;
-  const OP_email = req.token.email;
+  const op_userId = req.token._id;
   const userEmail = req.body.userEmail;
 
   let userObj: User | null = null;
@@ -60,7 +60,7 @@ export const rejectRequest = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Ride not found in DB" });
     }
 
-    if (OP_email !== rideObj.originalPoster.email)
+    if (op_userId !== rideObj.originalPoster.id)
       return res.status(403).json({ message: "User is not the OP" });
 
     const participantQueueEmails = new Set(

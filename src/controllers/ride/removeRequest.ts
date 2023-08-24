@@ -60,7 +60,7 @@ export const removeRequest = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Ride not found in the DB." });
     }
 
-    if (reqUserEmail == userEmail)
+    if (reqUserEmail == userEmail && userEmail == rideObj.originalPoster.email)
       return res.status(403).json({ message: "Cannot remove user from his own ride." });
 
     if (reqUserEmail !== rideObj.originalPoster.email && reqUserEmail !== userEmail)

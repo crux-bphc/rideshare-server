@@ -7,17 +7,17 @@ import { validate } from "../../helpers/zodValidateRequest";
 
 const dataSchema = z.object({
   params: z.object({
-      id: z
-        .string({
-          invalid_type_error: "rideId not a string",
-          required_error: "rideId is a required parameter",
-        })
-        .min(0, {
-          message: "rideId must be a non-empty string",
-        })
-        .uuid({ message: "rideId must be a valid uuid" }),
-    })
+    id: z
+      .string({
+        invalid_type_error: "rideId not a string",
+        required_error: "rideId is a required parameter",
+      })
+      .min(0, {
+        message: "rideId must be a non-empty string",
+      })
+      .uuid({ message: "rideId must be a valid uuid" }),
   })
+})
 
 export const findRideValidator = validate(dataSchema)
 

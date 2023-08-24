@@ -8,28 +8,28 @@ import { validate } from "../../helpers/zodValidateRequest";
 const dataSchema = z.object({
   query: z.object({
     fromPlace: z
-    .preprocess(
-      (input) => {
-        const processed = z.string().regex(/^\d+$/).transform(Number).safeParse(input);
-        return processed.success ? processed.data : input;
-      },
-      z.nativeEnum(Place, {
-        invalid_type_error: "fromPlace must be a valid enum of the defined places"
-      })
-      .optional(),
-    ),
+      .preprocess(
+        (input) => {
+          const processed = z.string().regex(/^\d+$/).transform(Number).safeParse(input);
+          return processed.success ? processed.data : input;
+        },
+        z.nativeEnum(Place, {
+          invalid_type_error: "fromPlace must be a valid enum of the defined places"
+        })
+          .optional(),
+      ),
 
     toPlace: z
-    .preprocess(
-      (input) => {
-        const processed = z.string().regex(/^\d+$/).transform(Number).safeParse(input);
-        return processed.success ? processed.data : input;
-      },
-      z.nativeEnum(Place, {
-        invalid_type_error: "toPlace must be a valid enum of the defined places"
-      })
-      .optional(),
-    ),
+      .preprocess(
+        (input) => {
+          const processed = z.string().regex(/^\d+$/).transform(Number).safeParse(input);
+          return processed.success ? processed.data : input;
+        },
+        z.nativeEnum(Place, {
+          invalid_type_error: "toPlace must be a valid enum of the defined places"
+        })
+          .optional(),
+      ),
 
     startTime: z
       .coerce.date({
@@ -176,7 +176,7 @@ export const searchRides = async (req: Request, res: Response) => {
   }
 
   if (searchFilter.length > 0) {
-    searchFilter = searchFilter.substring(5,searchFilter.length);
+    searchFilter = searchFilter.substring(5, searchFilter.length);
   }
 
   let rides: Ride[] = [];

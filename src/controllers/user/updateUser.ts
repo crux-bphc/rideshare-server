@@ -91,7 +91,7 @@ export const updateUser = async (req: Request, res: Response) => {
       .where("id = :id", { id: req.token._id })
       .execute()
 
-    return res.status(200).json({"message": "Updated user."});
+    return res.status(200).json({ "message": "Updated user." });
 
   } catch (err) {
     if (err.code == "23505") {

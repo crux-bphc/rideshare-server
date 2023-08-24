@@ -44,5 +44,5 @@ export const loginUser = async (req: Request, res: Response) => {
   }
 
   const token = generateToken(userObj);
-  return res.status(200).json({"message": "Logged in user.", "token": token});
+  return res.status(200).json({ "message": "Logged in user.", "token": token });
 };

@@ -20,9 +20,9 @@ import {
   acceptRequestValidator,
 } from "../controllers/ride/acceptRequest";
 
-import { 
-    findRide, 
-    findRideValidator 
+import {
+  findRide,
+  findRideValidator
 } from "../controllers/ride/findRide";
 
 import {
@@ -44,12 +44,12 @@ import { isLoggedIn } from "../middleware/auth";
 
 const rideRouter = express.Router();
 
-rideRouter.post("/create", createRideValidator,isLoggedIn ,createRide);
-rideRouter.put("/update/:id", updateRideValidator,isLoggedIn ,updateRide);
-rideRouter.get("/join/:id", createRequestValidator,isLoggedIn ,createRequest);
-rideRouter.post("/accept/:id", acceptRequestValidator,isLoggedIn,acceptRequest);
-rideRouter.get("/find/:id", findRideValidator,isLoggedIn ,findRide);
-rideRouter.get("/search", searchRideValidator,isLoggedIn ,searchRides);
+rideRouter.post("/create", createRideValidator, isLoggedIn, createRide);
+rideRouter.put("/update/:id", updateRideValidator, isLoggedIn, updateRide);
+rideRouter.get("/join/:id", createRequestValidator, isLoggedIn, createRequest);
+rideRouter.post("/accept/:id", acceptRequestValidator, isLoggedIn, acceptRequest);
+rideRouter.get("/find/:id", findRideValidator, isLoggedIn, findRide);
+rideRouter.get("/search", searchRideValidator, isLoggedIn, searchRides);
 rideRouter.delete("/delete/:id", deleteRideValidator, isLoggedIn, deleteRide);
 rideRouter.delete("/remove/:id", removeRequestValidator, isLoggedIn, removeRequest)
 

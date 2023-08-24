@@ -10,14 +10,14 @@ import {
   updateUserValidator,
 } from "../controllers/user/updateUser";
 
-import { 
-    findUser, 
-    findUserValidator 
+import {
+  findUser,
+  findUserValidator
 } from "../controllers/user/findUser";
 
-import {  
-    loginUser, 
-    loginUserValidator 
+import {
+  loginUser,
+  loginUserValidator
 } from "../controllers/user/loginUser";
 
 import { isLoggedIn } from "../middleware/auth";

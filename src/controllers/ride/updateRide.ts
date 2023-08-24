@@ -158,7 +158,7 @@ export const updateRide = async (req: Request, res: Response) => {
         .where("ride.id = :id", { id: rideId })
         .execute()
 
-        return res.status(200).json({ message: "Updated ride." });
+      return res.status(200).json({ message: "Updated ride." });
 
     } else {
       return res.status(401).json({ message: "Unauthorized to edit this ride." })

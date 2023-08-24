@@ -76,7 +76,7 @@ export const createRide = async (req: Request, res: Response) => {
 
     const userObj: User = await userRepository
       .createQueryBuilder("user")
-      .where("user.id = :id", { id: req.token._id }) 
+      .where("user.id = :id", { id: req.token._id })
       .getOne()
 
     if (!userObj) {
@@ -106,7 +106,7 @@ export const createRide = async (req: Request, res: Response) => {
       .returning("*")
       .execute()
 
-      const ride = newRide.generatedMaps[0] as Ride;
+    const ride = newRide.generatedMaps[0] as Ride;
 
     await rideRepository.manager.transaction(
       async (transactionalEntityManager) => {
@@ -118,7 +118,7 @@ export const createRide = async (req: Request, res: Response) => {
       }
     )
 
-  return res.status(201).json({ message: "Posted ride." , "id": ride.id });
+    return res.status(201).json({ message: "Posted ride.", "id": ride.id });
 
   } catch (err) {
     return res.status(500).json({ message: "Internal Server Error!" });

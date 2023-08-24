@@ -184,7 +184,6 @@ export const searchRides = async (req: Request, res: Response) => {
   try {
     rides = await rideRepository
       .createQueryBuilder('ride')
-      .leftJoinAndSelect('ride.participantQueue', 'participantQueue')
       .leftJoinAndSelect("ride.originalPoster", "originalPoster")
       .leftJoinAndSelect("ride.participants", "participants")
       .where(searchFilter, searchObj)

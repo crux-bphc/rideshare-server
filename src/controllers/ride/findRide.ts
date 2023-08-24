@@ -29,7 +29,7 @@ export const findRide = async (req: Request, res: Response) => {
   try {
     rideObj = await rideRepository
       .createQueryBuilder('ride')
-      .leftJoinAndSelect('ride.participantQueue', 'participantQueue')
+      .leftJoinAndSelect("ride.participantQueue", "participantQueue")
       .leftJoinAndSelect("ride.originalPoster", "originalPoster")
       .leftJoinAndSelect("ride.participants", "participants")
       .where('ride.id = :id', { id: rideId })
@@ -43,6 +43,9 @@ export const findRide = async (req: Request, res: Response) => {
   catch (err: any) {
     return res.status(500).json({ message: "Internal Server Error!" });
   }
+
+  if (rideObj.originalPoster.id != req.token._id)
+    delete rideObj.participantQueue
 
   rideObj["message"] = "Fetched ride.";
 

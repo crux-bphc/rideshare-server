@@ -57,11 +57,11 @@ export const removeRequest = async (req: Request, res: Response) => {
       .getOne();
 
     if (!rideObj) {
-      return res.status(404).json({ message: "Ride not found in DB" });
+      return res.status(404).json({ message: "Ride not found in the DB." });
     }
 
     if (reqUserEmail !== rideObj.originalPoster.email && reqUserEmail !== userEmail)
-      return res.status(403).json({ message: "User is not authorized to make this request" });
+      return res.status(403).json({ message: "Unauthorized to remove users from this ride." });
 
     const participantQueueEmails = new Set(
       rideObj.participantQueue.map((user) => user.email)
@@ -70,7 +70,7 @@ export const removeRequest = async (req: Request, res: Response) => {
     if (!participantQueueEmails.has(userEmail)) {
       return res
         .status(404)
-        .json({ message: "User not found in trip's request queue" });
+        .json({ message: "User has not requested to join this ride." });
     }
 
     try {
@@ -79,7 +79,7 @@ export const removeRequest = async (req: Request, res: Response) => {
         .where("user.email = :userEmail", { userEmail })
         .getOne();
     } catch (err: any) {
-      res.status(500).json({ message: "Internal Server Error" });
+      return res.status(500).json({ message: "Internal Server Error!" });
     }
 
     try {
@@ -94,12 +94,12 @@ export const removeRequest = async (req: Request, res: Response) => {
       );
 
     } catch (err: any) {
-      return res.status(500).json({ message: "Internal Server Error" });
+      return res.status(500).json({ message: "Internal Server Error!" });
     }
 
   } catch (err: any) {
-    res.status(500).json({ message: "Internal Server Error" });
+    return res.status(500).json({ message: "Internal Server Error!" });
   }
 
-  return res.json({ message: "User removed from request queue" });
+  return res.json({ message: "Removed from request queue." });
 };

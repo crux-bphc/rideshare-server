@@ -36,7 +36,7 @@ export const deleteRide = async (req: Request, res: Response) => {
       .getOne();
 
     if (!rideObj) {
-      return res.status(404).json({ message: "Ride not found in DB" });
+      return res.status(404).json({ message: "Ride not found in the DB." });
     }
 
     if (userId == rideObj.originalPoster.id) {
@@ -48,14 +48,14 @@ export const deleteRide = async (req: Request, res: Response) => {
         .where('ride.id = :id', { id: rideId })
         .execute();
 
-      return res.json({message: "Ride deleted."});
+      return res.status(200).json({ message: "Deleted ride." });
 
     } else {
-      res.status(401).json("Unauthorized to edit this ride.")
+      return res.status(401).json({ message: "Unauthorized to delete this ride." })
     }
 
   }
   catch (err: any) {
-    res.status(500).json({ message: "Internal Server Error" });
+    return res.status(500).json({ message: "Internal Server Error!" });
   }
 }

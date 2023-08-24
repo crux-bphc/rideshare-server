@@ -194,9 +194,9 @@ export const searchRides = async (req: Request, res: Response) => {
       .getMany()
 
   } catch (err: any) {
-    return res.status(500).json({ message: "Internal Server Error", "error": err });
+    return res.status(500).json({ message: "Internal Server Error!" });
   }
 
-  res.status(200).json(rides);
+  return res.status(200).json({ message: "Fetched rides.", "rides": rides });
 
 }

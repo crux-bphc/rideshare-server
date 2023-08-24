@@ -80,7 +80,7 @@ export const createRide = async (req: Request, res: Response) => {
       .getOne()
 
     if (!userObj) {
-      return res.status(403).json({ message: "User not found!" });
+      return res.status(403).json({ message: "User not found in the DB." });
     }
 
     const currentDateTime: Date = new Date();
@@ -108,7 +108,6 @@ export const createRide = async (req: Request, res: Response) => {
 
       const ride = newRide.generatedMaps[0] as Ride;
 
-    //Add the OP User to the particpant list
     await rideRepository.manager.transaction(
       async (transactionalEntityManager) => {
         await transactionalEntityManager
@@ -119,10 +118,9 @@ export const createRide = async (req: Request, res: Response) => {
       }
     )
 
-  return res.status(201).json({ message: "Created ride." , ride});
+  return res.status(201).json({ message: "Posted ride." , "id": ride.id });
 
   } catch (err) {
-    console.log("Error creating ride:", err.message)
-    return res.status(500).json({ message: "Internal Server Error" });
+    return res.status(500).json({ message: "Internal Server Error!" });
   }
 };

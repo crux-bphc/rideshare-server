@@ -57,17 +57,17 @@ export const acceptRequest = async (req: Request, res: Response) => {
       .getOne();
 
     if (!rideObj) {
-      return res.status(404).json({ message: "Ride not found in DB" });
+      return res.status(404).json({ message: "Ride not found in the DB." });
     }
 
     if (rideObj.seats <= 0) {
       return res
         .status(405)
-        .json({ message: "Ride participant count is full" });
+        .json({ message: "Ride is full." });
     }
 
     if (op_userId !== rideObj.originalPoster.id)
-      return res.status(403).json({ message: "User is not the OP" });
+      return res.status(401).json({ message: "Unauthorized to accept users into this ride." });
 
     const participantQueueEmails = new Set(
       rideObj.participantQueue.map((user) => user.email)
@@ -76,7 +76,7 @@ export const acceptRequest = async (req: Request, res: Response) => {
     if (!participantQueueEmails.has(userEmail)) {
       return res
         .status(404)
-        .json({ message: "User not found in trip's join queue" });
+        .json({ message: "User has not requested to join this ride." });
     }
 
     try {
@@ -85,12 +85,10 @@ export const acceptRequest = async (req: Request, res: Response) => {
         .where("user.email = :userEmail", { userEmail })
         .getOne();
     } catch (err: any) {
-      // console.log("Error while querying for User. Error : ", err.message)
-      res.status(500).json({ message: "Internal Server Error" });
+      return res.status(500).json({ message: "Internal Server Error!" });
     }
 
     try {
-      //Remove user from participantQueue
       await rideRepository.manager.transaction(
         async (transactionalEntityManager) => {
           await transactionalEntityManager
@@ -101,7 +99,6 @@ export const acceptRequest = async (req: Request, res: Response) => {
         }
       );
 
-      //Add user to participants list
       await rideRepository.manager.transaction(
         async (transactionalEntityManager) => {
           await transactionalEntityManager
@@ -112,7 +109,6 @@ export const acceptRequest = async (req: Request, res: Response) => {
         }
       );
 
-      //Update available number of seats
       await rideRepository
         .createQueryBuilder("ride")
         .update()
@@ -123,15 +119,12 @@ export const acceptRequest = async (req: Request, res: Response) => {
         .execute()
 
     } catch (err: any) {
-      // console.log("Error adding User to Participant List. Error :", err.message)
-      return res.status(500).json({ message: "Internal Server Error" });
+      return res.status(500).json({ message: "Internal Server Error!" });
     }
 
-    // console.log(userObj)
   } catch (err: any) {
-    // console.log("Error while accepting join request. ", err.message)
-    res.status(500).json({ message: "Internal Server Error" });
+    return res.status(500).json({ message: "Internal Server Error!" });
   }
 
-  return res.json({ message: "User added to participant list" });
+  return res.status(200).json({ message: "Accepted into this ride." });
 };

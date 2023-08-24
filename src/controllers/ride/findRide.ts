@@ -36,14 +36,15 @@ export const findRide = async (req: Request, res: Response) => {
       .getOne();
 
     if (!rideObj) {
-      return res.status(404).json({ message: "Ride not found in DB" });
+      return res.status(404).json({ message: "Ride not found in the DB." });
     }
 
   }
   catch (err: any) {
-    // console.log("Error while querying DB for ride. ", err.message)
-    res.status(500).json({ message: "Internal Server Error" });
+    return res.status(500).json({ message: "Internal Server Error!" });
   }
 
-  return res.json(rideObj);
+  rideObj["message"] = "Fetched ride.";
+
+  return res.status(200).json(rideObj);
 }

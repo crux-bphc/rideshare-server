@@ -314,7 +314,7 @@ Bearer JWT Token
 > | HTTP Code | Response |
 > |-----------|----------|
 > | `200` | `{"message": "Accepted into this ride."}` |
-> | `403` | `{"message": "Unauthorized to accept users into this ride."}` |
+> | `401` | `{"message": "Unauthorized to accept users into this ride."}` |
 > | `404` | `{"message": "User has not requested to join this ride."}` |
 > | `404` | `{"message": "Ride not found in the DB."}` |
 > | `405` | `{"message": "Ride is full."}` |
@@ -377,7 +377,7 @@ Bearer JWT Token
 > | HTTP Code | Response |
 > |-----------|----------|
 > | `200` | `{"message": "Removed from request queue."}` |
-> | `403` | `{"message": "Unauthorized to accept users into this ride."}` |
+> | `403` | `{"message": "Unauthorized to remove users from this ride."}` |
 > | `404` | `{"message": "User has not requested to join this ride."}` |
 > | `404` | `{"message": "Ride not found in the DB."}` |
 > | `500` | `{"message": "Internal Server Error!"}` |

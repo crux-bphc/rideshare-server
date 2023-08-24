@@ -60,11 +60,15 @@ export const findUser = async (req: Request, res: Response) => {
     }
 
     if (!userObj) {
-      return res.status(404).json({ message: "User not found in DB" });
+      return res.status(404).json({ message: "User not found in the DB." });
     }
 
   } catch (err: any) {
-    return res.status(500).json("Internal Server Error");
+    return res.status(500).json({ message: "Internal Server Error!" });
   }
+
+  delete userObj.id
+  userObj["message"] = "Found user.";
+
   return res.status(200).json(userObj);
 }

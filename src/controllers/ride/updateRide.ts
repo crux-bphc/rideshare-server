@@ -99,7 +99,7 @@ export const updateRide = async (req: Request, res: Response) => {
     .getOne()
 
   if (!userObj) {
-    res.status(403).json({ message: "User not found!" });
+    return res.status(403).json({ message: "User not found in the DB." });
   }
 
   const rideObj: Ride = await rideRepository
@@ -109,7 +109,7 @@ export const updateRide = async (req: Request, res: Response) => {
     .getOne()
 
   if (!rideObj) {
-    res.status(403).json({ message: "Ride id invalid" });
+    return res.status(403).json({ message: "Ride not found in the DB." });
   }
 
   if (fromPlace == null) {
@@ -158,14 +158,14 @@ export const updateRide = async (req: Request, res: Response) => {
         .where("ride.id = :id", { id: rideId })
         .execute()
 
-      res.status(200).json("Updated ride.");
+        return res.status(200).json({ message: "Updated ride." });
 
     } else {
-      res.status(401).json("Unauthorized to edit this ride.")
+      return res.status(401).json({ message: "Unauthorized to edit this ride." })
     }
 
   } catch (err) {
-    res.send(500).json(err);
+    return res.send(500).json({ message: "Internal Server Error!" });
   }
 
 };

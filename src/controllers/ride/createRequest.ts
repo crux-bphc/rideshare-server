@@ -38,12 +38,11 @@ export const createRequest = async (req: Request, res: Response) => {
       .getOne()
 
     if (!rideObj) {
-      return res.status(404).json({ message: "Ride not found in DB" });
+      return res.status(404).json({ message: "Ride not found in the DB." });
     }
 
   } catch (err: any) {
-    // console.log("Error querying ride in DB. Error :", err.message)
-    return res.status(500).json({ message: "Internal Server Error" })
+    return res.status(500).json({ message: "Internal Server Error!" })
   }
 
   try {
@@ -53,16 +52,15 @@ export const createRequest = async (req: Request, res: Response) => {
       .getOne()
 
     if (!userObj) {
-      return res.status(404).json({ message: "User not found in DB" });
+      return res.status(404).json({ message: "User not found in the DB." });
     }
 
   } catch (err: any) {
-    // console.log("Error querying user in DB. Error :", err.message)
-    return res.status(500).json({ message: "Internal Server Error" })
+    return res.status(500).json({ message: "Internal Server Error!" })
   }
 
   if (rideObj.originalPoster.id === userObj.id) {
-    return res.status(400).json({ message: "OP cannot be added to the join queue" });
+    return res.status(400).json({ message: "Cannot request to join your own ride." });
   }
 
   try {
@@ -77,8 +75,7 @@ export const createRequest = async (req: Request, res: Response) => {
     )
 
   } catch (err: any) {
-    // console.log("Error Adding User to Join Queue. Error :", err.message)
-    return res.status(500).json({ message: "Internal Server Error" })
+    return res.status(500).json({ message: "Internal Server Error!" })
   }
-  return res.status(200).json({ message: "User Added to Join Queue" });
+  return res.status(200).json({ message: "Requested to join this ride." });
 }

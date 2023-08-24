@@ -65,7 +65,7 @@ export const updateUser = async (req: Request, res: Response) => {
       .getOne()
 
     if (!userObj) {
-      return res.status(404).json({ message: "User not found in DB" });
+      return res.status(404).json({ message: "User not found in the DB." });
     }
 
     if (!updateName) {
@@ -91,13 +91,13 @@ export const updateUser = async (req: Request, res: Response) => {
       .where("id = :id", { id: req.token._id })
       .execute()
 
-    res.status(200).json("Updated user.");
+    return res.status(200).json({"message": "Updated user."});
 
   } catch (err) {
     if (err.code == "23505") {
-      return res.status(400).json({ message: "Email or Phone Number already exists" })
+      return res.status(400).json({ message: "Email or Phone Number already exists." })
     }
-    res.status(500).json(err);
+    return res.status(500).json({ message: "Internal Server Error!" });
   }
 
 };

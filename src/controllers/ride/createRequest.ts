@@ -63,6 +63,22 @@ export const createRequest = async (req: Request, res: Response) => {
     return res.status(400).json({ message: "Cannot request to join your own ride." });
   }
 
+  const participantQueueIds = new Set(
+    rideObj.participantQueue.map((user) => user.id)
+  );
+
+  if (participantQueueIds.has(userId)) {
+    return res.status(400).json({ message: "User has already requested to join this ride." });
+  }
+
+  const participantIds = new Set(
+    rideObj.participants.map((user) => user.id)
+  );
+
+  if (participantIds.has(userId)) {
+    return res.status(400).json({ message: "User has already been accepted into this ride." });
+  }
+
   try {
     await rideRepository.manager.transaction(
       async (transactionalEntityManager) => {

@@ -185,7 +185,7 @@ Bearer JWT Token
 </details>
 
 <details>
- <summary><code>GET</code> <code><b>`/ride/find/{id}`</b></code> <code>(Fetch the details of a particular ride)</code></summary>
+ <summary><code>GET</code> <code><b>`/ride/find/{id}`</b></code> <code>(Fetch the details of a particular ride posted by self)</code></summary>
 
 ##### Auth
 
@@ -202,6 +202,29 @@ Bearer JWT Token
 > | HTTP Code | Response |
 > |-----------|----------|
 > | `200` | `{"message": "Fetched ride.", "id": "xyz", , "originalPoster": {...}, "fromPlace": x, "toPlace": y, "seats": z, "timeRangeStart": x, "timeRangeStop": y, "participants": [...], "participantQueue": [...], "status": true, "createdAt": "YYYY-MM-DD hh:mm:ss", "updatedAt": "YYYY-MM-DD hh:mm:ss", "description": "xyz"}` |
+> | `403` | `{"message": "Ride not found in the DB."}` |
+> | `500` | `{"message": "Internal Server Error!"}` |
+
+</details>
+
+<details>
+ <summary><code>GET</code> <code><b>`/ride/find/{id}`</b></code> <code>(Fetch the details of a particular ride posted by another user)</code></summary>
+
+##### Auth
+
+Bearer JWT Token
+
+##### Parameters
+
+> | Name | Required | Data Type | Description |
+> |------|----------|-----------|-------------|
+> | id | yes | string | ID of the ride |
+
+##### Response
+
+> | HTTP Code | Response |
+> |-----------|----------|
+> | `200` | `{"message": "Fetched ride.", "id": "xyz", , "originalPoster": {...}, "fromPlace": x, "toPlace": y, "seats": z, "timeRangeStart": x, "timeRangeStop": y, "participants": [...], "status": true, "createdAt": "YYYY-MM-DD hh:mm:ss", "updatedAt": "YYYY-MM-DD hh:mm:ss", "description": "xyz"}` |
 > | `403` | `{"message": "Ride not found in the DB."}` |
 > | `500` | `{"message": "Internal Server Error!"}` |
 
@@ -284,6 +307,8 @@ Bearer JWT Token
 > |-----------|----------|
 > | `200` | `{"message": "Requested to join this ride."}` |
 > | `400` | `{"message": "Cannot request to join your own ride."}` |
+> | `400` | `{"message": "User has already requested to join this ride."}` |
+> | `400` | `{"message": "User has already been accepted into this ride."}` |
 > | `404` | `{"message": "User not found in the DB."}` |
 > | `404` | `{"message": "Ride not found in the DB."}` |
 > | `500` | `{"message": "Internal Server Error!"}` |

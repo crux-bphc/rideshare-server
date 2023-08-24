@@ -80,16 +80,15 @@ export const createUser = async (req: Request, res: Response) => {
       .returning("*")
       .execute()
 
-      const user = newUser.generatedMaps[0] as User;
+    const user = newUser.generatedMaps[0] as User;
 
-      return res.status(201).json({ message: "Created user." , user});
+    return res.status(201).json({ message: "Created user." });
 
   } catch (err) {
-    // console.log("Error creating user:", err.message)
     if (err.code == "23505") {
-      return res.status(400).json({ message: "Email or Phone Number already exists" })
+      return res.status(400).json({ message: "Email or Phone Number already exists." })
     }
-    return res.status(500).json({ message: "Internal Server Error" });
+    return res.status(500).json({ message: "Internal Server Error!" });
   }
 
 };

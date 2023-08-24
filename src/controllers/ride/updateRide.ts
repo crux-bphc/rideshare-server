@@ -23,18 +23,6 @@ const dataSchema = z.object({
 
   }),
   body: z.object({
-    userId: z
-      .string({
-        invalid_type_error: "userId not a string",
-        required_error: "userId is a required parameter",
-      })
-      .min(0, {
-        message: "userId must be a non-empty string",
-      })
-      .uuid({
-        message: "userId must be a valid uuid"
-      }),
-
     fromPlace: z
       .nativeEnum(Place, {
         invalid_type_error: "fromPlace must be a valid enum of the defined places",
@@ -84,35 +72,73 @@ const dataSchema = z.object({
       .optional(),
 
   })
-    .refine(data => ((((!data.timeRangeStart && !data.timeRangeStop) || ((data.timeRangeStop && data.timeRangeStart) && (new Date(data.timeRangeStart) < new Date(data.timeRangeStop)))))),
-      "if one of timeRangeStart or timeRangeStop is filled, the other must be filled too; timeRangeStart must occur before timeRangeStop"
+    .refine(data => ((((!data.timeRangeStart && !data.timeRangeStop) || ((data.timeRangeStop && data.timeRangeStart) && (new Date(data.timeRangeStart) <= new Date(data.timeRangeStop)))))),
+      "if one of timeRangeStart or timeRangeStop is filled, the other must be filled too; timeRangeStart must not occur after timeRangeStop"
+    )
+    .refine(data => ((data.fromPlace == null && data.toPlace == null) || (data.fromPlace != data.toPlace)),
+      "fromPlace and toPlace cannot be the same"
     )
 })
 
 export const updateRideValidator = validate(dataSchema)
 
 export const updateRide = async (req: Request, res: Response) => {
+
+  const rideId = req.params.id;
+  const userId = req.token._id;
+  let fromPlace = req.body.fromPlace;
+  let toPlace = req.body.toPlace;
+  let seats = req.body.seats;
+  let timeRangeStart = req.body.timeRangeStart;
+  let timeRangeStop = req.body.timeRangeStop;
+  let description = req.body.description;
+
+  const userObj: User = await userRepository
+    .createQueryBuilder("user")
+    .where("user.id = :id", { id: userId })
+    .getOne()
+
+  if (!userObj) {
+    return res.status(403).json({ message: "User not found in the DB." });
+  }
+
+  const rideObj: Ride = await rideRepository
+    .createQueryBuilder("ride")
+    .leftJoinAndSelect("ride.originalPoster", "originalPoster")
+    .where("ride.id = :id", { id: rideId })
+    .getOne()
+
+  if (!rideObj) {
+    return res.status(403).json({ message: "Ride not found in the DB." });
+  }
+
+  if (fromPlace == null) {
+    fromPlace = rideObj.fromPlace;
+  }
+
+  if (toPlace == null) {
+    toPlace = rideObj.toPlace;
+  }
+
+  if (seats == null) {
+    seats = rideObj.seats;
+  }
+
+  if (timeRangeStart == null) {
+    timeRangeStart = rideObj.timeRangeStart;
+  }
+
+  if (timeRangeStop == null) {
+    timeRangeStop = rideObj.timeRangeStop;
+  }
+
+  if (description == null) {
+    description = rideObj.description;
+  }
+
   try {
 
-    const user: User = await userRepository
-      .createQueryBuilder("user")
-      .where("user.id = :id", { id: req.body.userId })
-      .getOne()
-
-    if (!user) {
-      res.status(403).json({ message: "User id invalid" });
-    }
-
-    const ride: Ride = await rideRepository
-      .createQueryBuilder("ride")
-      .where("ride.id = :id", { id: req.params.id })
-      .getOne()
-
-    if (!ride) {
-      res.status(403).json({ message: "Ride id invalid" });
-    }
-
-    if (user == ride.originalPoster) {
+    if (userObj.id == rideObj.originalPoster.id) {
 
       const currentDateTime: Date = new Date();
 
@@ -129,17 +155,17 @@ export const updateRide = async (req: Request, res: Response) => {
           updatedAt: currentDateTime,
           description: req.body.description
         })
-        .where("ride.id = :id", { id: req.params.id })
+        .where("ride.id = :id", { id: rideId })
         .execute()
 
-      res.status(200).json("Updated ride.");
+      return res.status(200).json({ message: "Updated ride." });
 
     } else {
-      res.status(401).json("Unauthorized to edit this ride.")
+      return res.status(401).json({ message: "Unauthorized to edit this ride." })
     }
 
   } catch (err) {
-    res.send(500).json(err);
+    return res.send(500).json({ message: "Internal Server Error!" });
   }
 
 };

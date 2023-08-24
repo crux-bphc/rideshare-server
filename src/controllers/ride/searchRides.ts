@@ -6,18 +6,30 @@ import { z } from "zod";
 import { validate } from "../../helpers/zodValidateRequest";
 
 const dataSchema = z.object({
-  body: z.object({
+  query: z.object({
     fromPlace: z
-      .nativeEnum(Place, {
-        invalid_type_error: "fromPlace must be a valid enum of the defined places"
-      })
-      .optional(),
+      .preprocess(
+        (input) => {
+          const processed = z.string().regex(/^\d+$/).transform(Number).safeParse(input);
+          return processed.success ? processed.data : input;
+        },
+        z.nativeEnum(Place, {
+          invalid_type_error: "fromPlace must be a valid enum of the defined places"
+        })
+          .optional(),
+      ),
 
     toPlace: z
-      .nativeEnum(Place, {
-        invalid_type_error: "toPlace must be a valid enum of the defined places"
-      })
-      .optional(),
+      .preprocess(
+        (input) => {
+          const processed = z.string().regex(/^\d+$/).transform(Number).safeParse(input);
+          return processed.success ? processed.data : input;
+        },
+        z.nativeEnum(Place, {
+          invalid_type_error: "toPlace must be a valid enum of the defined places"
+        })
+          .optional(),
+      ),
 
     startTime: z
       .coerce.date({
@@ -32,6 +44,7 @@ const dataSchema = z.object({
       .optional(),
 
     availableSeats: z
+      .coerce
       .number({
         invalid_type_error: "availableSeats must be an integer"
       })
@@ -44,12 +57,14 @@ const dataSchema = z.object({
       .optional(),
 
     activeRides: z
+      .coerce
       .boolean({
         invalid_type_error: "activeRides must be a boolean"
       })
       .optional(),
 
     startAtRide: z
+      .coerce
       .number({
         invalid_type_error: "startAtRide must be an integer"
       })
@@ -62,6 +77,7 @@ const dataSchema = z.object({
       .optional(),
 
     endAtRide: z
+      .coerce
       .number({
         invalid_type_error: "endAtRide must be an integer"
       })
@@ -74,6 +90,7 @@ const dataSchema = z.object({
       .optional(),
 
     orderBy: z
+      .coerce
       .number({
         invalid_type_error: "orderBy must be an integer"
       })
@@ -89,8 +106,8 @@ const dataSchema = z.object({
       .optional()
 
   })
-    .refine(data => (!(data.startTime && data.endTime) || (new Date(data.startTime) < new Date(data.endTime))),
-      "startTime must occur before endTime",
+    .refine(data => (!(data.startTime && data.endTime) || (new Date(data.startTime) <= new Date(data.endTime))),
+      "startTime must not occur after endTime",
     )
 })
 
@@ -110,26 +127,26 @@ let orderingAlong: object = {
 
 export const searchRides = async (req: Request, res: Response) => {
 
-  let fromPlace: Place | null = req.body.fromPlace;
-  let toPlace: Place | null = req.body.toPlace;
-  let startTime: Date | null = req.body.startTime; // Renders trips whose timeRange is within or after startTime
-  let endTime: Date | null = req.body.endTime; // Renders trips whose timeRange is within or before endTime
+  let fromPlace: Place | null = req.query.fromPlace != null ? parseInt(req.query.fromPlace) : null;
+  let toPlace: Place | null = req.query.toPlace != null ? parseInt(req.query.toPlace) : null;
+  let startTime: Date | null = req.query.startTime != null ? new Date(req.query.startTime) : null; // Renders trips whose timeRange is within or after startTime
+  let endTime: Date | null = req.query.endTime != null ? new Date(req.query.endTime) : null; // Renders trips whose timeRange is within or before endTime
   // Use 1 or more here, to show only those rides which have available seats. leaving empty renders all rides without checking seats
-  let availableSeats: number | null = req.body.availableSeats;
+  let availableSeats: number | null = req.query.availableSeats != null ? parseInt(req.query.availableSeats) : null;
   // true renders rides whose trips are yet to start. false renders trips which have started/finished in the past. leaving empty renders all rides regardless.
-  let activeRides: boolean | null = req.body.activeRides;
+  let activeRides: boolean | null = req.query.activeRides != null ? Boolean(req.query.activeRides.toLowerCase() === "true") : null;
   // Pagination - both numbers inclusive
-  let startAtRide: number = req.body.startAtRide || 1;
-  let endAtRide: number = req.body.endAtRide || 10;
+  let startAtRide: number = req.query.startAtRide != null ? parseInt(req.query.startAtRide) : 1;
+  let endAtRide: number = req.query.endAtRide != null ? parseInt(req.query.endAtRide) : 10;
   // orderBy = 1 renders rides sorted by time of posting. orderBy = 2 renders rides sorted by time of departure. orderBy = 3 renders rides sorted by number of seats available.
   // the corresponding negative numbers renders rides in descending order
-  let orderBy: number = req.body.orderBy || 1;
+  let orderBy: number = req.query.orderBy != null ? parseInt(req.query.orderBy) : 1;
 
   let searchFilter: string = ""
   let searchObj: object = {}
 
   if (availableSeats != null) {
-    searchFilter = searchFilter + " AND (ride.seats - (SELECT COUNT(participant) FROM UNNEST(ride.participants) AS participant)) >= :availableSeats";
+    searchFilter = searchFilter + " AND (ride.seats >= :availableSeats)";
     searchObj["availableSeats"] = availableSeats;
   }
 
@@ -159,7 +176,7 @@ export const searchRides = async (req: Request, res: Response) => {
   }
 
   if (searchFilter.length > 0) {
-    searchFilter = searchFilter.substring(5,searchFilter.length);
+    searchFilter = searchFilter.substring(5, searchFilter.length);
   }
 
   let rides: Ride[] = [];
@@ -167,7 +184,6 @@ export const searchRides = async (req: Request, res: Response) => {
   try {
     rides = await rideRepository
       .createQueryBuilder('ride')
-      .leftJoinAndSelect('ride.participantQueue', 'participantQueue')
       .leftJoinAndSelect("ride.originalPoster", "originalPoster")
       .leftJoinAndSelect("ride.participants", "participants")
       .where(searchFilter, searchObj)
@@ -177,10 +193,9 @@ export const searchRides = async (req: Request, res: Response) => {
       .getMany()
 
   } catch (err: any) {
-    // console.log("Error while searching DB for rides.", err.message)
-    return res.status(500).json({ message: "Internal Server Error" });
+    return res.status(500).json({ message: "Internal Server Error!" });
   }
 
-  res.status(200).json(rides);
+  return res.status(200).json({ message: "Fetched rides.", "rides": rides });
 
 }

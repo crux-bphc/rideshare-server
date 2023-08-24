@@ -25,23 +25,23 @@ const dataSchema = z.object({
       ),
   }),
   params: z.object({
-    rideId: z
+    id: z
       .string({
-        invalid_type_error: "rideId not a string",
-        required_error: "rideId is a required parameter",
+        invalid_type_error: "id not a string",
+        required_error: "id is a required parameter",
       })
       .min(0, {
-        message: "rideId must be a non-empty string",
+        message: "id must be a non-empty string",
       })
-      .uuid({ message: "rideId must be a valid uuid" }),
+      .uuid({ message: "id must be a valid uuid" }),
   }),
 });
 
-export const acceptJoinRequestValidator = validate(dataSchema);
+export const acceptRequestValidator = validate(dataSchema);
 
-export const acceptJoinRequest = async (req: Request, res: Response) => {
-  const rideId = req.params.rideId;
-  const OP_email = req.token.email;
+export const acceptRequest = async (req: Request, res: Response) => {
+  const rideId = req.params.id;
+  const op_userId = req.token._id;
   const userEmail = req.body.userEmail;
 
   let userObj: User | null = null;
@@ -57,17 +57,17 @@ export const acceptJoinRequest = async (req: Request, res: Response) => {
       .getOne();
 
     if (!rideObj) {
-      return res.status(404).json({ message: "Ride not found in DB" });
+      return res.status(404).json({ message: "Ride not found in the DB." });
     }
 
-    if (rideObj.participants.length >= rideObj.seats) {
+    if (rideObj.seats <= 0) {
       return res
         .status(405)
-        .json({ message: "Ride participant count is full" });
+        .json({ message: "Ride is full." });
     }
 
-    if (OP_email !== rideObj.originalPoster.email)
-      return res.status(403).json({ message: "User is not the OP" });
+    if (op_userId !== rideObj.originalPoster.id)
+      return res.status(401).json({ message: "Unauthorized to accept users into this ride." });
 
     const participantQueueEmails = new Set(
       rideObj.participantQueue.map((user) => user.email)
@@ -76,7 +76,7 @@ export const acceptJoinRequest = async (req: Request, res: Response) => {
     if (!participantQueueEmails.has(userEmail)) {
       return res
         .status(404)
-        .json({ message: "User not found in trip's join queue" });
+        .json({ message: "User has not requested to join this ride." });
     }
 
     try {
@@ -85,12 +85,10 @@ export const acceptJoinRequest = async (req: Request, res: Response) => {
         .where("user.email = :userEmail", { userEmail })
         .getOne();
     } catch (err: any) {
-      // console.log("Error while querying for User. Error : ", err.message)
-      res.status(500).json({ message: "Internal Server Error" });
+      return res.status(500).json({ message: "Internal Server Error!" });
     }
 
     try {
-      //Remove user from participantQueue
       await rideRepository.manager.transaction(
         async (transactionalEntityManager) => {
           await transactionalEntityManager
@@ -101,7 +99,6 @@ export const acceptJoinRequest = async (req: Request, res: Response) => {
         }
       );
 
-      //Add user to participants list
       await rideRepository.manager.transaction(
         async (transactionalEntityManager) => {
           await transactionalEntityManager
@@ -111,16 +108,23 @@ export const acceptJoinRequest = async (req: Request, res: Response) => {
             .add(userObj);
         }
       );
+
+      await rideRepository
+        .createQueryBuilder("ride")
+        .update()
+        .set({
+          seats: rideObj.seats - 1,
+        })
+        .where("ride.id = :id", { id: rideId })
+        .execute()
+
     } catch (err: any) {
-      // console.log("Error adding User to Participant List. Error :", err.message)
-      return res.status(500).json({ message: "Internal Server Error" });
+      return res.status(500).json({ message: "Internal Server Error!" });
     }
 
-    // console.log(userObj)
   } catch (err: any) {
-    // console.log("Error while accepting join request. ", err.message)
-    res.status(500).json({ message: "Internal Server Error" });
+    return res.status(500).json({ message: "Internal Server Error!" });
   }
 
-  return res.json({ message: "User added to participant list" });
+  return res.status(200).json({ message: "Accepted into this ride." });
 };

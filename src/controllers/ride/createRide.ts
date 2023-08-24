@@ -58,23 +58,29 @@ const dataSchema = z.object({
       .optional(),
 
   })
-    .refine(data => new Date(data.timeRangeStart) < new Date(data.timeRangeStop),
-      "timeRangeStart must occur before timeRangeStop",
+    .refine(data => new Date(data.timeRangeStart) <= new Date(data.timeRangeStop),
+      "timeRangeStart must not occur after timeRangeStop",
+    )
+    .refine(data => ((data.fromPlace == null && data.toPlace == null) || (data.fromPlace != data.toPlace)),
+      "fromPlace and toPlace cannot be the same"
     )
 })
 
 export const createRideValidator = validate(dataSchema)
 
 export const createRide = async (req: Request, res: Response) => {
+
+  const description: string = (req.body.description != null) ? req.body.description : "";
+
   try {
 
     const userObj: User = await userRepository
       .createQueryBuilder("user")
-      .where("user.email = :email", { email: req.token.email }) 
+      .where("user.id = :id", { id: req.token._id })
       .getOne()
 
     if (!userObj) {
-      return res.status(403).json({ message: "User not found!" });
+      return res.status(403).json({ message: "User not found in the DB." });
     }
 
     const currentDateTime: Date = new Date();
@@ -95,14 +101,13 @@ export const createRide = async (req: Request, res: Response) => {
         status: true,
         createdAt: currentDateTime,
         updatedAt: currentDateTime,
-        description: req.body.description
+        description: description,
       }])
       .returning("*")
       .execute()
 
-      const ride = newRide.generatedMaps[0] as Ride;
+    const ride = newRide.generatedMaps[0] as Ride;
 
-    //Add the OP User to the particpant list
     await rideRepository.manager.transaction(
       async (transactionalEntityManager) => {
         await transactionalEntityManager
@@ -113,10 +118,9 @@ export const createRide = async (req: Request, res: Response) => {
       }
     )
 
-  return res.status(201).json({ message: "Created ride." , ride});
+    return res.status(201).json({ message: "Posted ride.", "id": ride.id });
 
   } catch (err) {
-    console.log("Error creating ride:", err.message)
-    return res.status(500).json({ message: "Internal Server Error" });
+    return res.status(500).json({ message: "Internal Server Error!" });
   }
 };

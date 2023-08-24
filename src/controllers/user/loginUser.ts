@@ -36,13 +36,13 @@ export const loginUser = async (req: Request, res: Response) => {
       .getOne();
 
     if (!userObj) {
-      return res.status(404).json({ message: "User not found in DB" });
+      return res.status(404).json({ message: "User not found in the DB." });
     }
   } catch (err: any) {
     console.log("Error while querying for User. Error : ", err.message);
-    return res.status(500).json({ message: "Internal Server Error" });
+    return res.status(500).json({ message: "Internal Server Error!" });
   }
 
   const token = generateToken(userObj);
-  return res.json(token);
+  return res.status(200).json({ "message": "Logged in user.", "token": token });
 };

@@ -5,5 +5,5 @@ build/
 tmp/
 temp/
 .env
-API.md
 postgres/
+data_rideshare/

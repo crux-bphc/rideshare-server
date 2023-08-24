@@ -9,7 +9,7 @@ import { validate } from "../../helpers/zodValidateRequest";
 
 const dataSchema = z.object({
   body: z.object({
-    userEmail: z
+    email: z
       .string({
         invalid_type_error: "email should be a string",
         required_error: "email is a required parameter",
@@ -37,12 +37,12 @@ const dataSchema = z.object({
   }),
 });
 
-export const rejectRequestValidator = validate(dataSchema);
+export const removeRequestValidator = validate(dataSchema);
 
-export const rejectRequest = async (req: Request, res: Response) => {
+export const removeRequest = async (req: Request, res: Response) => {
   const rideId = req.params.id;
-  const op_userId = req.token._id;
-  const userEmail = req.body.userEmail;
+  const reqUserEmail = req.token.email;
+  const userEmail = req.body.email;
 
   let userObj: User | null = null;
   let rideObj: Ride | null = null;
@@ -60,8 +60,8 @@ export const rejectRequest = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Ride not found in DB" });
     }
 
-    if (op_userId !== rideObj.originalPoster.id)
-      return res.status(403).json({ message: "User is not the OP" });
+    if (reqUserEmail !== rideObj.originalPoster.email && reqUserEmail !== userEmail)
+      return res.status(403).json({ message: "User is not authorized to make this request" });
 
     const participantQueueEmails = new Set(
       rideObj.participantQueue.map((user) => user.email)
@@ -70,7 +70,7 @@ export const rejectRequest = async (req: Request, res: Response) => {
     if (!participantQueueEmails.has(userEmail)) {
       return res
         .status(404)
-        .json({ message: "User not found in trip's join queue" });
+        .json({ message: "User not found in trip's request queue" });
     }
 
     try {
@@ -101,5 +101,5 @@ export const rejectRequest = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 
-  return res.json({ message: "User removed from participant queue" });
+  return res.json({ message: "User removed from request queue" });
 };

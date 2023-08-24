@@ -36,14 +36,9 @@ import {
 } from "../controllers/ride/deleteRide";
 
 import {
-  rejectRequest,
-  rejectRequestValidator,
-} from "../controllers/ride/rejectRequest";
-
-import {
-  revokeRequest,
-  revokeRequestValidator,
-} from "../controllers/ride/revokeRequest";
+  removeRequest,
+  removeRequestValidator
+} from "../controllers/ride/removeRequest";
 
 import { isLoggedIn } from "../middleware/auth";
 
@@ -56,7 +51,6 @@ rideRouter.post("/accept/:id", acceptRequestValidator,isLoggedIn,acceptRequest);
 rideRouter.get("/find/:id", findRideValidator,isLoggedIn ,findRide);
 rideRouter.get("/search", searchRideValidator,isLoggedIn ,searchRides);
 rideRouter.delete("/delete/:id", deleteRideValidator, isLoggedIn, deleteRide);
-rideRouter.post("/reject/:id", rejectRequestValidator, isLoggedIn, rejectRequest);
-rideRouter.delete("/revoke/:id", revokeRequestValidator, isLoggedIn, revokeRequest)
+rideRouter.delete("/remove/:id", removeRequestValidator, isLoggedIn, removeRequest)
 
 export { rideRouter };

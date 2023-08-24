@@ -20,7 +20,6 @@ const dataSchema = z.object({
           message: "email must be valid",
         }
       )
-      .optional(),
   }),
 })
 
@@ -29,10 +28,11 @@ export const findUserValidator = validate(dataSchema);
 export const findUser = async (req: Request, res: Response) => {
 
   let userObj: User | null = null;
+  let userEmail: string = req.params.email;
 
   try {
 
-    if (req.params.email == null || req.token.email == req.params.email) {
+    if (userEmail === req.token.email) {
 
       userObj = await userRepository
         .createQueryBuilder("user")
@@ -44,7 +44,7 @@ export const findUser = async (req: Request, res: Response) => {
         .leftJoinAndSelect("rides.participantQueue", "rideParticipantQueue")
         .leftJoinAndSelect("rides.originalPoster", "rideOriginalPoster")
         .leftJoinAndSelect("rides.participants", "rideParticipants")
-        .where("user.id = :id", { id: req.token._id })
+        .where("user.email = :email", { email: userEmail })
         .getOne()
 
     } else {
@@ -54,7 +54,7 @@ export const findUser = async (req: Request, res: Response) => {
         .leftJoinAndSelect("user.rides", "rides")
         .leftJoinAndSelect("rides.originalPoster", "rideOriginalPoster")
         .leftJoinAndSelect("rides.participants", "rideParticipants")
-        .where("user.email = :email", { email: req.params.email })
+        .where("user.email = :email", { email: userEmail })
         .getOne()
 
     }
@@ -64,8 +64,7 @@ export const findUser = async (req: Request, res: Response) => {
     }
 
   } catch (err: any) {
-    console.log("Error while querying for User. Error : ", err.message)
-    return res.status(500).json({ message: "Internal Server Error" });
+    return res.status(500).json("Internal Server Error");
   }
-  return res.json(userObj);
+  return res.status(200).json(userObj);
 }

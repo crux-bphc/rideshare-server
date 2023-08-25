@@ -33,7 +33,9 @@ export const createRequest = async (req: Request, res: Response) => {
   try {
     rideObj = await rideRepository
       .createQueryBuilder("ride")
+      .leftJoinAndSelect("ride.participantQueue", "participantQueue")
       .leftJoinAndSelect("ride.originalPoster", "originalPoster")
+      .leftJoinAndSelect("ride.participants", "participants")
       .where("ride.id = :rideId", { rideId })
       .getOne()
 

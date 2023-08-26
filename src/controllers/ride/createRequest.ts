@@ -47,6 +47,10 @@ export const createRequest = async (req: Request, res: Response) => {
     return res.status(500).json({ message: "Internal Server Error!" })
   }
 
+  if (rideObj.seats <= 0) {
+    return res.status(405).json({ message: "Ride is full." });
+  }
+
   try {
     userObj = await userRepository
       .createQueryBuilder("user")

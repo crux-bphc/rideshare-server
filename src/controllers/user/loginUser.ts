@@ -4,6 +4,7 @@ import { validate } from "../../helpers/zodValidateRequest";
 import { User } from "../../entity/User";
 import { z } from "zod";
 import { generateToken } from "../../helpers/tokenHelper";
+import { verify } from "../../helpers/googleIdVerify";
 
 const dataSchema = z.object({
   body: z.object({
@@ -24,9 +25,11 @@ export const loginUser = async (req: Request, res: Response) => {
   let userObj: User | null = null;
 
   try {
+    const payload = await verify(req.body.token)
+    
     userObj = await userRepository
       .createQueryBuilder("user")
-      .where("user.email = :email", { email: req.body.email })
+      .where("user.email = :email", { email: payload["email"] })
       .getOne();
 
     if (!userObj) {

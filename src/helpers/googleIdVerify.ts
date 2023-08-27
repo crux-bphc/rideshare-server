@@ -10,10 +10,15 @@ export const verify = async (token: string) => {
       idToken: token,
       audience: env.GOOGLE_CLIENT_ID,
     });
+
     const payload = ticket.getPayload();
-    const userid = payload["sub"];
     const domain = payload["hd"];
-    console.log(payload);
+
+    if(domain === "hyderabad.bits-pilani.ac.in")
+        return payload
+    else
+        throw new Error("Invalid domain");
+    
   } catch (err: any) {
     console.log("Error while verifying Google Token. Error : ", err.message);
   }

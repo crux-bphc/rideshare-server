@@ -32,7 +32,7 @@
 
 > | Name | Required | Data Type | Description |
 > |------|----------|-----------|-------------|
-> | email | yes | string | Email of the user |
+> | token | yes | string | User's google idToken|
 
 ##### Response
 

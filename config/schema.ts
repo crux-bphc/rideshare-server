@@ -10,4 +10,5 @@ export const serverSchema = z.object({
     PORT: z.coerce.number().default(3000),
     JWT_SECRET : z.string().min(8),
     PGPORT: z.coerce.number().default(5432),
+    GOOGLE_CLIENT_ID: z.string().min(1)
   });

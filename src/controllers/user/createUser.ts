@@ -6,14 +6,11 @@ import { z } from "zod";
 
 const dataSchema = z.object({
   body: z.object({
-    name: z
-      .string({
-        invalid_type_error: "name should be a sting",
-        required_error: "name is a required paramater"
-      })
-      .min(0, {
-        message: "name cannot be empty"
-      }),
+    token: z
+    .string({
+      invalid_type_error: "token should be a string",
+      required_error: "token is a required parameter",
+    }),
 
     phNo: z
       .number({
@@ -28,36 +25,6 @@ const dataSchema = z.object({
       })
       .lte(99999999999999, {
         message: "phNo must be valid"
-      }),
-
-    email: z
-      .string({
-        invalid_type_error: "email should be a string",
-        required_error: "email is a required parameter",
-      })
-      .min(0, {
-        message: "email cannot be empty",
-      })
-      .regex(
-        /^([A-Z0-9_+-]+\.?)*[A-Z0-9_+-]@([A-Z0-9][A-Z0-9\-]*\.)+[A-Z]{2,}$/i,
-        {
-          message: "email must be valid",
-        }
-      ),
-
-    batch: z
-      .number({
-        invalid_type_error: "batch should be a number",
-        required_error: "batch is a required parameter"
-      })
-      .int({
-        message: "batch must be an integer"
-      })
-      .min(0, {
-        message: "batch must be valid"
-      })
-      .max(9999, {
-        message: "batch must be valid"
       }),
   }),
 });

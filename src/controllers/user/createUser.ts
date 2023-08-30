@@ -3,17 +3,15 @@ import { userRepository } from "../../repositories/userRepository";
 import { validate } from "../../helpers/zodValidateRequest";
 import { User } from "../../entity/User";
 import { z } from "zod";
+import { verify } from "../../helpers/googleIdVerify";
 
 const dataSchema = z.object({
   body: z.object({
-    name: z
-      .string({
-        invalid_type_error: "name should be a sting",
-        required_error: "name is a required paramater"
-      })
-      .min(0, {
-        message: "name cannot be empty"
-      }),
+    token: z
+    .string({
+      invalid_type_error: "token should be a string",
+      required_error: "token is a required parameter",
+    }),
 
     phNo: z
       .number({
@@ -29,36 +27,6 @@ const dataSchema = z.object({
       .lte(99999999999999, {
         message: "phNo must be valid"
       }),
-
-    email: z
-      .string({
-        invalid_type_error: "email should be a string",
-        required_error: "email is a required parameter",
-      })
-      .min(0, {
-        message: "email cannot be empty",
-      })
-      .regex(
-        /^([A-Z0-9_+-]+\.?)*[A-Z0-9_+-]@([A-Z0-9][A-Z0-9\-]*\.)+[A-Z]{2,}$/i,
-        {
-          message: "email must be valid",
-        }
-      ),
-
-    batch: z
-      .number({
-        invalid_type_error: "batch should be a number",
-        required_error: "batch is a required parameter"
-      })
-      .int({
-        message: "batch must be an integer"
-      })
-      .min(0, {
-        message: "batch must be valid"
-      })
-      .max(9999, {
-        message: "batch must be valid"
-      }),
   }),
 });
 
@@ -66,23 +34,25 @@ export const createUserValidator = validate(dataSchema);
 
 export const createUser = async (req: Request, res: Response) => {
   try {
-
+    const payload = await verify(req.body.token)
+    
     const newUser = await userRepository
       .createQueryBuilder()
       .insert()
       .into(User)
       .values([{
-        name: req.body.name,
-        email: req.body.email,
+        name: payload["name"],
+        email: payload["email"],
         phNo: req.body.phNo,
-        batch: req.body.batch,
+        batch: Number(payload["email"].substring(1,5)),
+        profilePicture: payload["picture"]
       }])
       .returning("*")
       .execute()
 
     const user = newUser.generatedMaps[0] as User;
 
-    return res.status(201).json({ message: "Created user." });
+    return res.status(201).json({ message: "Created user." } , user);
 
   } catch (err) {
     if (err.code == "23505") {

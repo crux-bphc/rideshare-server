@@ -29,6 +29,7 @@
       "config": "^3.3.9",
       "dotenv": "^16.3.1",
       "express": "^4.17.2",
+      "google-auth-library": "^9.0.0",
       "jsonwebtoken": "^9.0.1",
       "pg": "^8.4.0",
       "reflect-metadata": "^0.1.13",

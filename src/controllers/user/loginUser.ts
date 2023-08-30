@@ -4,23 +4,18 @@ import { validate } from "../../helpers/zodValidateRequest";
 import { User } from "../../entity/User";
 import { z } from "zod";
 import { generateToken } from "../../helpers/tokenHelper";
+import { verify } from "../../helpers/googleIdVerify";
 
 const dataSchema = z.object({
   body: z.object({
-    email: z
+    token: z
       .string({
-        invalid_type_error: "email should be a string",
-        required_error: "email is a required parameter",
+        invalid_type_error: "token should be a string",
+        required_error: "token is a required parameter",
       })
       .min(0, {
-        message: "email cannot be empty",
+        message: "token cannot be empty",
       })
-      .regex(
-        /^([A-Z0-9_+-]+\.?)*[A-Z0-9_+-]@([A-Z0-9][A-Z0-9\-]*\.)+[A-Z]{2,}$/i,
-        {
-          message: "email must be valid",
-        }
-      ),
   }),
 });
 
@@ -30,9 +25,11 @@ export const loginUser = async (req: Request, res: Response) => {
   let userObj: User | null = null;
 
   try {
+    const payload = await verify(req.body.token)
+    
     userObj = await userRepository
       .createQueryBuilder("user")
-      .where("user.email = :email", { email: req.body.email })
+      .where("user.email = :email", { email: payload["email"] })
       .getOne();
 
     if (!userObj) {
@@ -46,3 +43,4 @@ export const loginUser = async (req: Request, res: Response) => {
   const token = generateToken(userObj);
   return res.status(200).json({ "message": "Logged in user.", "token": token });
 };
+

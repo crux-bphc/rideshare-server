@@ -44,6 +44,12 @@ export class User {
   })
   batch: number;
 
+  @Column({
+    type: "string",
+    width: 200
+  })
+  profilePicture : string
+
   @ManyToMany(() => Ride, (ride) => ride.participantQueue)
   rideRequests!: Ride[]
 

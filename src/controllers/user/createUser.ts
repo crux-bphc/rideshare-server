@@ -3,6 +3,7 @@ import { userRepository } from "../../repositories/userRepository";
 import { validate } from "../../helpers/zodValidateRequest";
 import { User } from "../../entity/User";
 import { z } from "zod";
+import { verify } from "../../helpers/googleIdVerify";
 
 const dataSchema = z.object({
   body: z.object({
@@ -33,16 +34,17 @@ export const createUserValidator = validate(dataSchema);
 
 export const createUser = async (req: Request, res: Response) => {
   try {
-
+    const payload = await verify(req.body.token)
+    
     const newUser = await userRepository
       .createQueryBuilder()
       .insert()
       .into(User)
       .values([{
-        name: req.body.name,
-        email: req.body.email,
+        name: payload["name"],
+        email: payload["email"],
         phNo: req.body.phNo,
-        batch: req.body.batch,
+        batch: Number(payload["email"].substring(1,5)),
       }])
       .returning("*")
       .execute()

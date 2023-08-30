@@ -35,7 +35,12 @@ export const createUserValidator = validate(dataSchema);
 export const createUser = async (req: Request, res: Response) => {
   try {
     const payload = await verify(req.body.token)
-    
+    let batch: number = Number(payload["email"].substring(1,5))
+
+    if (Number.isNaN(batch)) {
+      batch = 0;
+    }
+
     const newUser = await userRepository
       .createQueryBuilder()
       .insert()
@@ -44,7 +49,7 @@ export const createUser = async (req: Request, res: Response) => {
         name: payload["name"],
         email: payload["email"],
         phNo: req.body.phNo,
-        batch: Number(payload["email"].substring(1,5)),
+        batch: batch,
         profilePicture: payload["picture"]
       }])
       .returning("*")

@@ -45,13 +45,14 @@ export const createUser = async (req: Request, res: Response) => {
         email: payload["email"],
         phNo: req.body.phNo,
         batch: Number(payload["email"].substring(1,5)),
+        profilePicture: payload["picture"]
       }])
       .returning("*")
       .execute()
 
     const user = newUser.generatedMaps[0] as User;
 
-    return res.status(201).json({ message: "Created user." });
+    return res.status(201).json({ message: "Created user." } , user);
 
   } catch (err) {
     if (err.code == "23505") {

@@ -55,9 +55,7 @@ export const createUser = async (req: Request, res: Response) => {
       .returning("*")
       .execute()
 
-    const user = newUser.generatedMaps[0] as User;
-
-    return res.status(201).json({ "message": "Created user.", "newUser": user });
+    return res.status(201).json({ message: "Created user." });
 
   } catch (err) {
     if (err.code == "23505") {

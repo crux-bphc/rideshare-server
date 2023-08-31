@@ -33,7 +33,9 @@ export const createRequest = async (req: Request, res: Response) => {
   try {
     rideObj = await rideRepository
       .createQueryBuilder("ride")
+      .leftJoinAndSelect("ride.participantQueue", "participantQueue")
       .leftJoinAndSelect("ride.originalPoster", "originalPoster")
+      .leftJoinAndSelect("ride.participants", "participants")
       .where("ride.id = :rideId", { rideId })
       .getOne()
 
@@ -43,6 +45,10 @@ export const createRequest = async (req: Request, res: Response) => {
 
   } catch (err: any) {
     return res.status(500).json({ message: "Internal Server Error!" })
+  }
+
+  if (rideObj.seats <= 0) {
+    return res.status(405).json({ message: "Ride is full." });
   }
 
   try {

@@ -75,8 +75,8 @@ const dataSchema = z.object({
     .refine(data => ((((!data.timeRangeStart && !data.timeRangeStop) || ((data.timeRangeStop && data.timeRangeStart) && (new Date(data.timeRangeStart) <= new Date(data.timeRangeStop)))))),
       "if one of timeRangeStart or timeRangeStop is filled, the other must be filled too; timeRangeStart must not occur after timeRangeStop"
     )
-    .refine(data => ((data.fromPlace == null && data.toPlace == null) || (data.fromPlace != data.toPlace)),
-      "fromPlace and toPlace cannot be the same"
+    .refine(data => ((((!data.fromPlace && !data.toPlace) || ((data.fromPlace && data.toPlace) && (data.fromPlace != data.toPlace))))),
+      "if one of fromPlace or toPlace is filled, the other must be filled too; fromPlace and toPlace cannot be the same"
     )
 })
 

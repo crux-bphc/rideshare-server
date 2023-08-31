@@ -311,6 +311,7 @@ Bearer JWT Token
 > | `400` | `{"message": "User has already been accepted into this ride."}` |
 > | `404` | `{"message": "User not found in the DB."}` |
 > | `404` | `{"message": "Ride not found in the DB."}` |
+> | `405` | `{"message": "Ride is full."}` |
 > | `500` | `{"message": "Internal Server Error!"}` |
 
 </details>

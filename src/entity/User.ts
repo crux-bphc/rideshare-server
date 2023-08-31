@@ -45,10 +45,10 @@ export class User {
   batch: number;
 
   @Column({
-    type: "string",
+    type: "varchar",
     width: 200
   })
-  profilePicture : string
+  profilePicture : string;
 
   @ManyToMany(() => Ride, (ride) => ride.participantQueue)
   rideRequests!: Ride[]

@@ -23,9 +23,9 @@ const dataSchema = z.object({
   }),
 });
 
-export const loginUserValidator = validate(dataSchema);
+export const refreshUserValidator = validate(dataSchema);
 
-export const loginUser = async (req: Request, res: Response) => {
+export const refreshUser = async (req: Request, res: Response) => {
   let userObj: User | null = null;
 
   try {

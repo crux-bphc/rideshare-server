@@ -4,9 +4,10 @@ import { User } from "../entity/User";
 import "dotenv/config";
 import { env } from "../../config/server";
 
-const secretKey = env.JWT_SECRET;
 
 export const generateAccessToken = (userObj: User) => {
+  const accessSecretKey = env.ACCESS_JWT_SECRET;
+
   const tokenPayload = {
     _id: userObj.id,
     name: userObj.name,
@@ -19,12 +20,14 @@ export const generateAccessToken = (userObj: User) => {
     expiresIn: env.ACCESS_TOKEN_EXPIRY,
   };
 
-  const token = jwt.sign(tokenPayload, secretKey, tokenOptions);
+  const token = jwt.sign(tokenPayload, accessSecretKey, tokenOptions);
 
   return token;
 };
 
 export const generateRefreshToken = (userObj: User) => {
+  const refreshSecretKey = env.REFRESH_JWT_SECRET;
+
   const tokenPayload = {
     _id: userObj.id,
     name: userObj.name,
@@ -37,7 +40,7 @@ export const generateRefreshToken = (userObj: User) => {
     expiresIn: env.REFRESH_TOKEN_EXPIRY,
   };
 
-  const token = jwt.sign(tokenPayload, secretKey, tokenOptions);
+  const token = jwt.sign(tokenPayload, refreshSecretKey, tokenOptions);
 
   return token;
 };

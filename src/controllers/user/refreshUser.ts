@@ -31,6 +31,11 @@ export const refreshUser = async (req: Request, res: Response) => {
   try {
     const refreshSecretKey = env.REFRESH_JWT_SECRET
     const decoded = jwt.verify(req.body.refreshToken, refreshSecretKey);
+
+    userObj = await userRepository
+      .createQueryBuilder("user")
+      .where("user.email = :email", { email: decoded["email"] })
+      .getOne();
     
     const accessToken = generateAccessToken(userObj);
     const refreshToken = generateRefreshToken(userObj)

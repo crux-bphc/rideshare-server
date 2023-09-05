@@ -8,9 +8,10 @@ export const serverSchema = z.object({
     POSTGRES_SOCKET: z.string().min(1),
     // PROD_URL: z.string().url().min(1),
     PORT: z.coerce.number().default(3000),
-    JWT_SECRET : z.string().min(8),
     PGPORT: z.coerce.number().default(5432),
     GOOGLE_CLIENT_ID: z.string().min(1),
     ACCESS_TOKEN_EXPIRY: z.string().min(1),
-    REFRESH_TOKEN_EXPIRY: z.string().min(1)
+    ACCESS_JWT_SECRET : z.string().min(8),
+    REFRESH_TOKEN_EXPIRY: z.string().min(1),
+    REFRESH_JWT_SECRET : z.string().min(8),
   });

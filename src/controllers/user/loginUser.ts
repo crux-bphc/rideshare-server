@@ -3,7 +3,7 @@ import { userRepository } from "../../repositories/userRepository";
 import { validate } from "../../helpers/zodValidateRequest";
 import { User } from "../../entity/User";
 import { z } from "zod";
-import { generateToken } from "../../helpers/tokenHelper";
+import { generateAccessToken, generateRefreshToken } from "../../helpers/tokenHelper";
 import { verify } from "../../helpers/googleIdVerify";
 
 const dataSchema = z.object({
@@ -35,12 +35,15 @@ export const loginUser = async (req: Request, res: Response) => {
     if (!userObj) {
       return res.status(404).json({ message: "User not found in the DB." });
     }
+
+    const accessToken = generateAccessToken(userObj);
+    const refreshToken = generateRefreshToken(userObj)
+
+    return res.status(200).json({ "message": "Logged in user.", "accessToken": accessToken , "refreshToken" : refreshToken});
+
   } catch (err: any) {
-    console.log("Error while querying for User. Error : ", err.message);
+    console.log("Error while logging User in. Error : ", err.message);
     return res.status(500).json({ message: "Internal Server Error!" });
   }
-
-  const token = generateToken(userObj);
-  return res.status(200).json({ "message": "Logged in user.", "token": token });
 };
 

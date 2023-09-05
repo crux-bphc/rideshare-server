@@ -29,8 +29,8 @@ export const refreshUser = async (req: Request, res: Response) => {
   let userObj: User | null = null;
 
   try {
-    const secretKey = env.JWT_SECRET;
-    const decoded = jwt.verify(req.body.refreshToken, secretKey);
+    const refreshSecretKey = env.REFRESH_JWT_SECRET
+    const decoded = jwt.verify(req.body.refreshToken, refreshSecretKey);
     
     const accessToken = generateAccessToken(userObj);
     const refreshToken = generateRefreshToken(userObj)

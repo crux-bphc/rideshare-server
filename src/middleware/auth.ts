@@ -1,14 +1,13 @@
-import jwt, { Secret, JwtPayload } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
 
 import "dotenv/config";
 import { env } from "../../config/server";
 
-const secretKey = env.JWT_SECRET;
-
 export const isLoggedIn = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const token = req.header('Authorization')?.replace('Bearer ', '');
+    const secretKey = env.JWT_SECRET;
 
     if (!token) {
       throw new Error();

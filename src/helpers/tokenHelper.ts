@@ -6,7 +6,7 @@ import { env } from "../../config/server";
 
 const secretKey = env.JWT_SECRET;
 
-export const generateToken = (userObj: User) => {
+export const generateAccessToken = (userObj: User) => {
   const tokenPayload = {
     _id: userObj.id,
     name: userObj.name,
@@ -16,7 +16,25 @@ export const generateToken = (userObj: User) => {
   };
 
   const tokenOptions = {
-    expiresIn: "30 days",
+    expiresIn: env.ACCESS_TOKEN_EXPIRY,
+  };
+
+  const token = jwt.sign(tokenPayload, secretKey, tokenOptions);
+
+  return token;
+};
+
+export const generateRefreshToken = (userObj: User) => {
+  const tokenPayload = {
+    _id: userObj.id,
+    name: userObj.name,
+    email: userObj.email,
+    phNo: userObj.phNo,
+    batch: userObj.batch,
+  };
+
+  const tokenOptions = {
+    expiresIn: env.REFRESH_TOKEN_EXPIRY,
   };
 
   const token = jwt.sign(tokenPayload, secretKey, tokenOptions);

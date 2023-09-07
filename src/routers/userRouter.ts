@@ -20,10 +20,16 @@ import {
   loginUserValidator
 } from "../controllers/user/loginUser";
 
+import { 
+  refreshUser, 
+  refreshUserValidator 
+} from "../controllers/user/refreshUser";
+
 import { isLoggedIn } from "../middleware/auth";
 
 const userRouter = express.Router();
 
+userRouter.post("/refresh",refreshUserValidator,refreshUser)
 userRouter.post("/create", createUserValidator, createUser);
 userRouter.put("/update", updateUserValidator, isLoggedIn, updateUser);
 userRouter.get("/find/:email", findUserValidator, isLoggedIn, findUser);

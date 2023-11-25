@@ -3,6 +3,7 @@ import { rideRepository } from "../../repositories/rideRepository";
 import { Ride } from "../../entity/Ride";
 import { userRepository } from "../../repositories/userRepository";
 import { User } from "../../entity/User";
+import { messaging } from "../../helpers/firebaseMessaging";
 
 import { z } from "zod";
 import { validate } from "../../helpers/zodValidateRequest";
@@ -95,6 +96,24 @@ export const createRequest = async (req: Request, res: Response) => {
           .add(userObj);
       }
     )
+
+    const deviceTokens = rideObj.originalPoster.deviceTokens;
+
+    const payload = {
+      notification: {
+        title: `${userObj.name} Requested to Join Your Ride`,
+        body: "Review their request to join your ride.",
+      },
+      data: {
+        action: 'rideRequest',
+        userName: userObj.name,
+        userId: userObj.id,
+        rideId: rideId,
+      },
+      tokens: deviceTokens,
+    }
+
+    await messaging.sendEachForMulticast(payload);
 
   } catch (err: any) {
     return res.status(500).json({ message: "Internal Server Error!" })

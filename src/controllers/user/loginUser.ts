@@ -15,7 +15,16 @@ const dataSchema = z.object({
       })
       .min(0, {
         message: "token cannot be empty",
+      }),
+
+      deviceToken: z
+      .string({
+        invalid_type_error: "device_token should be a string",
+        required_error: "device_token is a required parameter",
       })
+      .min(0, {
+        message: "device_token cannot be empty",
+      }),
   }),
 });
 
@@ -36,6 +45,21 @@ export const loginUser = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "User not found in the DB." });
     }
 
+    const deviceToken = req.body.deviceToken;
+    const deviceTokens = userObj.deviceTokens;
+
+    if (!deviceTokens.includes(deviceToken)) {
+      deviceTokens.push(deviceToken);
+      await userRepository
+        .createQueryBuilder()
+        .update(User)
+        .set({
+          deviceTokens: deviceTokens
+        })
+        .where("email = :email", { email: payload["email"] })
+        .execute()
+    }
+
     const accessToken = generateAccessToken(userObj);
     const refreshToken = generateRefreshToken(userObj)
 
@@ -46,4 +70,3 @@ export const loginUser = async (req: Request, res: Response) => {
     return res.status(500).json({ message: "Internal Server Error!" });
   }
 };
-

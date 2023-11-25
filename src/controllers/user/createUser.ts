@@ -50,7 +50,8 @@ export const createUser = async (req: Request, res: Response) => {
         email: payload["email"],
         phNo: req.body.phNo,
         batch: batch,
-        profilePicture: payload["picture"]
+        profilePicture: payload["picture"],
+        deviceTokens: [],
       }])
       .returning("*")
       .execute()

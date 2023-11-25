@@ -50,6 +50,11 @@ export class User {
   })
   profilePicture : string;
 
+  @Column(
+    'simple-array'
+  )
+  deviceTokens: string[];
+
   @ManyToMany(() => Ride, (ride) => ride.participantQueue)
   rideRequests!: Ride[]
 

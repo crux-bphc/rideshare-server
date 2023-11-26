@@ -3,6 +3,7 @@ import { rideRepository } from "../../repositories/rideRepository";
 import { Ride } from "../../entity/Ride";
 import { userRepository } from "../../repositories/userRepository";
 import { User } from "../../entity/User";
+import { messaging } from "../../helpers/firebaseMessaging";
 
 import { z } from "zod";
 import { validate } from "../../helpers/zodValidateRequest";
@@ -95,6 +96,28 @@ export const removeRequest = async (req: Request, res: Response) => {
             .remove(userObj);
         }
       );
+
+      if (reqUserEmail == rideObj.originalPoster.email) {
+
+        const deviceTokens = userObj.deviceTokens;
+
+        const payload = {
+          notification: {
+            title: `${rideObj.originalPoster.name} Declined Your Request to Join Their Ride`,
+            body: "View the ride for more details.",
+          },
+          data: {
+            action: 'requestDeclined',
+            userName: rideObj.originalPoster.name,
+            userId: rideObj.originalPoster.id,
+            rideId: rideId,
+          },
+          tokens: deviceTokens,
+        }
+
+        messaging.sendEachForMulticast(payload);
+
+      }
 
     } catch (err: any) {
       return res.status(500).json({ message: "Internal Server Error!" });

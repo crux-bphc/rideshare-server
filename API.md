@@ -33,6 +33,7 @@
 > | Name | Required | Data Type | Description |
 > |------|----------|-----------|-------------|
 > | token | yes | string | User's google idToken|
+> | deviceToken | yes | string | User's device FCM Token|
 
 ##### Response
 

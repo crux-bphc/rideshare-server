@@ -115,7 +115,7 @@ export const removeRequest = async (req: Request, res: Response) => {
           tokens: deviceTokens,
         }
 
-        await messaging.sendEachForMulticast(payload);
+        messaging.sendEachForMulticast(payload);
 
       }
 

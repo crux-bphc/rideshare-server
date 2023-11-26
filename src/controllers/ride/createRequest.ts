@@ -113,7 +113,7 @@ export const createRequest = async (req: Request, res: Response) => {
       tokens: deviceTokens,
     }
 
-    await messaging.sendEachForMulticast(payload);
+    messaging.sendEachForMulticast(payload);
 
   } catch (err: any) {
     return res.status(500).json({ message: "Internal Server Error!" })

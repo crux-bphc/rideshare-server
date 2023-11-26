@@ -97,7 +97,7 @@ export const removeRequest = async (req: Request, res: Response) => {
         }
       );
 
-      if (userEmail == rideObj.originalPoster.email) {
+      if (reqUserEmail == rideObj.originalPoster.email) {
 
         const deviceTokens = userObj.deviceTokens;
 

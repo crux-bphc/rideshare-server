@@ -7,3 +7,4 @@ temp/
 .env
 postgres/
 data_rideshare/
+rideshare-creds.json

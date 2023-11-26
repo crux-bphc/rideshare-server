@@ -30,6 +30,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends dumb-init && ap
 COPY --chown=node:node --from=build-stage /usr/src/app/node_modules /usr/src/app/node_modules
 COPY --chown=node:node --from=build-stage /usr/src/app/build /usr/src/app/build
 
+COPY --chown=node:node rideshare-creds.json ./build
+
 USER node
 
 CMD ["dumb-init", "node", "build/src/index.js"] 

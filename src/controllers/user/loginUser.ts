@@ -54,7 +54,7 @@ export const loginUser = async (req: Request, res: Response) => {
 
     const existingDeviceToken = await deviceTokenRepository
       .createQueryBuilder("deviceToken")
-      .where("deviceToken.deviceToken = :deviceToken", {
+      .where("deviceToken.tokenId = :deviceTokenVal", {
         deviceToken: req.body.deviceToken,
       })
       .getOne();

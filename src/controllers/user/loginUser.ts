@@ -69,7 +69,7 @@ export const loginUser = async (req: Request, res: Response) => {
         .values([
           {
             user: userObj,
-            deviceToken: deviceToken,
+            tokenId: deviceToken,
           },
         ])
         .returning("*")

@@ -58,9 +58,19 @@ export const loginUser = async (req: Request, res: Response) => {
       .getOne();
 
     if (existingDeviceToken) {
-      existingDeviceToken.user = userObj; // Device token already exists. Token assigned to new user.
+
+      await deviceTokenRepository
+        .createQueryBuilder("deviceToken")
+        .update()
+        .set({
+          user: userObj
+        })
+        .where("deviceToken.tokenId = :tokenId", { tokenId: deviceTokenVal })
+        .execute();
+
     } else {
-      const newDeviceToken = await deviceTokenRepository
+
+      await deviceTokenRepository
         .createQueryBuilder()
         .insert()
         .into(deviceToken)
@@ -72,6 +82,7 @@ export const loginUser = async (req: Request, res: Response) => {
         ])
         .returning("*")
         .execute();
+
     }
 
     const accessToken = generateAccessToken(userObj);

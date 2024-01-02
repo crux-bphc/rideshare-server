@@ -59,117 +59,169 @@ export const removeRequest = async (req: Request, res: Response) => {
       .leftJoinAndSelect("ride.participants", "participants")
       .where("ride.id = :id", { id: rideId })
       .getOne();
-
-    if (!rideObj) {
-      return res.status(404).json({ message: "Ride not found in the DB." });
-    }
-
-    if (reqUserEmail == userEmail && userEmail == rideObj.originalPoster.email)
-      return res
-        .status(400)
-        .json({ message: "Cannot remove user from his own ride." });
-
-    if (
-      reqUserEmail !== rideObj.originalPoster.email &&
-      reqUserEmail !== userEmail
-    )
-      return res
-        .status(403)
-        .json({ message: "Unauthorized to remove users from this ride." });
-
-    const participantQueueEmails = new Set(
-      rideObj.participantQueue.map((user) => user.email)
+  } catch (err) {
+    console.log(
+      "[removeRequest.ts] Error in selecting ride from db: ",
+      err.message
     );
-
-    if (!participantQueueEmails.has(userEmail)) {
-      return res
-        .status(400)
-        .json({ message: "User has not requested to join this ride." });
-    }
-
-    try {
-      userObj = await userRepository
-        .createQueryBuilder("user")
-        .where("user.email = :userEmail", { userEmail })
-        .getOne();
-    } catch (err: any) {
-      return res.status(500).json({ message: "Internal Server Error!" });
-    }
-
-    try {
-      if (reqUserEmail == rideObj.originalPoster.email) {
-        await rideRepository.manager.transaction(
-          async (transactionalEntityManager) => {
-            await transactionalEntityManager
-              .createQueryBuilder()
-              .relation(Ride, "participantQueue")
-              .of(rideObj)
-              .remove(userObj);
-          }
-        );
-
-        deviceTokenObj = await deviceTokenRepository
-          .createQueryBuilder("deviceToken")
-          .select("deviceToken.tokenId")
-          .where("deviceToken.user.id = :userId", { userId: userObj.id })
-          .getMany();
-
-        const payload = {
-          notification: {
-            title: `${rideObj.originalPoster.name} Declined Your Request to Join Their Ride `,
-            body: "View the ride for more details.",
-          },
-          data: {
-            action: "requestDeclined",
-            userName: rideObj.originalPoster.name,
-            userId: rideObj.originalPoster.id,
-            rideId: rideId,
-          },
-          tokens: deviceTokenObj.map((deviceToken) => deviceToken.tokenId),
-        };
-
-        messaging.sendEachForMulticast(payload);
-
-      } else {
-        await rideRepository.manager.transaction(
-          async (transactionalEntityManager) => {
-            await transactionalEntityManager
-              .createQueryBuilder()
-              .relation(Ride, "participantQueue")
-              .of(rideObj)
-              .remove(userObj);
-          }
-        );
-
-        deviceTokenObj = await deviceTokenRepository
-          .createQueryBuilder("deviceToken")
-          .select("deviceToken.tokenId")
-          .where("deviceToken.user.id = :userId", { userId: rideObj.originalPoster.id })
-          .getMany();
-
-        const payload = {
-          notification: {
-            title: `${userObj.name} Revoked Their Request to Join Your Ride `,
-            body: "View the ride for more details.",
-          },
-          data: {
-            action: "requestDeclined",
-            userName: userObj.name,
-            userId: userObj.id,
-            rideId: rideId,
-          },
-          tokens: deviceTokenObj.map((deviceToken) => deviceToken.tokenId),
-        };
-
-        messaging.sendEachForMulticast(payload);
-
-      }
-    } catch (err: any) {
-      return res.status(500).json({ message: "Internal Server Error!" });
-    }
-  } catch (err: any) {
     return res.status(500).json({ message: "Internal Server Error!" });
   }
 
-  return res.json({ message: "Removed from request queue." });
+  if (!rideObj) {
+    return res.status(404).json({ message: "Ride not found in the DB." });
+  }
+
+  if (reqUserEmail == userEmail && userEmail == rideObj.originalPoster.email)
+    return res
+      .status(400)
+      .json({ message: "Cannot remove user from his own ride." });
+
+  if (
+    reqUserEmail !== rideObj.originalPoster.email &&
+    reqUserEmail !== userEmail
+  )
+    return res
+      .status(403)
+      .json({ message: "Unauthorized to remove users from this ride." });
+
+  const participantQueueEmails = new Set(
+    rideObj.participantQueue.map((user) => user.email)
+  );
+
+  if (!participantQueueEmails.has(userEmail)) {
+    return res
+      .status(400)
+      .json({ message: "User has not requested to join this ride." });
+  }
+
+  try {
+    userObj = await userRepository
+      .createQueryBuilder("user")
+      .where("user.email = :userEmail", { userEmail })
+      .getOne();
+  } catch (err) {
+    console.log(
+      "[removeRequest.ts] Error in selecting user from db: ",
+      err.message
+    );
+    return res.status(500).json({ message: "Internal Server Error!" });
+  }
+
+  if (reqUserEmail == rideObj.originalPoster.email) {
+    try {
+      await rideRepository.manager.transaction(
+        async (transactionalEntityManager) => {
+          await transactionalEntityManager
+            .createQueryBuilder()
+            .relation(Ride, "participantQueue")
+            .of(rideObj)
+            .remove(userObj);
+        }
+      );
+    } catch (err) {
+      console.log(
+        "[removeRequest.ts] Error in removing user from participantQueue in db: ",
+        err.message
+      );
+      return res.status(500).json({ message: "Internal Server Error!" });
+    }
+
+    try {
+      deviceTokenObj = await deviceTokenRepository
+        .createQueryBuilder("deviceToken")
+        .select("deviceToken.tokenId")
+        .where("deviceToken.user.id = :userId", { userId: userObj.id })
+        .getMany();
+    } catch (err) {
+      console.log(
+        "[removeRequest.ts] Error in finding deviceTokens from db: ",
+        err.message
+      );
+      return res.status(500).json({ message: "Internal Server Error!" });
+    }
+
+    const payload = {
+      notification: {
+        title: `${rideObj.originalPoster.name} Declined Your Request to Join Their Ride `,
+        body: "View the ride for more details.",
+      },
+      data: {
+        action: "requestDeclined",
+        userName: rideObj.originalPoster.name,
+        userId: rideObj.originalPoster.id,
+        rideId: rideId,
+      },
+      tokens: deviceTokenObj.map((deviceToken) => deviceToken.tokenId),
+    };
+
+    try {
+      messaging.sendEachForMulticast(payload);
+    } catch (err) {
+      console.log(
+        "[removeRequest.ts] Error in sending notifications: ",
+        err.message
+      );
+      return res.status(500).json({ message: "Internal Server Error!" });
+    }
+  } else {
+    try {
+      await rideRepository.manager.transaction(
+        async (transactionalEntityManager) => {
+          await transactionalEntityManager
+            .createQueryBuilder()
+            .relation(Ride, "participantQueue")
+            .of(rideObj)
+            .remove(userObj);
+        }
+      );
+    } catch (err) {
+      console.log(
+        "[removeRequest.ts] Error in removing user from participantQueue in db: ",
+        err.message
+      );
+      return res.status(500).json({ message: "Internal Server Error!" });
+    }
+
+    try {
+      deviceTokenObj = await deviceTokenRepository
+        .createQueryBuilder("deviceToken")
+        .select("deviceToken.tokenId")
+        .where("deviceToken.user.id = :userId", {
+          userId: rideObj.originalPoster.id,
+        })
+        .getMany();
+    } catch (err) {
+      console.log(
+        "[removeRequest.ts] Error in finding deviceTokens from db: ",
+        err.message
+      );
+      return res.status(500).json({ message: "Internal Server Error!" });
+    }
+
+    const payload = {
+      notification: {
+        title: `${userObj.name} Revoked Their Request to Join Your Ride `,
+        body: "View the ride for more details.",
+      },
+      data: {
+        action: "requestDeclined",
+        userName: userObj.name,
+        userId: userObj.id,
+        rideId: rideId,
+      },
+      tokens: deviceTokenObj.map((deviceToken) => deviceToken.tokenId),
+    };
+
+    try {
+      messaging.sendEachForMulticast(payload);
+    } catch (err) {
+      console.log(
+        "[removeRequest.ts] Error in sending notifications: ",
+        err.message
+      );
+      return res.status(500).json({ message: "Internal Server Error!" });
+    }
+  }
+
+  return res.status(200).json({ message: "Removed from request queue." });
 };

@@ -49,7 +49,7 @@ export const removeRequest = async (req: Request, res: Response) => {
 
   let userObj: User | null = null;
   let rideObj: Ride | null = null;
-  let deviceTokenObj: deviceToken | null = null;
+  let deviceTokenObj: deviceToken[] | null = null;
 
   try {
     rideObj = await rideRepository
@@ -66,7 +66,7 @@ export const removeRequest = async (req: Request, res: Response) => {
 
     if (reqUserEmail == userEmail && userEmail == rideObj.originalPoster.email)
       return res
-        .status(403)
+        .status(400)
         .json({ message: "Cannot remove user from his own ride." });
 
     if (
@@ -83,7 +83,7 @@ export const removeRequest = async (req: Request, res: Response) => {
 
     if (!participantQueueEmails.has(userEmail)) {
       return res
-        .status(404)
+        .status(400)
         .json({ message: "User has not requested to join this ride." });
     }
 
@@ -108,7 +108,7 @@ export const removeRequest = async (req: Request, res: Response) => {
           }
         );
 
-        const deviceTokenObj = await deviceTokenRepository
+        deviceTokenObj = await deviceTokenRepository
           .createQueryBuilder("deviceToken")
           .select("deviceToken.tokenId")
           .where("deviceToken.user.id = :userId", { userId: userObj.id })
@@ -129,6 +129,40 @@ export const removeRequest = async (req: Request, res: Response) => {
         };
 
         messaging.sendEachForMulticast(payload);
+
+      } else {
+        await rideRepository.manager.transaction(
+          async (transactionalEntityManager) => {
+            await transactionalEntityManager
+              .createQueryBuilder()
+              .relation(Ride, "participantQueue")
+              .of(rideObj)
+              .remove(userObj);
+          }
+        );
+
+        deviceTokenObj = await deviceTokenRepository
+          .createQueryBuilder("deviceToken")
+          .select("deviceToken.tokenId")
+          .where("deviceToken.user.id = :userId", { userId: rideObj.originalPoster.id })
+          .getMany();
+
+        const payload = {
+          notification: {
+            title: `${userObj.name} Revoked Their Request to Join Your Ride `,
+            body: "View the ride for more details.",
+          },
+          data: {
+            action: "requestDeclined",
+            userName: userObj.name,
+            userId: userObj.id,
+            rideId: rideId,
+          },
+          tokens: deviceTokenObj.map((deviceToken) => deviceToken.tokenId),
+        };
+
+        messaging.sendEachForMulticast(payload);
+
       }
     } catch (err: any) {
       return res.status(500).json({ message: "Internal Server Error!" });

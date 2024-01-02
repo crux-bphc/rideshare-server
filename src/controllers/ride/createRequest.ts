@@ -41,14 +41,17 @@ export const createRequest = async (req: Request, res: Response) => {
       .getOne()
 
     if (!rideObj) {
+      req.log.error(`Ride {${rideId}} not found in the DB.`)
       return res.status(404).json({ message: "Ride not found in the DB." });
     }
 
   } catch (err: any) {
+    req.log.error(`Internal Server Error: ${err}`);
     return res.status(500).json({ message: "Internal Server Error!" })
   }
 
   if (rideObj.seats <= 0) {
+    req.log.error(`Ride {${rideId}} is full.`)
     return res.status(405).json({ message: "Ride is full." });
   }
 
@@ -59,14 +62,17 @@ export const createRequest = async (req: Request, res: Response) => {
       .getOne()
 
     if (!userObj) {
+      req.log.error(`User {${userId}} not found in the DB.`)
       return res.status(404).json({ message: "User not found in the DB." });
     }
 
   } catch (err: any) {
+    req.log.error(`Internal Server Error: ${err}`);
     return res.status(500).json({ message: "Internal Server Error!" })
   }
 
   if (rideObj.originalPoster.id === userObj.id) {
+    req.log.error(`User {${userId}} cannot request to join their own ride {${rideId}}.`)
     return res.status(400).json({ message: "Cannot request to join your own ride." });
   }
 
@@ -75,6 +81,7 @@ export const createRequest = async (req: Request, res: Response) => {
   );
 
   if (participantQueueIds.has(userId)) {
+    req.log.error(`User {${userId}} has already requested to join this ride {${rideId}}.`)
     return res.status(400).json({ message: "User has already requested to join this ride." });
   }
 
@@ -83,6 +90,7 @@ export const createRequest = async (req: Request, res: Response) => {
   );
 
   if (participantIds.has(userId)) {
+    req.log.error(`User {${userId}} has already been accepted into this ride {${rideId}}.`)
     return res.status(400).json({ message: "User has already been accepted into this ride." });
   }
 
@@ -116,7 +124,9 @@ export const createRequest = async (req: Request, res: Response) => {
     messaging.sendEachForMulticast(payload);
 
   } catch (err: any) {
+    req.log.error(`Internal Server Error: ${err}`);
     return res.status(500).json({ message: "Internal Server Error!" })
   }
+  req.log.info(`User {${userId}} requested to join ride {${rideId}}.`)
   return res.status(200).json({ message: "Requested to join this ride." });
 }

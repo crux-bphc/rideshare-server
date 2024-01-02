@@ -80,6 +80,7 @@ export const createRide = async (req: Request, res: Response) => {
       .getOne()
 
     if (!userObj) {
+      req.log.error(`User {${req.token._id}} not found in the DB.`)
       return res.status(403).json({ message: "User not found in the DB." });
     }
 
@@ -117,10 +118,12 @@ export const createRide = async (req: Request, res: Response) => {
           .add(userObj);
       }
     )
-
+    
+    req.log.info(`Posted ride {id: ${ride.id}}.`)
     return res.status(201).json({ message: "Posted ride.", "id": ride.id });
 
   } catch (err) {
+    req.log.error(`Internal Server Error: ${err}`);
     return res.status(500).json({ message: "Internal Server Error!" });
   }
 };

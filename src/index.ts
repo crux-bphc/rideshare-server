@@ -5,6 +5,7 @@ import { AppDataSource } from "./data-source"
 
 import { userRouter } from "./routers/userRouter"
 import { rideRouter } from "./routers/rideRouter"
+import pino from "pino-http";
 
 import "dotenv/config";
 import { env } from "../config/server";
@@ -15,6 +16,7 @@ AppDataSource.initialize().then(async () => {
   const app = express()
 
   app.use(bodyParser.json())
+  app.use(pino)
 
   app.use("/user", userRouter)
   app.use("/ride", rideRouter)

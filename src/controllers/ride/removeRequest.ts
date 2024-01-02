@@ -58,20 +58,26 @@ export const removeRequest = async (req: Request, res: Response) => {
       .getOne();
 
     if (!rideObj) {
+      req.log.error(`Ride {${rideId}} not found in the DB.`);
       return res.status(404).json({ message: "Ride not found in the DB." });
     }
 
-    if (reqUserEmail == userEmail && userEmail == rideObj.originalPoster.email)
+    if (reqUserEmail == userEmail && userEmail == rideObj.originalPoster.email){
+      req.log.error(`User {${userEmail}} cannot remove himself from his own ride.`);
       return res.status(403).json({ message: "Cannot remove user from his own ride." });
+    }
 
-    if (reqUserEmail !== rideObj.originalPoster.email && reqUserEmail !== userEmail)
+    if (reqUserEmail !== rideObj.originalPoster.email && reqUserEmail !== userEmail){
+      req.log.error(`User {${reqUserEmail}} is not authorized to remove user {${userEmail}} from ride {${rideId}}.`);
       return res.status(403).json({ message: "Unauthorized to remove users from this ride." });
+    }
 
     const participantQueueEmails = new Set(
       rideObj.participantQueue.map((user) => user.email)
     );
 
     if (!participantQueueEmails.has(userEmail)) {
+      req.log.error(`User {${userEmail}} has not requested to join ride {${rideId}}.`);
       return res
         .status(404)
         .json({ message: "User has not requested to join this ride." });
@@ -83,6 +89,7 @@ export const removeRequest = async (req: Request, res: Response) => {
         .where("user.email = :userEmail", { userEmail })
         .getOne();
     } catch (err: any) {
+      req.log.error(`Internal Server Error: ${err}`);
       return res.status(500).json({ message: "Internal Server Error!" });
     }
 
@@ -120,12 +127,15 @@ export const removeRequest = async (req: Request, res: Response) => {
       }
 
     } catch (err: any) {
+      req.log.error(`Internal Server Error: ${err}`);
       return res.status(500).json({ message: "Internal Server Error!" });
     }
 
   } catch (err: any) {
+    req.log.error(`Internal Server Error: ${err}`);
     return res.status(500).json({ message: "Internal Server Error!" });
   }
 
+  req.log.info(`Removed user {${userEmail}} from ride {${rideId}}.`);
   return res.json({ message: "Removed from request queue." });
 };

@@ -40,10 +40,11 @@ export const refreshUser = async (req: Request, res: Response) => {
     const accessToken = generateAccessToken(userObj);
     const refreshToken = generateRefreshToken(userObj)
 
+    req.log.info(`New tokens generated for User {${userObj.email}}.`)
     return res.status(200).json({ "message": "New tokens generated", "accessToken": accessToken , "refreshToken" : refreshToken});
     
   } catch (err: any) {
-    console.log("Error while generating tokens for User. Error : ", err.message);
+    req.log.error(`Internal Server Error: ${err}`);
     return res.status(500).json({ message: "Internal Server Error!" });
   }
 };

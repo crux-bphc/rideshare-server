@@ -55,13 +55,16 @@ export const createUser = async (req: Request, res: Response) => {
       }])
       .returning("*")
       .execute()
-
+    
+    req.log.info(`Created user {${newUser.raw[0].id}}.`)
     return res.status(201).json({ message: "Created user." });
 
   } catch (err) {
     if (err.code == "23505") {
+      req.log.error(`Email ${req.body.email} or Phone Number ${req.body.phNo} already exists.`)
       return res.status(400).json({ message: "Email or Phone Number already exists." })
     }
+    req.log.error(`Internal Server Error: ${err}`);
     return res.status(500).json({ message: "Internal Server Error!" });
   }
 

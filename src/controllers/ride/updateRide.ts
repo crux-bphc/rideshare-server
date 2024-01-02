@@ -99,6 +99,7 @@ export const updateRide = async (req: Request, res: Response) => {
     .getOne()
 
   if (!userObj) {
+    req.log.error(`User {${userId}} not found in the DB.`)
     return res.status(403).json({ message: "User not found in the DB." });
   }
 
@@ -109,6 +110,7 @@ export const updateRide = async (req: Request, res: Response) => {
     .getOne()
 
   if (!rideObj) {
+    req.log.error(`Ride {${rideId}} not found in the DB.`)
     return res.status(403).json({ message: "Ride not found in the DB." });
   }
 
@@ -157,14 +159,17 @@ export const updateRide = async (req: Request, res: Response) => {
         })
         .where("ride.id = :id", { id: rideId })
         .execute()
-
+      
+      req.log.info(`Updated ride {id: ${rideId}}.`)
       return res.status(200).json({ message: "Updated ride." });
 
     } else {
+      req.log.error(`User {${userId}} is not authorized to edit ride {${rideId}}.`)
       return res.status(401).json({ message: "Unauthorized to edit this ride." })
     }
 
   } catch (err) {
+    req.log.error(`Internal Server Error: ${err}`);
     return res.send(500).json({ message: "Internal Server Error!" });
   }
 

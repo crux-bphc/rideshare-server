@@ -42,6 +42,7 @@ export const loginUser = async (req: Request, res: Response) => {
       .getOne();
 
     if (!userObj) {
+      req.log.error(`User {${payload["email"]}} not found in the DB.`)
       return res.status(404).json({ message: "User not found in the DB." });
     }
 
@@ -59,14 +60,15 @@ export const loginUser = async (req: Request, res: Response) => {
         .where("email = :email", { email: payload["email"] })
         .execute()
     }
-
+  
     const accessToken = generateAccessToken(userObj);
     const refreshToken = generateRefreshToken(userObj)
 
+    req.log.info(`User {${payload["email"]}} logged in.`)
     return res.status(200).json({ "message": "Logged in user.", "accessToken": accessToken , "refreshToken" : refreshToken});
 
   } catch (err: any) {
-    console.log("Error while logging User in. Error : ", err.message);
+    req.log.error(`Internal Server Error: ${err}`);
     return res.status(500).json({ message: "Internal Server Error!" });
   }
 };

@@ -36,11 +36,13 @@ export const findRide = async (req: Request, res: Response) => {
       .getOne();
 
     if (!rideObj) {
+      req.log.error(`Ride {${rideId}} not found in the DB.`)
       return res.status(404).json({ message: "Ride not found in the DB." });
     }
 
   }
   catch (err: any) {
+    req.log.error(`Internal Server Error: ${err}`);
     return res.status(500).json({ message: "Internal Server Error!" });
   }
 
@@ -49,5 +51,7 @@ export const findRide = async (req: Request, res: Response) => {
 
   rideObj["message"] = "Fetched ride.";
 
+
+  req.log.info(`Fetched ride {${rideId}}.`)
   return res.status(200).json(rideObj);
 }

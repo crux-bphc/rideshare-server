@@ -65,6 +65,7 @@ export const updateUser = async (req: Request, res: Response) => {
       .getOne()
 
     if (!userObj) {
+      req.log.error(`User {${req.token._id}} not found in the DB.`)
       return res.status(404).json({ message: "User not found in the DB." });
     }
 
@@ -90,13 +91,16 @@ export const updateUser = async (req: Request, res: Response) => {
       })
       .where("id = :id", { id: req.token._id })
       .execute()
-
+    
+    req.log.info(`User {${req.token._id}} updated.`)
     return res.status(200).json({ "message": "Updated user." });
 
   } catch (err) {
     if (err.code == "23505") {
+      req.log.error(`Email ${req.body.email} or Phone Number ${req.body.phNo} already exists.`)
       return res.status(400).json({ message: "Email or Phone Number already exists." })
     }
+    req.log.error(`Internal Server Error: ${err}`);
     return res.status(500).json({ message: "Internal Server Error!" });
   }
 

@@ -58,23 +58,31 @@ export const acceptRequest = async (req: Request, res: Response) => {
       .getOne();
 
     if (!rideObj) {
+      req.log.error(`Ride {id: ${rideId}} not found in the DB.`);
       return res.status(404).json({ message: "Ride not found in the DB." });
     }
 
     if (rideObj.seats <= 0) {
+      req.log.error(`Ride {id: ${rideId}} is full.`);
       return res
         .status(405)
         .json({ message: "Ride is full." });
     }
 
-    if (op_userId !== rideObj.originalPoster.id)
+    if (op_userId !== rideObj.originalPoster.id){
+      req.log.error(`User {id: ${op_userId}} is not authorized to accept users into this ride {id: ${rideId}}.`);
       return res.status(401).json({ message: "Unauthorized to accept users into this ride." });
+    }
+      
 
     const participantQueueEmails = new Set(
       rideObj.participantQueue.map((user) => user.email)
     );
 
     if (!participantQueueEmails.has(userEmail)) {
+      req.log.error(
+        `User {email: ${userEmail}} has not requested to join this ride {id: ${rideId}}.`
+      );
       return res
         .status(404)
         .json({ message: "User has not requested to join this ride." });
@@ -86,6 +94,7 @@ export const acceptRequest = async (req: Request, res: Response) => {
         .where("user.email = :userEmail", { userEmail })
         .getOne();
     } catch (err: any) {
+      req.log.error(`Internal Server Error: finding user {email: ${userEmail}} in the DB.\n${err}`);
       return res.status(500).json({ message: "Internal Server Error!" });
     }
 
@@ -138,12 +147,15 @@ export const acceptRequest = async (req: Request, res: Response) => {
       messaging.sendEachForMulticast(payload);
 
     } catch (err: any) {
+      req.log.error(`Internal Server Error: ${err}`);
       return res.status(500).json({ message: "Internal Server Error!" });
     }
 
   } catch (err: any) {
+    req.log.error(`Internal Server Error: ${err}`);
     return res.status(500).json({ message: "Internal Server Error!" });
   }
 
+  req.log.info(`User {email: ${userEmail}} accepted into ride {id: ${rideId}}.`);
   return res.status(200).json({ message: "Accepted into this ride." });
 };

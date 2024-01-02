@@ -54,13 +54,11 @@ export const loginUser = async (req: Request, res: Response) => {
 
     const existingDeviceToken = await deviceTokenRepository
       .createQueryBuilder("deviceToken")
-      .where("deviceToken.tokenId = :deviceTokenVal", {
-        deviceToken: req.body.deviceToken,
-      })
+      .where("deviceToken.tokenId = :tokenId", { tokenId: deviceTokenVal })
       .getOne();
 
     if (existingDeviceToken) {
-      existingDeviceToken.user = userObj; //Device token already exists. Token assigned to new user.
+      existingDeviceToken.user = userObj; // Device token already exists. Token assigned to new user.
     } else {
       const newDeviceToken = await deviceTokenRepository
         .createQueryBuilder()
@@ -79,13 +77,11 @@ export const loginUser = async (req: Request, res: Response) => {
     const accessToken = generateAccessToken(userObj);
     const refreshToken = generateRefreshToken(userObj);
 
-    return res
-      .status(200)
-      .json({
-        message: "Logged in user.",
-        accessToken: accessToken,
-        refreshToken: refreshToken,
-      });
+    return res.status(200).json({
+      message: "Logged in user.",
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+    });
   } catch (err: any) {
     console.log("Error while logging User in. Error : ", err.message);
     return res.status(500).json({ message: "Internal Server Error!" });

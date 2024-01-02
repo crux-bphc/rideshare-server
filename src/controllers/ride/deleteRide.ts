@@ -3,6 +3,8 @@ import { rideRepository } from "../../repositories/rideRepository";
 import { Ride } from "../../entity/Ride";
 import { userRepository } from "../../repositories/userRepository";
 import { User } from "../../entity/User";
+import { deviceTokenRepository } from "../../repositories/deviceTokenRepository";
+import { messaging } from "../../helpers/firebaseMessaging";
 import { z } from "zod";
 import { validate } from "../../helpers/zodValidateRequest";
 
@@ -47,6 +49,54 @@ export const deleteRide = async (req: Request, res: Response) => {
         .from(Ride)
         .where('ride.id = :id', { id: rideId })
         .execute();
+
+      const joinedUserIds = rideObj.participants;
+
+      const joinedDeviceObjs = await deviceTokenRepository
+        .createQueryBuilder("deviceToken")
+        .select("deviceToken.tokenId")
+        .where("deviceToken.user.id IN (:...userIds)", { userIds: joinedUserIds })
+        .getMany();
+
+      const joinedUsersPayload = {
+        notification: {
+          title: `${rideObj.originalPoster.name} Deleted The Ride You Were Accepted Into`,
+          body: "View the ride for more details.",
+        },
+        data: {
+          action: 'rideDeleted',
+          userName: rideObj.originalPoster.name,
+          userId: rideObj.originalPoster.id,
+          rideId: rideId,
+        },
+        tokens: joinedDeviceObjs.map(deviceToken => deviceToken.tokenId),
+      }
+
+      messaging.sendEachForMulticast(joinedUsersPayload);
+
+      const requestedUserIds = rideObj.participantQueue;
+
+      const requestedDeviceObjs = await deviceTokenRepository
+        .createQueryBuilder("deviceToken")
+        .select("deviceToken.tokenId")
+        .where("deviceToken.user.id IN (:...userIds)", { userIds: requestedUserIds })
+        .getMany();
+
+      const requestedUsersPayload = {
+        notification: {
+          title: `${rideObj.originalPoster.name} Deleted The Ride You Requested To Join`,
+          body: "View the ride for more details.",
+        },
+        data: {
+          action: 'rideDeleted',
+          userName: rideObj.originalPoster.name,
+          userId: rideObj.originalPoster.id,
+          rideId: rideId,
+        },
+        tokens: requestedDeviceObjs.map(deviceToken => deviceToken.tokenId),
+      }
+
+      messaging.sendEachForMulticast(requestedUsersPayload);
 
       return res.status(200).json({ message: "Deleted ride." });
 

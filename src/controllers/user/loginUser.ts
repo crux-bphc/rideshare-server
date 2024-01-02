@@ -50,7 +50,7 @@ export const loginUser = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "User not found in the DB." });
     }
 
-    const deviceToken = req.body.deviceToken;
+    const deviceTokenVal = req.body.deviceToken;
 
     const existingDeviceToken = await deviceTokenRepository
       .createQueryBuilder("deviceToken")
@@ -65,11 +65,11 @@ export const loginUser = async (req: Request, res: Response) => {
       const newDeviceToken = await deviceTokenRepository
         .createQueryBuilder()
         .insert()
-        .into("deviceToken")
+        .into(deviceToken)
         .values([
           {
             user: userObj,
-            tokenId: deviceToken,
+            tokenId: deviceTokenVal,
           },
         ])
         .returning("*")

@@ -102,7 +102,7 @@ export const createRequest = async (req: Request, res: Response) => {
     const deviceTokenObj = await deviceTokenRepository
         .createQueryBuilder("deviceToken")
         .select("deviceToken.tokenId")
-        .where("deviceToken.user = :userId", { userId: rideObj.originalPoster.id })
+        .where("deviceToken.user.id = :userId", { userId: rideObj.originalPoster.id })
         .getMany();
       
     console.log(deviceTokenObj)

@@ -121,10 +121,10 @@ export const acceptRequest = async (req: Request, res: Response) => {
         .where("ride.id = :id", { id: rideId })
         .execute()
 
-      const deviceTokenObj = await deviceTokenRepository
+    const deviceTokenObj = await deviceTokenRepository
         .createQueryBuilder("deviceToken")
         .select("deviceToken.tokenId")
-        .where("deviceToken.user = :userObj", { userObj: userObj })
+        .where("deviceToken.user.id = :userId", { userId: rideObj.originalPoster.id })
         .getMany();
         
       const payload = {

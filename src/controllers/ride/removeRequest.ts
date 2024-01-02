@@ -105,7 +105,7 @@ export const removeRequest = async (req: Request, res: Response) => {
         const deviceTokenObj = await deviceTokenRepository
         .createQueryBuilder("deviceToken")
         .select("deviceToken.tokenId")
-        .where("deviceToken.user = :user", { user: userObj })
+        .where("deviceToken.user.id = :user", { user: userObj })
         .getMany();
 
         const payload = {

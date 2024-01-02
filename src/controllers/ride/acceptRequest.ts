@@ -58,96 +58,140 @@ export const acceptRequest = async (req: Request, res: Response) => {
       .leftJoinAndSelect("ride.participants", "participants")
       .where("ride.id = :id", { id: rideId })
       .getOne();
-
-    if (!rideObj) {
-      return res.status(404).json({ message: "Ride not found in the DB." });
-    }
-
-    if (rideObj.seats <= 0) {
-      return res
-        .status(405)
-        .json({ message: "Ride is full." });
-    }
-
-    if (op_userId !== rideObj.originalPoster.id)
-      return res.status(401).json({ message: "Unauthorized to accept users into this ride." });
-
-    const participantQueueEmails = new Set(
-      rideObj.participantQueue.map((user) => user.email)
+  } catch (err) {
+    console.log(
+      "[acceptRequest.ts] Error in selecting ride from db: ",
+      err.message
     );
+    return res.status(500).json({ message: "Internal Server Error!" });
+  }
 
-    if (!participantQueueEmails.has(userEmail)) {
-      return res
-        .status(404)
-        .json({ message: "User has not requested to join this ride." });
-    }
+  if (!rideObj) {
+    return res.status(404).json({ message: "Ride not found in the DB." });
+  }
 
-    try {
-      userObj = await userRepository
-        .createQueryBuilder("user")
-        .where("user.email = :userEmail", { userEmail })
-        .getOne();
-    } catch (err: any) {
-      return res.status(500).json({ message: "Internal Server Error!" });
-    }
+  if (rideObj.seats <= 0) {
+    return res.status(405).json({ message: "Ride is full." });
+  }
 
-    try {
-      await rideRepository.manager.transaction(
-        async (transactionalEntityManager) => {
-          await transactionalEntityManager
-            .createQueryBuilder()
-            .relation(Ride, "participantQueue")
-            .of(rideObj)
-            .remove(userObj);
-        }
-      );
+  if (op_userId !== rideObj.originalPoster.id)
+    return res
+      .status(401)
+      .json({ message: "Unauthorized to accept users into this ride." });
 
-      await rideRepository.manager.transaction(
-        async (transactionalEntityManager) => {
-          await transactionalEntityManager
-            .createQueryBuilder()
-            .relation(Ride, "participants")
-            .of(rideObj)
-            .add(userObj);
-        }
-      );
+  const participantQueueEmails = new Set(
+    rideObj.participantQueue.map((user) => user.email)
+  );
 
-      await rideRepository
-        .createQueryBuilder("ride")
-        .update()
-        .set({
-          seats: rideObj.seats - 1,
-        })
-        .where("ride.id = :id", { id: rideId })
-        .execute()
+  if (!participantQueueEmails.has(userEmail)) {
+    return res
+      .status(404)
+      .json({ message: "User has not requested to join this ride." });
+  }
 
-    const deviceTokenObj = await deviceTokenRepository
-        .createQueryBuilder("deviceToken")
-        .select("deviceToken.tokenId")
-        .where("deviceToken.user.id = :userId", { userId: userObj.id })
-        .getMany();
-        
-      const payload = {
-        notification: {
-          title: `${rideObj.originalPoster.name} Accepted You into Their Ride`,
-          body: "View the ride for more details.",
-        },
-        data: {
-          action: 'requestAccepted',
-          userName: rideObj.originalPoster.name,
-          userId: rideObj.originalPoster.id,
-          rideId: rideId,
-        },
-        tokens: deviceTokenObj.map(deviceToken => deviceToken.tokenId),
-      }
-
-      messaging.sendEachForMulticast(payload);
-
-    } catch (err: any) {
-      return res.status(500).json({ message: "Internal Server Error!" });
-    }
-
+  try {
+    userObj = await userRepository
+      .createQueryBuilder("user")
+      .where("user.email = :userEmail", { userEmail })
+      .getOne();
   } catch (err: any) {
+    console.log(
+      "[acceptRequest.ts] Error in selecting user from db: ",
+      err.message
+    );
+    return res.status(500).json({ message: "Internal Server Error!" });
+  }
+
+  try {
+    await rideRepository.manager.transaction(
+      async (transactionalEntityManager) => {
+        await transactionalEntityManager
+          .createQueryBuilder()
+          .relation(Ride, "participantQueue")
+          .of(rideObj)
+          .remove(userObj);
+      }
+    );
+  } catch (err: any) {
+    console.log(
+      "[acceptRequest.ts] Error in removing user from participantQueue in db: ",
+      err.message
+    );
+    return res.status(500).json({ message: "Internal Server Error!" });
+  }
+
+  try {
+    await rideRepository.manager.transaction(
+      async (transactionalEntityManager) => {
+        await transactionalEntityManager
+          .createQueryBuilder()
+          .relation(Ride, "participants")
+          .of(rideObj)
+          .add(userObj);
+      }
+    );
+  } catch (err: any) {
+    console.log(
+      "[acceptRequest.ts] Error in adding user to participants in db: ",
+      err.message
+    );
+    return res.status(500).json({ message: "Internal Server Error!" });
+  }
+
+  try {
+    await rideRepository
+      .createQueryBuilder("ride")
+      .update()
+      .set({
+        seats: rideObj.seats - 1,
+      })
+      .where("ride.id = :id", { id: rideId })
+      .execute();
+  } catch (err: any) {
+    console.log(
+      "[acceptRequest.ts] Error in updating seats in db: ",
+      err.message
+    );
+    return res.status(500).json({ message: "Internal Server Error!" });
+  }
+
+  let deviceTokenObjs: deviceToken[];
+
+  try {
+    deviceTokenObjs = await deviceTokenRepository
+      .createQueryBuilder("deviceToken")
+      .select("deviceToken.tokenId")
+      .where("deviceToken.user.id = :userId", { userId: userObj.id })
+      .getMany();
+  } catch (err: any) {
+    console.log(
+      "[acceptRequest.ts] Error in selecting deviceTokens from db: ",
+      err.message
+    );
+    return res.status(500).json({ message: "Internal Server Error!" });
+  }
+
+  const payload = {
+    notification: {
+      title: `${rideObj.originalPoster.name} Accepted You into Their Ride`,
+      body: "View the ride for more details.",
+    },
+    data: {
+      action: "requestAccepted",
+      userName: rideObj.originalPoster.name,
+      userId: rideObj.originalPoster.id,
+      rideId: rideId,
+    },
+    tokens: deviceTokenObjs.map((deviceToken) => deviceToken.tokenId),
+  };
+
+  try {
+    messaging.sendEachForMulticast(payload);
+  } catch (err: any) {
+    console.log(
+      "[acceptRequest.ts] Error in sending notifications: ",
+      err.message
+    );
     return res.status(500).json({ message: "Internal Server Error!" });
   }
 

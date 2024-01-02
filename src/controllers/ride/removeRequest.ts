@@ -3,6 +3,8 @@ import { rideRepository } from "../../repositories/rideRepository";
 import { Ride } from "../../entity/Ride";
 import { userRepository } from "../../repositories/userRepository";
 import { User } from "../../entity/User";
+import { deviceTokenRepository } from "../../repositories/deviceTokenRepository";
+import { deviceToken } from "../../entity/deviceToken";
 import { messaging } from "../../helpers/firebaseMessaging";
 
 import { z } from "zod";
@@ -47,6 +49,7 @@ export const removeRequest = async (req: Request, res: Response) => {
 
   let userObj: User | null = null;
   let rideObj: Ride | null = null;
+  let deviceTokenObj: deviceToken | null = null;
 
   try {
     rideObj = await rideRepository
@@ -99,7 +102,11 @@ export const removeRequest = async (req: Request, res: Response) => {
 
       if (reqUserEmail == rideObj.originalPoster.email) {
 
-        const deviceTokens = userObj.deviceTokens;
+        const deviceTokenObj = await deviceTokenRepository
+        .createQueryBuilder("deviceToken")
+        .select("deviceToken.deviceToken")
+        .where("deviceToken.user = :user", { user: userObj })
+        .getMany();
 
         const payload = {
           notification: {
@@ -112,7 +119,7 @@ export const removeRequest = async (req: Request, res: Response) => {
             userId: rideObj.originalPoster.id,
             rideId: rideId,
           },
-          tokens: deviceTokens,
+          tokens: deviceTokenObj.map(obj => obj.tokenId),
         }
 
         messaging.sendEachForMulticast(payload);

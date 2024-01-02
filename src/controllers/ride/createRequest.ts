@@ -3,6 +3,8 @@ import { rideRepository } from "../../repositories/rideRepository";
 import { Ride } from "../../entity/Ride";
 import { userRepository } from "../../repositories/userRepository";
 import { User } from "../../entity/User";
+import { deviceTokenRepository } from "../../repositories/deviceTokenRepository";
+import { deviceToken } from "../../entity/deviceToken";
 import { messaging } from "../../helpers/firebaseMessaging";
 
 import { z } from "zod";
@@ -97,7 +99,11 @@ export const createRequest = async (req: Request, res: Response) => {
       }
     )
 
-    const deviceTokens = rideObj.originalPoster.deviceTokens;
+    const deviceTokenObj = await deviceTokenRepository
+        .createQueryBuilder("deviceToken")
+        .select("deviceToken.deviceToken")
+        .where("deviceToken.user = :user", { user: rideObj.originalPoster })
+        .getMany();
 
     const payload = {
       notification: {
@@ -110,7 +116,7 @@ export const createRequest = async (req: Request, res: Response) => {
         userId: userObj.id,
         rideId: rideId,
       },
-      tokens: deviceTokens,
+      tokens: deviceTokenObj.map(obj => obj.tokenId),
     }
 
     messaging.sendEachForMulticast(payload);

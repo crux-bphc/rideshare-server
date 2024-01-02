@@ -3,6 +3,8 @@ import { rideRepository } from "../../repositories/rideRepository";
 import { Ride } from "../../entity/Ride";
 import { userRepository } from "../../repositories/userRepository";
 import { User } from "../../entity/User";
+import { deviceTokenRepository } from "../../repositories/deviceTokenRepository";
+import { deviceToken } from "../../entity/deviceToken";
 import { messaging } from "../../helpers/firebaseMessaging";
 
 import { z } from "zod";
@@ -119,8 +121,12 @@ export const acceptRequest = async (req: Request, res: Response) => {
         .where("ride.id = :id", { id: rideId })
         .execute()
 
-      const deviceTokens = userObj.deviceTokens;
-
+    const deviceTokenObj = await deviceTokenRepository
+        .createQueryBuilder("deviceToken")
+        .select("deviceToken.tokenId")
+        .where("deviceToken.user.id = :userId", { userId: userObj.id })
+        .getMany();
+        
       const payload = {
         notification: {
           title: `${rideObj.originalPoster.name} Accepted You into Their Ride`,
@@ -132,7 +138,7 @@ export const acceptRequest = async (req: Request, res: Response) => {
           userId: rideObj.originalPoster.id,
           rideId: rideId,
         },
-        tokens: deviceTokens,
+        tokens: deviceTokenObj.map(deviceToken => deviceToken.tokenId),
       }
 
       messaging.sendEachForMulticast(payload);

@@ -3,6 +3,8 @@ import { rideRepository } from "../../repositories/rideRepository";
 import { Ride } from "../../entity/Ride";
 import { userRepository } from "../../repositories/userRepository";
 import { User } from "../../entity/User";
+import { deviceTokenRepository } from "../../repositories/deviceTokenRepository";
+import { deviceToken } from "../../entity/deviceToken";
 import { messaging } from "../../helpers/firebaseMessaging";
 
 import { z } from "zod";
@@ -47,6 +49,7 @@ export const removeRequest = async (req: Request, res: Response) => {
 
   let userObj: User | null = null;
   let rideObj: Ride | null = null;
+  let deviceTokenObj: deviceToken | null = null;
 
   try {
     rideObj = await rideRepository
@@ -62,10 +65,17 @@ export const removeRequest = async (req: Request, res: Response) => {
     }
 
     if (reqUserEmail == userEmail && userEmail == rideObj.originalPoster.email)
-      return res.status(403).json({ message: "Cannot remove user from his own ride." });
+      return res
+        .status(403)
+        .json({ message: "Cannot remove user from his own ride." });
 
-    if (reqUserEmail !== rideObj.originalPoster.email && reqUserEmail !== userEmail)
-      return res.status(403).json({ message: "Unauthorized to remove users from this ride." });
+    if (
+      reqUserEmail !== rideObj.originalPoster.email &&
+      reqUserEmail !== userEmail
+    )
+      return res
+        .status(403)
+        .json({ message: "Unauthorized to remove users from this ride." });
 
     const participantQueueEmails = new Set(
       rideObj.participantQueue.map((user) => user.email)
@@ -87,42 +97,42 @@ export const removeRequest = async (req: Request, res: Response) => {
     }
 
     try {
-      await rideRepository.manager.transaction(
-        async (transactionalEntityManager) => {
-          await transactionalEntityManager
-            .createQueryBuilder()
-            .relation(Ride, "participantQueue")
-            .of(rideObj)
-            .remove(userObj);
-        }
-      );
-
       if (reqUserEmail == rideObj.originalPoster.email) {
+        await rideRepository.manager.transaction(
+          async (transactionalEntityManager) => {
+            await transactionalEntityManager
+              .createQueryBuilder()
+              .relation(Ride, "participantQueue")
+              .of(rideObj)
+              .remove(userObj);
+          }
+        );
 
-        const deviceTokens = userObj.deviceTokens;
+        const deviceTokenObj = await deviceTokenRepository
+          .createQueryBuilder("deviceToken")
+          .select("deviceToken.tokenId")
+          .where("deviceToken.user.id = :userId", { userId: userObj.id })
+          .getMany();
 
         const payload = {
           notification: {
-            title: `${rideObj.originalPoster.name} Declined Your Request to Join Their Ride`,
+            title: `${rideObj.originalPoster.name} Declined Your Request to Join Their Ride `,
             body: "View the ride for more details.",
           },
           data: {
-            action: 'requestDeclined',
+            action: "requestDeclined",
             userName: rideObj.originalPoster.name,
             userId: rideObj.originalPoster.id,
             rideId: rideId,
           },
-          tokens: deviceTokens,
-        }
+          tokens: deviceTokenObj.map((deviceToken) => deviceToken.tokenId),
+        };
 
         messaging.sendEachForMulticast(payload);
-
       }
-
     } catch (err: any) {
       return res.status(500).json({ message: "Internal Server Error!" });
     }
-
   } catch (err: any) {
     return res.status(500).json({ message: "Internal Server Error!" });
   }

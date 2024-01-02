@@ -97,17 +97,17 @@ export const removeRequest = async (req: Request, res: Response) => {
     }
 
     try {
-      await rideRepository.manager.transaction(
-        async (transactionalEntityManager) => {
-          await transactionalEntityManager
-            .createQueryBuilder()
-            .relation(Ride, "participantQueue")
-            .of(rideObj)
-            .remove(userObj);
-        }
-      );
-
       if (reqUserEmail == rideObj.originalPoster.email) {
+        await rideRepository.manager.transaction(
+          async (transactionalEntityManager) => {
+            await transactionalEntityManager
+              .createQueryBuilder()
+              .relation(Ride, "participantQueue")
+              .of(rideObj)
+              .remove(userObj);
+          }
+        );
+
         const deviceTokenObj = await deviceTokenRepository
           .createQueryBuilder("deviceToken")
           .select("deviceToken.tokenId")
@@ -116,7 +116,7 @@ export const removeRequest = async (req: Request, res: Response) => {
 
         const payload = {
           notification: {
-            title: `${rideObj.originalPoster.name} Declined Your Request to Join Their Ride`,
+            title: `${rideObj.originalPoster.name} Declined Your Request to Join Their Ride `,
             body: "View the ride for more details.",
           },
           data: {

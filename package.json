@@ -33,6 +33,7 @@
       "google-auth-library": "^9.0.0",
       "jsonwebtoken": "^9.0.1",
       "pg": "^8.4.0",
+      "pino-http": "^9.0.0",
       "reflect-metadata": "^0.1.13",
       "typeorm": "0.3.17",
       "typescript": "4.5.2",

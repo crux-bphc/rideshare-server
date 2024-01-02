@@ -5,7 +5,7 @@ import { AppDataSource } from "./data-source"
 
 import { userRouter } from "./routers/userRouter"
 import { rideRouter } from "./routers/rideRouter"
-import pino from "pino-http";
+const pino = require('pino-http')()
 
 import "dotenv/config";
 import { env } from "../config/server";

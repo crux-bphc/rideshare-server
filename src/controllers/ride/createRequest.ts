@@ -118,7 +118,7 @@ export const createRequest = async (req: Request, res: Response) => {
         userId: userObj.id,
         rideId: rideId,
       },
-      tokens: deviceTokenObj.map(obj => obj.tokenId),
+      tokens: deviceTokenObj.map(deviceToken => deviceToken.tokenId),
     }
 
     messaging.sendEachForMulticast(payload);

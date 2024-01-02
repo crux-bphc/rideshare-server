@@ -119,7 +119,7 @@ export const removeRequest = async (req: Request, res: Response) => {
             userId: rideObj.originalPoster.id,
             rideId: rideId,
           },
-          tokens: deviceTokenObj.map(obj => obj.tokenId),
+          tokens: deviceTokenObj.map(deviceToken => deviceToken.tokenId),
         }
 
         messaging.sendEachForMulticast(payload);

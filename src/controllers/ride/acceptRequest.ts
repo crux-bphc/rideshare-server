@@ -126,6 +126,7 @@ export const acceptRequest = async (req: Request, res: Response) => {
         .select("deviceToken.tokenId")
         .where("deviceToken.user.id = :userId", { userId: rideObj.originalPoster.id })
         .getMany();
+    console.log(deviceTokenObj)
         
       const payload = {
         notification: {
@@ -138,7 +139,7 @@ export const acceptRequest = async (req: Request, res: Response) => {
           userId: rideObj.originalPoster.id,
           rideId: rideId,
         },
-        tokens: deviceTokenObj.map(obj => obj.tokenId),
+        tokens: deviceTokenObj.map(deviceToken => deviceToken.tokenId),
       }
 
       messaging.sendEachForMulticast(payload);

@@ -42,8 +42,8 @@ const dataSchema = z.object({
       .int({
         message: "seats must be an integer",
       })
-      .positive({
-        message: "seats must be a positive integer"
+      .nonnegative({
+        message: "seats must be a non-negative integer"
       })
       .optional(),
 

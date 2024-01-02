@@ -1,17 +1,10 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToOne,
-} from "typeorm"
-import { User } from "./User"
-
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from "typeorm";
+import { User } from "./User";
 
 @Entity()
 export class deviceToken {
-
   @PrimaryGeneratedColumn("uuid")
-  id: string
+  id: string;
 
   @ManyToOne(() => User)
   user: User;
@@ -20,7 +13,7 @@ export class deviceToken {
     type: "varchar",
     width: 200,
     unique: true,
-    nullable: false
+    nullable: false,
   })
-  tokenId: string
+  tokenId: string;
 }

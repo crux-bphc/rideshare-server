@@ -1,8 +1,6 @@
 import { Request, Response } from "express";
 import { rideRepository } from "../../repositories/rideRepository";
 import { Ride } from "../../entity/Ride";
-import { userRepository } from "../../repositories/userRepository";
-import { User } from "../../entity/User";
 import { deviceTokenRepository } from "../../repositories/deviceTokenRepository";
 import { messaging } from "../../helpers/firebaseMessaging";
 import { z } from "zod";

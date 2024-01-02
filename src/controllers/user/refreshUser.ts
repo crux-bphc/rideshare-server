@@ -8,7 +8,6 @@ import {
   generateRefreshToken,
 } from "../../helpers/tokenHelper";
 import jwt from "jsonwebtoken";
-
 import "dotenv/config";
 import { env } from "../../../config/server";
 

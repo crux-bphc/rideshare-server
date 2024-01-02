@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { rideRepository } from "../../repositories/rideRepository";
 import { Ride } from "../../entity/Ride";
-
 import { z } from "zod";
 import { validate } from "../../helpers/zodValidateRequest";
 

@@ -1,9 +1,7 @@
 import jwt from "jsonwebtoken";
 import { User } from "../entity/User";
-
 import "dotenv/config";
 import { env } from "../../config/server";
-
 
 export const generateAccessToken = (userObj: User) => {
   const accessSecretKey = env.ACCESS_JWT_SECRET;

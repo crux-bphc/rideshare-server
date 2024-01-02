@@ -6,7 +6,6 @@ import { User } from "../../entity/User";
 import { deviceTokenRepository } from "../../repositories/deviceTokenRepository";
 import { deviceToken } from "../../entity/deviceToken";
 import { messaging } from "../../helpers/firebaseMessaging";
-
 import { z } from "zod";
 import { validate } from "../../helpers/zodValidateRequest";
 

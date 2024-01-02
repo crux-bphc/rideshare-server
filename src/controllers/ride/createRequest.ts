@@ -21,10 +21,10 @@ const dataSchema = z.object({
         message: "id must be a non-empty string",
       })
       .uuid({ message: "id must be a valid uuid" }),
-  })
-})
+  }),
+});
 
-export const createRequestValidator = validate(dataSchema)
+export const createRequestValidator = validate(dataSchema);
 
 export const createRequest = async (req: Request, res: Response) => {
   const rideId = req.params.id;
@@ -40,14 +40,17 @@ export const createRequest = async (req: Request, res: Response) => {
       .leftJoinAndSelect("ride.originalPoster", "originalPoster")
       .leftJoinAndSelect("ride.participants", "participants")
       .where("ride.id = :rideId", { rideId })
-      .getOne()
+      .getOne();
+  } catch (err) {
+    console.log(
+      "[createRequest.ts] Error in selecting ride from db: ",
+      err.message
+    );
+    return res.status(500).json({ message: "Internal Server Error!" });
+  }
 
-    if (!rideObj) {
-      return res.status(404).json({ message: "Ride not found in the DB." });
-    }
-
-  } catch (err: any) {
-    return res.status(500).json({ message: "Internal Server Error!" })
+  if (!rideObj) {
+    return res.status(404).json({ message: "Ride not found in the DB." });
   }
 
   if (rideObj.seats <= 0) {
@@ -58,18 +61,23 @@ export const createRequest = async (req: Request, res: Response) => {
     userObj = await userRepository
       .createQueryBuilder("user")
       .where("user.id = :userId", { userId })
-      .getOne()
+      .getOne();
+  } catch (err) {
+    console.log(
+      "[createRequest.ts] Error in selecting user from db: ",
+      err.message
+    );
+    return res.status(500).json({ message: "Internal Server Error!" });
+  }
 
-    if (!userObj) {
-      return res.status(404).json({ message: "User not found in the DB." });
-    }
-
-  } catch (err: any) {
-    return res.status(500).json({ message: "Internal Server Error!" })
+  if (!userObj) {
+    return res.status(404).json({ message: "User not found in the DB." });
   }
 
   if (rideObj.originalPoster.id === userObj.id) {
-    return res.status(400).json({ message: "Cannot request to join your own ride." });
+    return res
+      .status(400)
+      .json({ message: "Cannot request to join your own ride." });
   }
 
   const participantQueueIds = new Set(
@@ -77,15 +85,17 @@ export const createRequest = async (req: Request, res: Response) => {
   );
 
   if (participantQueueIds.has(userId)) {
-    return res.status(400).json({ message: "User has already requested to join this ride." });
+    return res
+      .status(400)
+      .json({ message: "User has already requested to join this ride." });
   }
 
-  const participantIds = new Set(
-    rideObj.participants.map((user) => user.id)
-  );
+  const participantIds = new Set(rideObj.participants.map((user) => user.id));
 
   if (participantIds.has(userId)) {
-    return res.status(400).json({ message: "User has already been accepted into this ride." });
+    return res
+      .status(400)
+      .json({ message: "User has already been accepted into this ride." });
   }
 
   try {
@@ -97,32 +107,55 @@ export const createRequest = async (req: Request, res: Response) => {
           .of(rideObj)
           .add(userObj);
       }
-    )
-
-    const deviceTokenObj = await deviceTokenRepository
-        .createQueryBuilder("deviceToken")
-        .select("deviceToken.tokenId")
-        .where("deviceToken.user.id = :userId", { userId: rideObj.originalPoster.id })
-        .getMany();
-
-    const payload = {
-      notification: {
-        title: `${userObj.name} Requested to Join Your Ride`,
-        body: "Review their request to join your ride.",
-      },
-      data: {
-        action: 'rideRequest',
-        userName: userObj.name,
-        userId: userObj.id,
-        rideId: rideId,
-      },
-      tokens: deviceTokenObj.map(deviceToken => deviceToken.tokenId),
-    }
-
-    messaging.sendEachForMulticast(payload);
-
-  } catch (err: any) {
-    return res.status(500).json({ message: "Internal Server Error!" })
+    );
+  } catch (err) {
+    console.log(
+      "[createRequest.ts] Error in adding user to participantQueue in db: ",
+      err.message
+    );
+    return res.status(500).json({ message: "Internal Server Error!" });
   }
+
+  let deviceTokenObj: deviceToken[];
+
+  try {
+    deviceTokenObj = await deviceTokenRepository
+      .createQueryBuilder("deviceToken")
+      .select("deviceToken.tokenId")
+      .where("deviceToken.user.id = :userId", {
+        userId: rideObj.originalPoster.id,
+      })
+      .getMany();
+  } catch (err: any) {
+    console.log(
+      "[createRequest.ts] Error in selecting deviceTokens from db: ",
+      err.message
+    );
+    return res.status(500).json({ message: "Internal Server Error!" });
+  }
+  const payload = {
+    notification: {
+      title: `${userObj.name} Requested to Join Your Ride`,
+      body: "Review their request to join your ride.",
+    },
+    data: {
+      action: "rideRequest",
+      userName: userObj.name,
+      userId: userObj.id,
+      rideId: rideId,
+    },
+    tokens: deviceTokenObj.map((deviceToken) => deviceToken.tokenId),
+  };
+
+  try {
+    messaging.sendEachForMulticast(payload);
+  } catch (err) {
+    console.log(
+      "[createRequest.ts] Error in sending notifications: ",
+      err.message
+    );
+    return res.status(500).json({ message: "Internal Server Error!" });
+  }
+
   return res.status(200).json({ message: "Requested to join this ride." });
-}
+};

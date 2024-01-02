@@ -65,10 +65,17 @@ export const removeRequest = async (req: Request, res: Response) => {
     }
 
     if (reqUserEmail == userEmail && userEmail == rideObj.originalPoster.email)
-      return res.status(403).json({ message: "Cannot remove user from his own ride." });
+      return res
+        .status(403)
+        .json({ message: "Cannot remove user from his own ride." });
 
-    if (reqUserEmail !== rideObj.originalPoster.email && reqUserEmail !== userEmail)
-      return res.status(403).json({ message: "Unauthorized to remove users from this ride." });
+    if (
+      reqUserEmail !== rideObj.originalPoster.email &&
+      reqUserEmail !== userEmail
+    )
+      return res
+        .status(403)
+        .json({ message: "Unauthorized to remove users from this ride." });
 
     const participantQueueEmails = new Set(
       rideObj.participantQueue.map((user) => user.email)
@@ -101,12 +108,11 @@ export const removeRequest = async (req: Request, res: Response) => {
       );
 
       if (reqUserEmail == rideObj.originalPoster.email) {
-
         const deviceTokenObj = await deviceTokenRepository
-        .createQueryBuilder("deviceToken")
-        .select("deviceToken.tokenId")
-        .where("deviceToken.user.id = :user", { user: userObj })
-        .getMany();
+          .createQueryBuilder("deviceToken")
+          .select("deviceToken.tokenId")
+          .where("deviceToken.user.id = :userId", { userId: userObj.id })
+          .getMany();
 
         const payload = {
           notification: {
@@ -114,22 +120,19 @@ export const removeRequest = async (req: Request, res: Response) => {
             body: "View the ride for more details.",
           },
           data: {
-            action: 'requestDeclined',
+            action: "requestDeclined",
             userName: rideObj.originalPoster.name,
             userId: rideObj.originalPoster.id,
             rideId: rideId,
           },
-          tokens: deviceTokenObj.map(deviceToken => deviceToken.tokenId),
-        }
+          tokens: deviceTokenObj.map((deviceToken) => deviceToken.tokenId),
+        };
 
         messaging.sendEachForMulticast(payload);
-
       }
-
     } catch (err: any) {
       return res.status(500).json({ message: "Internal Server Error!" });
     }
-
   } catch (err: any) {
     return res.status(500).json({ message: "Internal Server Error!" });
   }

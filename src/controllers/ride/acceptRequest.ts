@@ -124,9 +124,8 @@ export const acceptRequest = async (req: Request, res: Response) => {
     const deviceTokenObj = await deviceTokenRepository
         .createQueryBuilder("deviceToken")
         .select("deviceToken.tokenId")
-        .where("deviceToken.user.id = :userId", { userId: rideObj.originalPoster.id })
+        .where("deviceToken.user.id = :userId", { userId: userObj.id })
         .getMany();
-    console.log(deviceTokenObj)
         
       const payload = {
         notification: {

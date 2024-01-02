@@ -34,4 +34,4 @@ COPY --chown=node:node rideshare-creds.json ./build
 
 USER node
 
-CMD ["dumb-init", "node", "build/src/index.js"] 
+CMD ["dumb-init", "node", "build/src/index.js", "|", "pino-pretty"] 

@@ -3,11 +3,10 @@ import {
   PrimaryGeneratedColumn,
   Column,
   Index,
-  ManyToMany,
-  OneToMany
+  ManyToMany
 } from "typeorm";
-
 import { Ride } from "./Ride"
+
 @Entity()
 export class User {
   @PrimaryGeneratedColumn("uuid")
@@ -50,10 +49,10 @@ export class User {
   })
   profilePicture : string;
 
-  @Column(
-    'simple-array'
-  )
-  deviceTokens: string[];
+  // @Column(
+  //   'simple-array'
+  // )
+  // deviceTokens: string[];
 
   @ManyToMany(() => Ride, (ride) => ride.participantQueue)
   rideRequests!: Ride[]

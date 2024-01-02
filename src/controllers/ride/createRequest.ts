@@ -104,8 +104,6 @@ export const createRequest = async (req: Request, res: Response) => {
         .select("deviceToken.tokenId")
         .where("deviceToken.user.id = :userId", { userId: rideObj.originalPoster.id })
         .getMany();
-      
-    console.log(deviceTokenObj)
 
     const payload = {
       notification: {

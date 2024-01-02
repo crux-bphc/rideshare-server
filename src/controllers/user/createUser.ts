@@ -7,8 +7,7 @@ import { verify } from "../../helpers/googleIdVerify";
 
 const dataSchema = z.object({
   body: z.object({
-    token: z
-    .string({
+    token: z.string({
       invalid_type_error: "token should be a string",
       required_error: "token is a required parameter",
     }),
@@ -16,16 +15,16 @@ const dataSchema = z.object({
     phNo: z
       .number({
         invalid_type_error: "phNo should be a number",
-        required_error: "phNo is a required parameter"
+        required_error: "phNo is a required parameter",
       })
       .int({
-        message: "phNo must be an integer"
+        message: "phNo must be an integer",
       })
       .gte(0, {
-        message: "phNo must be valid"
+        message: "phNo must be valid",
       })
       .lte(99999999999999, {
-        message: "phNo must be valid"
+        message: "phNo must be valid",
       }),
   }),
 });
@@ -33,35 +32,38 @@ const dataSchema = z.object({
 export const createUserValidator = validate(dataSchema);
 
 export const createUser = async (req: Request, res: Response) => {
+  const payload = await verify(req.body.token);
+  let batch: number = Number(payload["email"].substring(1, 5));
+
+  if (Number.isNaN(batch)) {
+    batch = 0;
+  }
+
   try {
-    const payload = await verify(req.body.token)
-    let batch: number = Number(payload["email"].substring(1,5))
-
-    if (Number.isNaN(batch)) {
-      batch = 0;
-    }
-
     const newUser = await userRepository
       .createQueryBuilder()
       .insert()
       .into(User)
-      .values([{
-        name: payload["name"],
-        email: payload["email"],
-        phNo: req.body.phNo,
-        batch: batch,
-        profilePicture: payload["picture"]
-      }])
+      .values([
+        {
+          name: payload["name"],
+          email: payload["email"],
+          phNo: req.body.phNo,
+          batch: batch,
+          profilePicture: payload["picture"],
+        },
+      ])
       .returning("*")
-      .execute()
+      .execute();
 
     return res.status(201).json({ message: "Created user." });
-
   } catch (err) {
     if (err.code == "23505") {
-      return res.status(400).json({ message: "Email or Phone Number already exists." })
+      return res
+        .status(400)
+        .json({ message: "Email or Phone Number already exists." });
     }
+    console.log("[createUser.ts] Error in inserting user to db: ", err.message);
     return res.status(500).json({ message: "Internal Server Error!" });
   }
-
 };

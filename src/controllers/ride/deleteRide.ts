@@ -7,6 +7,7 @@ import { deviceTokenRepository } from "../../repositories/deviceTokenRepository"
 import { messaging } from "../../helpers/firebaseMessaging";
 import { z } from "zod";
 import { validate } from "../../helpers/zodValidateRequest";
+import { deviceToken } from "../../entity/deviceToken";
 
 const dataSchema = z.object({
   params: z.object({
@@ -19,10 +20,10 @@ const dataSchema = z.object({
         message: "id must be a non-empty string",
       })
       .uuid({ message: "id must be a valid uuid" }),
-  })
-})
+  }),
+});
 
-export const deleteRideValidator = validate(dataSchema)
+export const deleteRideValidator = validate(dataSchema);
 
 export const deleteRide = async (req: Request, res: Response) => {
   const rideId = req.params.id;
@@ -32,80 +33,128 @@ export const deleteRide = async (req: Request, res: Response) => {
 
   try {
     rideObj = await rideRepository
-      .createQueryBuilder('ride')
+      .createQueryBuilder("ride")
       .leftJoinAndSelect("ride.originalPoster", "originalPoster")
-      .where('ride.id = :id', { id: rideId })
+      .where("ride.id = :id", { id: rideId })
       .getOne();
-
-    if (!rideObj) {
-      return res.status(404).json({ message: "Ride not found in the DB." });
-    }
-
-    if (userId == rideObj.originalPoster.id) {
-
-      await rideRepository
-        .createQueryBuilder('ride')
-        .delete()
-        .from(Ride)
-        .where('ride.id = :id', { id: rideId })
-        .execute();
-
-      const joinedUserIds = rideObj.participants;
-
-      const joinedDeviceObjs = await deviceTokenRepository
-        .createQueryBuilder("deviceToken")
-        .select("deviceToken.tokenId")
-        .where("deviceToken.user.id IN (:...userIds)", { userIds: joinedUserIds })
-        .getMany();
-
-      const joinedUsersPayload = {
-        notification: {
-          title: `${rideObj.originalPoster.name} Deleted The Ride You Were Accepted Into`,
-          body: "View the ride for more details.",
-        },
-        data: {
-          action: 'rideDeleted',
-          userName: rideObj.originalPoster.name,
-          userId: rideObj.originalPoster.id,
-          rideId: rideId,
-        },
-        tokens: joinedDeviceObjs.map(deviceToken => deviceToken.tokenId),
-      }
-
-      messaging.sendEachForMulticast(joinedUsersPayload);
-
-      const requestedUserIds = rideObj.participantQueue;
-
-      const requestedDeviceObjs = await deviceTokenRepository
-        .createQueryBuilder("deviceToken")
-        .select("deviceToken.tokenId")
-        .where("deviceToken.user.id IN (:...userIds)", { userIds: requestedUserIds })
-        .getMany();
-
-      const requestedUsersPayload = {
-        notification: {
-          title: `${rideObj.originalPoster.name} Deleted The Ride You Requested To Join`,
-          body: "View the ride for more details.",
-        },
-        data: {
-          action: 'rideDeleted',
-          userName: rideObj.originalPoster.name,
-          userId: rideObj.originalPoster.id,
-          rideId: rideId,
-        },
-        tokens: requestedDeviceObjs.map(deviceToken => deviceToken.tokenId),
-      }
-
-      messaging.sendEachForMulticast(requestedUsersPayload);
-
-      return res.status(200).json({ message: "Deleted ride." });
-
-    } else {
-      return res.status(401).json({ message: "Unauthorized to delete this ride." })
-    }
-
-  }
-  catch (err: any) {
+  } catch (err) {
+    console.log(
+      "[deleteRide.ts] Error in selecting ride from db: ",
+      err.message
+    );
     return res.status(500).json({ message: "Internal Server Error!" });
   }
-}
+
+  if (!rideObj) {
+    return res.status(404).json({ message: "Ride not found in the DB." });
+  }
+
+  if (userId != rideObj.originalPoster.id) {
+    return res
+      .status(401)
+      .json({ message: "Unauthorized to delete this ride." });
+  }
+
+  try {
+    await rideRepository
+      .createQueryBuilder("ride")
+      .delete()
+      .from(Ride)
+      .where("ride.id = :id", { id: rideId })
+      .execute();
+  } catch (err) {
+    console.log(
+      "[deleteRide.ts] Error in deleting ride from db: ",
+      err.message
+    );
+    return res.status(500).json({ message: "Internal Server Error!" });
+  }
+
+  const joinedUserIds = rideObj.participants;
+  let joinedDeviceObjs: deviceToken[];
+
+  try {
+    joinedDeviceObjs = await deviceTokenRepository
+      .createQueryBuilder("deviceToken")
+      .select("deviceToken.tokenId")
+      .where("deviceToken.user.id IN (:...userIds)", {
+        userIds: joinedUserIds,
+      })
+      .getMany();
+  } catch (err) {
+    console.log(
+      "[deleteRide.ts] Error in finding deviceTokens of participants from db: ",
+      err.message
+    );
+    return res.status(500).json({ message: "Internal Server Error!" });
+  }
+
+  const joinedUsersPayload = {
+    notification: {
+      title: `${rideObj.originalPoster.name} Deleted The Ride You Were Accepted Into`,
+      body: "View the ride for more details.",
+    },
+    data: {
+      action: "rideDeleted",
+      userName: rideObj.originalPoster.name,
+      userId: rideObj.originalPoster.id,
+      rideId: rideId,
+    },
+    tokens: joinedDeviceObjs.map((deviceToken) => deviceToken.tokenId),
+  };
+
+  try {
+    messaging.sendEachForMulticast(joinedUsersPayload);
+  } catch (err) {
+    console.log(
+      "[deleteRide.ts] Error in sending notifications to participants: ",
+      err.message
+    );
+    return res.status(500).json({ message: "Internal Server Error!" });
+  }
+
+  const requestedUserIds = rideObj.participantQueue;
+  let requestedDeviceObjs: deviceToken[];
+
+  try {
+    requestedDeviceObjs = await deviceTokenRepository
+      .createQueryBuilder("deviceToken")
+      .select("deviceToken.tokenId")
+      .where("deviceToken.user.id IN (:...userIds)", {
+        userIds: requestedUserIds,
+      })
+      .getMany();
+  } catch (err) {
+    console.log(
+      "[deleteRide.ts] Error in finding deviceTokens of participantQueue from db: ",
+      err.message
+    );
+    return res.status(500).json({ message: "Internal Server Error!" });
+  }
+
+  const requestedUsersPayload = {
+    notification: {
+      title: `${rideObj.originalPoster.name} Deleted The Ride You Requested To Join`,
+      body: "View the ride for more details.",
+    },
+    data: {
+      action: "rideDeleted",
+      userName: rideObj.originalPoster.name,
+      userId: rideObj.originalPoster.id,
+      rideId: rideId,
+    },
+    tokens: requestedDeviceObjs.map((deviceToken) => deviceToken.tokenId),
+  };
+
+  try {
+    messaging.sendEachForMulticast(requestedUsersPayload);
+  } catch (err) {
+    console.log(
+      "[deleteRide.ts] Error in sending notifications to participantQueue: ",
+      err.message
+    );
+    return res.status(500).json({ message: "Internal Server Error!" });
+  }
+
+  return res.status(200).json({ message: "Deleted ride." });
+};

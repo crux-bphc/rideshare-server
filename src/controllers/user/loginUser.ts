@@ -65,7 +65,7 @@ export const loginUser = async (req: Request, res: Response) => {
       const newDeviceToken = await deviceTokenRepository
         .createQueryBuilder()
         .insert()
-        .into(deviceToken)
+        .into("deviceToken")
         .values([
           {
             user: userObj,

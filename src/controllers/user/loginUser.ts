@@ -1,9 +1,14 @@
 import { Request, Response } from "express";
 import { userRepository } from "../../repositories/userRepository";
+import { deviceTokenRepository } from "../../repositories/deviceTokenRepository";
 import { validate } from "../../helpers/zodValidateRequest";
 import { User } from "../../entity/User";
+import { deviceToken } from "../../entity/deviceToken";
 import { z } from "zod";
-import { generateAccessToken, generateRefreshToken } from "../../helpers/tokenHelper";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+} from "../../helpers/tokenHelper";
 import { verify } from "../../helpers/googleIdVerify";
 
 const dataSchema = z.object({
@@ -17,7 +22,7 @@ const dataSchema = z.object({
         message: "token cannot be empty",
       }),
 
-      deviceToken: z
+    deviceToken: z
       .string({
         invalid_type_error: "device_token should be a string",
         required_error: "device_token is a required parameter",
@@ -34,8 +39,8 @@ export const loginUser = async (req: Request, res: Response) => {
   let userObj: User | null = null;
 
   try {
-    const payload = await verify(req.body.token)
-    
+    const payload = await verify(req.body.token);
+
     userObj = await userRepository
       .createQueryBuilder("user")
       .where("user.email = :email", { email: payload["email"] })
@@ -46,25 +51,41 @@ export const loginUser = async (req: Request, res: Response) => {
     }
 
     const deviceToken = req.body.deviceToken;
-    const deviceTokens = userObj.deviceTokens;
 
-    if (!deviceTokens.includes(deviceToken)) {
-      deviceTokens.push(deviceToken);
-      await userRepository
+    const existingDeviceToken = await deviceTokenRepository
+      .createQueryBuilder("deviceToken")
+      .where("deviceToken.deviceToken = :deviceToken", {
+        deviceToken: req.body.deviceToken,
+      })
+      .getOne();
+
+    if (existingDeviceToken) {
+      existingDeviceToken.user = userObj; //Device token already exists. Token assigned to new user.
+    } else {
+      const newDeviceToken = await deviceTokenRepository
         .createQueryBuilder()
-        .update(User)
-        .set({
-          deviceTokens: deviceTokens
-        })
-        .where("email = :email", { email: payload["email"] })
-        .execute()
+        .insert()
+        .into(deviceToken)
+        .values([
+          {
+            user: userObj,
+            deviceToken: deviceToken,
+          },
+        ])
+        .returning("*")
+        .execute();
     }
 
     const accessToken = generateAccessToken(userObj);
-    const refreshToken = generateRefreshToken(userObj)
+    const refreshToken = generateRefreshToken(userObj);
 
-    return res.status(200).json({ "message": "Logged in user.", "accessToken": accessToken , "refreshToken" : refreshToken});
-
+    return res
+      .status(200)
+      .json({
+        message: "Logged in user.",
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+      });
   } catch (err: any) {
     console.log("Error while logging User in. Error : ", err.message);
     return res.status(500).json({ message: "Internal Server Error!" });

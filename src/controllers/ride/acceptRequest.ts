@@ -123,7 +123,7 @@ export const acceptRequest = async (req: Request, res: Response) => {
 
       const deviceTokenObj = await deviceTokenRepository
         .createQueryBuilder("deviceToken")
-        .select("deviceToken.deviceToken")
+        .select("deviceToken.tokenId")
         .where("deviceToken.user = :user", { user: userObj })
         .getMany();
         

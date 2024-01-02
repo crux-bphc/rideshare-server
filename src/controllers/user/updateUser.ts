@@ -8,40 +8,40 @@ const dataSchema = z.object({
   body: z.object({
     name: z
       .string({
-        invalid_type_error: "name should be a sting"
+        invalid_type_error: "name should be a sting",
       })
       .min(0, {
-        message: "name cannot be empty"
+        message: "name cannot be empty",
       })
       .optional(),
 
     phNo: z
       .number({
-        invalid_type_error: "phNo should be a number"
+        invalid_type_error: "phNo should be a number",
       })
       .int({
-        message: "phNo must be an integer"
+        message: "phNo must be an integer",
       })
       .gte(0, {
-        message: "phNo must be valid"
+        message: "phNo must be valid",
       })
       .lte(99999999999999, {
-        message: "phNo must be valid"
+        message: "phNo must be valid",
       })
       .optional(),
 
     batch: z
       .number({
-        invalid_type_error: "batch should be a number"
+        invalid_type_error: "batch should be a number",
       })
       .int({
-        message: "batch must be an integer"
+        message: "batch must be an integer",
       })
       .min(0, {
-        message: "batch must be valid"
+        message: "batch must be valid",
       })
       .max(9999, {
-        message: "batch must be valid"
+        message: "batch must be valid",
       })
       .optional(),
   }),
@@ -50,7 +50,6 @@ const dataSchema = z.object({
 export const updateUserValidator = validate(dataSchema);
 
 export const updateUser = async (req: Request, res: Response) => {
-
   let userObj: User | null = null;
 
   let updateName: string | null = req.body.name;
@@ -58,28 +57,35 @@ export const updateUser = async (req: Request, res: Response) => {
   let updateBatch: number | null = req.body.batch;
 
   try {
-
     userObj = await userRepository
       .createQueryBuilder("user")
       .where("user.id = :id", { id: req.token._id })
-      .getOne()
+      .getOne();
+  } catch (err: any) {
+    console.log(
+      "[updateUser.ts] Error in selecting user from db: ",
+      err.message
+    );
+    return res.status(500).json({ message: "Internal Server Error!" });
+  }
 
-    if (!userObj) {
-      return res.status(404).json({ message: "User not found in the DB." });
-    }
+  if (!userObj) {
+    return res.status(404).json({ message: "User not found in the DB." });
+  }
 
-    if (!updateName) {
-      updateName = userObj.name;
-    }
+  if (!updateName) {
+    updateName = userObj.name;
+  }
 
-    if (!updatePhNo) {
-      updatePhNo = userObj.phNo;
-    }
+  if (!updatePhNo) {
+    updatePhNo = userObj.phNo;
+  }
 
-    if (!updateBatch) {
-      updateBatch = userObj.batch;
-    }
+  if (!updateBatch) {
+    updateBatch = userObj.batch;
+  }
 
+  try {
     await userRepository
       .createQueryBuilder()
       .update(User)
@@ -89,15 +95,16 @@ export const updateUser = async (req: Request, res: Response) => {
         batch: updateBatch,
       })
       .where("id = :id", { id: req.token._id })
-      .execute()
+      .execute();
 
-    return res.status(200).json({ "message": "Updated user." });
-
+    return res.status(200).json({ message: "Updated user." });
   } catch (err) {
     if (err.code == "23505") {
-      return res.status(400).json({ message: "Email or Phone Number already exists." })
+      return res
+        .status(400)
+        .json({ message: "Email or Phone Number already exists." });
     }
+    console.log("[updateUser.ts] Error in updating user on db: ", err.message);
     return res.status(500).json({ message: "Internal Server Error!" });
   }
-
 };

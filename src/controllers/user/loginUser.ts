@@ -72,15 +72,16 @@ export const loginUser = async (req: Request, res: Response) => {
     return res.status(500).json({ message: "Internal Server Error!" });
   }
 
-  if (existingDeviceToken) {
+  if (existingDeviceToken !== null) {
     try {
       await deviceTokenRepository
-        .createQueryBuilder("deviceToken")
-        .update()
+        .createQueryBuilder()
+        .update(deviceToken)
         .set({
           user: userObj,
+          tokenId: deviceTokenVal
         })
-        .where("deviceToken.tokenId = :tokenId", { tokenId: deviceTokenVal })
+        .where("tokenId = :tokenId", { tokenId: deviceTokenVal })
         .execute();
     } catch (err) {
       console.log(

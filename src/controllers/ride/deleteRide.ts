@@ -71,94 +71,96 @@ export const deleteRide = async (req: Request, res: Response) => {
     return res.status(500).json({ message: "Internal Server Error!" });
   }
 
-  const joinedUserIds = new Set(
-    rideObj.participants.map((user) => user.id)
-  );
-  let joinedDeviceObjs: deviceToken[];
+  const joinedUserIds = new Set(rideObj.participants.map((user) => user.id));
 
-  try {
-    joinedDeviceObjs = await deviceTokenRepository
-      .createQueryBuilder("deviceToken")
-      .select("deviceToken.tokenId")
-      .where("deviceToken.user.id IN (:...userIds)", {
-        userIds: joinedUserIds,
-      })
-      .getMany();
-  } catch (err) {
-    console.log(
-      "[deleteRide.ts] Error in finding deviceTokens of participants from db: ",
-      err.message
-    );
-    return res.status(500).json({ message: "Internal Server Error!" });
-  }
+  if (joinedUserIds.size > 0) {
+    let joinedDeviceObjs: deviceToken[];
+    try {
+      joinedDeviceObjs = await deviceTokenRepository
+        .createQueryBuilder("deviceToken")
+        .select("deviceToken.tokenId")
+        .where("deviceToken.user.id IN (:...userIds)", {
+          userIds: joinedUserIds,
+        })
+        .getMany();
+    } catch (err) {
+      console.log(
+        "[deleteRide.ts] Error in finding deviceTokens of participants from db: ",
+        err.message
+      );
+      return res.status(500).json({ message: "Internal Server Error!" });
+    }
 
-  const joinedUsersPayload = {
-    notification: {
-      title: `${rideObj.originalPoster.name} Deleted The Ride You Were Accepted Into`,
-      body: "View the ride for more details.",
-    },
-    data: {
-      action: "rideDeleted",
-      userName: rideObj.originalPoster.name,
-      userId: rideObj.originalPoster.id,
-      rideId: rideId,
-    },
-    tokens: joinedDeviceObjs.map((deviceToken) => deviceToken.tokenId),
-  };
+    const joinedUsersPayload = {
+      notification: {
+        title: `${rideObj.originalPoster.name} Deleted The Ride You Were Accepted Into`,
+        body: "View the ride for more details.",
+      },
+      data: {
+        action: "rideDeleted",
+        userName: rideObj.originalPoster.name,
+        userId: rideObj.originalPoster.id,
+        rideId: rideId,
+      },
+      tokens: joinedDeviceObjs.map((deviceToken) => deviceToken.tokenId),
+    };
 
-  try {
-    messaging.sendEachForMulticast(joinedUsersPayload);
-  } catch (err) {
-    console.log(
-      "[deleteRide.ts] Error in sending notifications to participants: ",
-      err.message
-    );
-    return res.status(500).json({ message: "Internal Server Error!" });
+    try {
+      messaging.sendEachForMulticast(joinedUsersPayload);
+    } catch (err) {
+      console.log(
+        "[deleteRide.ts] Error in sending notifications to participants: ",
+        err.message
+      );
+      return res.status(500).json({ message: "Internal Server Error!" });
+    }
   }
 
   const requestedUserIds = new Set(
     rideObj.participantQueue.map((user) => user.id)
   );
-  let requestedDeviceObjs: deviceToken[];
 
-  try {
-    requestedDeviceObjs = await deviceTokenRepository
-      .createQueryBuilder("deviceToken")
-      .select("deviceToken.tokenId")
-      .where("deviceToken.user.id IN (:...userIds)", {
-        userIds: requestedUserIds,
-      })
-      .getMany();
-  } catch (err) {
-    console.log(
-      "[deleteRide.ts] Error in finding deviceTokens of participantQueue from db: ",
-      err.message
-    );
-    return res.status(500).json({ message: "Internal Server Error!" });
-  }
+  if (requestedUserIds.size > 0) {
+    let requestedDeviceObjs: deviceToken[];
+    try {
+      requestedDeviceObjs = await deviceTokenRepository
+        .createQueryBuilder("deviceToken")
+        .select("deviceToken.tokenId")
+        .where("deviceToken.user.id IN (:...userIds)", {
+          userIds: requestedUserIds,
+        })
+        .getMany();
+    } catch (err) {
+      console.log(
+        "[deleteRide.ts] Error in finding deviceTokens of participantQueue from db: ",
+        err.message
+      );
+      return res.status(500).json({ message: "Internal Server Error!" });
+    }
 
-  const requestedUsersPayload = {
-    notification: {
-      title: `${rideObj.originalPoster.name} Deleted The Ride You Requested To Join`,
-      body: "View the ride for more details.",
-    },
-    data: {
-      action: "rideDeleted",
-      userName: rideObj.originalPoster.name,
-      userId: rideObj.originalPoster.id,
-      rideId: rideId,
-    },
-    tokens: requestedDeviceObjs.map((deviceToken) => deviceToken.tokenId),
-  };
+    const requestedUsersPayload = {
+      notification: {
+        title: `${rideObj.originalPoster.name} Deleted The Ride You Requested To Join`,
+        body: "View the ride for more details.",
+      },
+      data: {
+        action: "rideDeleted",
+        userName: rideObj.originalPoster.name,
+        userId: rideObj.originalPoster.id,
+        rideId: rideId,
+      },
+      tokens: requestedDeviceObjs.map((deviceToken) => deviceToken.tokenId),
+    };
 
-  try {
-    messaging.sendEachForMulticast(requestedUsersPayload);
-  } catch (err) {
-    console.log(
-      "[deleteRide.ts] Error in sending notifications to participantQueue: ",
-      err.message
-    );
-    return res.status(500).json({ message: "Internal Server Error!" });
+    try {
+      messaging.sendEachForMulticast(requestedUsersPayload);
+    } catch (err) {
+      console.log(
+        "[deleteRide.ts] Error in sending notifications to participantQueue: ",
+        err.message
+      );
+      return res.status(500).json({ message: "Internal Server Error!" });
+    }
   }
 
   return res.status(200).json({ message: "Deleted ride." });

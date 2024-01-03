@@ -446,7 +446,7 @@ Bearer JWT Token
 </details>
 
 <details>
- <summary><code>DELETE</code> <code><b>/ride/remove/{id}</b></code> <code>(Kick a participant out of a ride you created after accepting the user)</code></summary>
+ <summary><code>DELETE</code> <code><b>/ride/kick/{id}</b></code> <code>(Kick a participant out of a ride you created after accepting the user)</code></summary>
 
 ##### Auth
 

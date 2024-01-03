@@ -397,7 +397,7 @@ Bearer JWT Token
 
 > | Name | Required | Data Type | Description |
 > |------|----------|-----------|-------------|
-> | email | yes | email | email of the self |
+> | email | yes | email | email of self |
 
 ##### Response
 
@@ -406,6 +406,70 @@ Bearer JWT Token
 > | `200` | `{"message": "Removed from request queue."}` |
 > | `403` | `{"message": "Unauthorized to remove users from this ride."}` |
 > | `404` | `{"message": "User has not requested to join this ride."}` |
+> | `404` | `{"message": "Ride not found in the DB."}` |
+> | `500` | `{"message": "Internal Server Error!"}` |
+
+</details>
+
+<details>
+ <summary><code>DELETE</code> <code><b>/ride/kick/{id}</b></code> <code>(Remove self from a ride you were accepted into)</code></summary>
+
+##### Auth
+
+Bearer JWT Token
+
+##### Parameters
+
+> | Name | Required | Data Type | Description |
+> |------|----------|-----------|-------------|
+> | id | yes | string | ID of the ride |
+
+##### Body
+
+> | Name | Required | Data Type | Description |
+> |------|----------|-----------|-------------|
+> | email | yes | email | email of self |
+
+##### Response
+
+> | HTTP Code | Response |
+> |-----------|----------|
+> | `200` | `{"message": "Removed from ride participants."}` |
+> | `400` | `{"message": "User has not been accepted into this ride."}` |
+> | `400` | `{"message": "Cannot kick user from his own ride."}` |
+> | `403` | `{"message": "Unauthorized to kick users from this ride."}` |
+> | `404` | `{"message": "Ride not found in the DB."}` |
+> | `500` | `{"message": "Internal Server Error!"}` |
+
+</details>
+
+<details>
+ <summary><code>DELETE</code> <code><b>/ride/remove/{id}</b></code> <code>(Kick a participant out of a ride you created after accepting the user)</code></summary>
+
+##### Auth
+
+Bearer JWT Token
+
+##### Parameters
+
+> | Name | Required | Data Type | Description |
+> |------|----------|-----------|-------------|
+> | id | yes | string | ID of the ride |
+
+##### Body
+
+> | Name | Required | Data Type | Description |
+> |------|----------|-----------|-------------|
+> | email | yes | email | email of the user being kicked |
+
+##### Response
+
+> | HTTP Code | Response |
+> |-----------|----------|
+> | `200` | `{"message": "Removed from ride participants."}` |
+> | `400` | `{"message": "User has not been accepted into this ride."}` |
+> | `400` | `{"message": "Cannot kick user from his own ride."}` |
+> | `403` | `{"message": "Unauthorized to kick users from this ride."}` |
 > | `404` | `{"message": "Ride not found in the DB."}` |
 > | `500` | `{"message": "Internal Server Error!"}` |
 

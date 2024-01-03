@@ -225,7 +225,7 @@ export const updateRide = async (req: Request, res: Response) => {
         body: "View the ride for more details.",
       },
       data: {
-        action: "rideDeleted",
+        action: "rideUpdated",
         userName: rideObj.originalPoster.name,
         userId: rideObj.originalPoster.id,
         rideId: rideId,
@@ -272,7 +272,7 @@ export const updateRide = async (req: Request, res: Response) => {
         body: "View the ride for more details.",
       },
       data: {
-        action: "rideDeleted",
+        action: "rideUpdated",
         userName: rideObj.originalPoster.name,
         userId: rideObj.originalPoster.id,
         rideId: rideId,

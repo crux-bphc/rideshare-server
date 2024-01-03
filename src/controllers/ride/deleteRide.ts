@@ -81,7 +81,7 @@ export const deleteRide = async (req: Request, res: Response) => {
         .createQueryBuilder("deviceToken")
         .select("deviceToken.tokenId")
         .where("deviceToken.user.id IN (:...userIds)", {
-          userIds: joinedUserIds,
+          userIds: Array.from(joinedUserIds),
         })
         .getMany();
     } catch (err) {
@@ -128,7 +128,7 @@ export const deleteRide = async (req: Request, res: Response) => {
         .createQueryBuilder("deviceToken")
         .select("deviceToken.tokenId")
         .where("deviceToken.user.id IN (:...userIds)", {
-          userIds: requestedUserIds,
+          userIds: Array.from(requestedUserIds),
         })
         .getMany();
     } catch (err) {

@@ -37,6 +37,11 @@ import {
   removeRequestValidator,
 } from "../controllers/ride/removeRequest";
 
+import {
+  kickUserRequest,
+  kickUserValidator,
+} from "../controllers/ride/kickUser";
+
 import { isLoggedIn } from "../middleware/auth";
 
 const rideRouter = express.Router();
@@ -59,5 +64,6 @@ rideRouter.delete(
   isLoggedIn,
   removeRequest
 );
+rideRouter.delete("/kick/:id/", kickUserValidator, isLoggedIn, kickUserRequest);
 
 export { rideRouter };

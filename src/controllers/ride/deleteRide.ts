@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { rideRepository } from "../../repositories/rideRepository";
 import { Ride } from "../../entity/Ride";
+import { User } from "../../entity/User";
 import { deviceTokenRepository } from "../../repositories/deviceTokenRepository";
 import { messaging } from "../../helpers/firebaseMessaging";
 import { z } from "zod";
@@ -68,7 +69,9 @@ export const deleteRide = async (req: Request, res: Response) => {
     return res.status(500).json({ message: "Internal Server Error!" });
   }
 
-  const joinedUserIds = rideObj.participants;
+  const joinedUserIds = new Set(
+    rideObj.participants.map((user) => user.id)
+  );
   let joinedDeviceObjs: deviceToken[];
 
   try {
@@ -111,7 +114,9 @@ export const deleteRide = async (req: Request, res: Response) => {
     return res.status(500).json({ message: "Internal Server Error!" });
   }
 
-  const requestedUserIds = rideObj.participantQueue;
+  const requestedUserIds = new Set(
+    rideObj.participantQueue.map((user) => user.id)
+  );
   let requestedDeviceObjs: deviceToken[];
 
   try {

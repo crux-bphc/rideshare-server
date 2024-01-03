@@ -33,7 +33,9 @@ export const deleteRide = async (req: Request, res: Response) => {
   try {
     rideObj = await rideRepository
       .createQueryBuilder("ride")
+      .leftJoinAndSelect("ride.participantQueue", "participantQueue")
       .leftJoinAndSelect("ride.originalPoster", "originalPoster")
+      .leftJoinAndSelect("ride.participants", "participants")
       .where("ride.id = :id", { id: rideId })
       .getOne();
   } catch (err) {

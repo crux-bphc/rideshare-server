@@ -16,4 +16,5 @@ export const serverSchema = z.object({
   REFRESH_JWT_SECRET: z.string().min(8),
   FIREBASE_PROJECT_ID: z.string().min(1),
   GOOGLE_APPLICATION_CREDENTIALS: z.string().min(1),
+  TEST_EMAIL: z.string().min(1),
 });

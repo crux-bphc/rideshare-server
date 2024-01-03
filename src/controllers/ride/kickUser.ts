@@ -126,6 +126,23 @@ export const kickUserRequest = async (req: Request, res: Response) => {
     }
 
     try {
+      await rideRepository
+        .createQueryBuilder("ride")
+        .update()
+        .set({
+          seats: rideObj.seats + 1,
+        })
+        .where("ride.id = :id", { id: rideId })
+        .execute();
+    } catch (err: any) {
+      console.log(
+        "[kickUser.ts] Error in updating seats in db: ",
+        err.message
+      );
+      return res.status(500).json({ message: "Internal Server Error!" });
+    }
+  
+    try {
       deviceTokenObj = await deviceTokenRepository
         .createQueryBuilder("deviceToken")
         .select("deviceToken.tokenId")
@@ -180,6 +197,23 @@ export const kickUserRequest = async (req: Request, res: Response) => {
       );
       return res.status(500).json({ message: "Internal Server Error!" });
     }
+
+  try {
+    await rideRepository
+      .createQueryBuilder("ride")
+      .update()
+      .set({
+        seats: rideObj.seats + 1,
+      })
+      .where("ride.id = :id", { id: rideId })
+      .execute();
+  } catch (err: any) {
+    console.log(
+      "[kickUser.ts] Error in updating seats in db: ",
+      err.message
+    );
+    return res.status(500).json({ message: "Internal Server Error!" });
+  }
 
     try {
       deviceTokenObj = await deviceTokenRepository

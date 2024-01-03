@@ -72,6 +72,7 @@ export const deleteRide = async (req: Request, res: Response) => {
   }
 
   const joinedUserIds = new Set(rideObj.participants.map((user) => user.id));
+  joinedUserIds.delete(userId);
 
   if (joinedUserIds.size > 0) {
     let joinedDeviceObjs: deviceToken[];

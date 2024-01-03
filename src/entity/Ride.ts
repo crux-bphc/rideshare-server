@@ -5,17 +5,15 @@ import {
   ManyToOne,
   ManyToMany,
   JoinTable,
-  Index
-} from "typeorm"
-import { User } from "./User"
-import { Place } from "../helpers/places"
-
+  Index,
+} from "typeorm";
+import { User } from "./User";
+import { Place } from "../helpers/places";
 
 @Entity()
 export class Ride {
-
   @PrimaryGeneratedColumn("uuid")
-  id: string
+  id: string;
 
   @ManyToOne(() => User)
   originalPoster: User;
@@ -23,69 +21,68 @@ export class Ride {
   @Column({
     type: "enum",
     enum: Place,
-    nullable: false
+    nullable: false,
   })
-  fromPlace: Place
+  fromPlace: Place;
 
   @Column({
     type: "enum",
     enum: Place,
     default: Place.Airport,
-    nullable: false
+    nullable: false,
   })
-  toPlace: Place
+  toPlace: Place;
 
   @Column({
     type: "int",
     width: 3,
-    nullable: false
+    nullable: false,
   })
-  seats: number
+  seats: number;
 
   @Column({
-    type: 'timestamp',
-    nullable: false
+    type: "timestamp",
+    nullable: false,
   })
-  timeRangeStart: Date
+  timeRangeStart: Date;
 
   @Column({
-    type: 'timestamp',
-    nullable: false
+    type: "timestamp",
+    nullable: false,
   })
-  timeRangeStop: Date
+  timeRangeStop: Date;
 
   @JoinTable()
-  @ManyToMany(() => User, (user => user.rides))
+  @ManyToMany(() => User, (user) => user.rides)
   participants: User[];
 
   @JoinTable()
-  @ManyToMany(() => User, (user => user.rideRequests))
+  @ManyToMany(() => User, (user) => user.rideRequests)
   participantQueue: User[];
 
   @Column({
     type: "bool",
-    default: true
+    default: true,
   })
-  status: Boolean
+  status: Boolean;
 
   @Index()
   @Column({
-    type: 'timestamp',
-    nullable: false
+    type: "timestamp",
+    nullable: false,
   })
-  createdAt: Date
+  createdAt: Date;
 
   @Column({
-    type: 'timestamp',
-    nullable: false
+    type: "timestamp",
+    nullable: false,
   })
-  updatedAt: Date
+  updatedAt: Date;
 
   @Column({
     type: "varchar",
     width: 200,
-    nullable: true
+    nullable: true,
   })
-  description: string
-
+  description: string;
 }

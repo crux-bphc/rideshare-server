@@ -3,9 +3,9 @@ import {
   PrimaryGeneratedColumn,
   Column,
   Index,
-  ManyToMany
+  ManyToMany,
 } from "typeorm";
-import { Ride } from "./Ride"
+import { Ride } from "./Ride";
 
 @Entity()
 export class User {
@@ -15,7 +15,7 @@ export class User {
   @Column({
     type: "varchar",
     width: 100,
-    nullable: false
+    nullable: false,
   })
   name: string;
 
@@ -24,7 +24,7 @@ export class User {
     type: "varchar",
     width: 100,
     unique: true,
-    nullable: false
+    nullable: false,
   })
   email: string;
 
@@ -32,32 +32,26 @@ export class User {
     type: "int8",
     width: 10,
     unique: true,
-    nullable: false
+    nullable: false,
   })
   phNo: number;
 
   @Column({
     type: "int",
     width: 4,
-    nullable: false
+    nullable: false,
   })
   batch: number;
 
   @Column({
     type: "varchar",
-    width: 200
+    width: 200,
   })
-  profilePicture : string;
-
-  // @Column(
-  //   'simple-array'
-  // )
-  // deviceTokens: string[];
+  profilePicture: string;
 
   @ManyToMany(() => Ride, (ride) => ride.participantQueue)
-  rideRequests!: Ride[]
+  rideRequests!: Ride[];
 
   @ManyToMany(() => Ride, (ride) => ride.participants)
-  rides!: Ride[]
-
+  rides!: Ride[];
 }

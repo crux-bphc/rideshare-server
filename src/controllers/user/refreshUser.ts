@@ -3,12 +3,13 @@ import { userRepository } from "../../repositories/userRepository";
 import { validate } from "../../helpers/zodValidateRequest";
 import { User } from "../../entity/User";
 import { z } from "zod";
-import { generateAccessToken, generateRefreshToken } from "../../helpers/tokenHelper";
-import jwt from 'jsonwebtoken';
-
+import {
+  generateAccessToken,
+  generateRefreshToken,
+} from "../../helpers/tokenHelper";
+import jwt from "jsonwebtoken";
 import "dotenv/config";
 import { env } from "../../../config/server";
-
 
 const dataSchema = z.object({
   body: z.object({
@@ -19,7 +20,7 @@ const dataSchema = z.object({
       })
       .min(0, {
         message: "refresh token cannot be empty",
-      })
+      }),
   }),
 });
 
@@ -28,23 +29,28 @@ export const refreshUserValidator = validate(dataSchema);
 export const refreshUser = async (req: Request, res: Response) => {
   let userObj: User | null = null;
 
-  try {
-    const refreshSecretKey = env.REFRESH_JWT_SECRET
-    const decoded = jwt.verify(req.body.refreshToken, refreshSecretKey);
+  const refreshSecretKey = env.REFRESH_JWT_SECRET;
+  const decoded = jwt.verify(req.body.refreshToken, refreshSecretKey);
 
+  try {
     userObj = await userRepository
       .createQueryBuilder("user")
       .where("user.email = :email", { email: decoded["email"] })
       .getOne();
-    
-    const accessToken = generateAccessToken(userObj);
-    const refreshToken = generateRefreshToken(userObj)
-
-    return res.status(200).json({ "message": "New tokens generated", "accessToken": accessToken , "refreshToken" : refreshToken});
-    
   } catch (err: any) {
-    console.log("Error while generating tokens for User. Error : ", err.message);
+    console.log(
+      "[refreshUser.ts] Error in selecting user from db: ",
+      err.message
+    );
     return res.status(500).json({ message: "Internal Server Error!" });
   }
-};
 
+  const accessToken = generateAccessToken(userObj);
+  const refreshToken = generateRefreshToken(userObj);
+
+  return res.status(200).json({
+    message: "New tokens generated",
+    accessToken: accessToken,
+    refreshToken: refreshToken,
+  });
+};

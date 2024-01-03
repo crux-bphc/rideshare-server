@@ -39,9 +39,9 @@ const dataSchema = z.object({
   }),
 });
 
-export const removeRequestValidator = validate(dataSchema);
+export const kickUserValidator = validate(dataSchema);
 
-export const removeRequest = async (req: Request, res: Response) => {
+export const kickUserRequest = async (req: Request, res: Response) => {
   const rideId = req.params.id;
   const reqUserEmail = req.token.email;
   const userEmail = req.body.email;
@@ -53,14 +53,14 @@ export const removeRequest = async (req: Request, res: Response) => {
   try {
     rideObj = await rideRepository
       .createQueryBuilder("ride")
-      .leftJoinAndSelect("ride.participantQueue", "participantQueue")
+      // .leftJoinAndSelect("ride.participantQueue", "participantQueue")
       .leftJoinAndSelect("ride.originalPoster", "originalPoster")
       .leftJoinAndSelect("ride.participants", "participants")
       .where("ride.id = :id", { id: rideId })
       .getOne();
   } catch (err) {
     console.log(
-      "[removeRequest.ts] Error in selecting ride from db: ",
+      "[kickUser.ts] Error in selecting ride from db: ",
       err.message
     );
     return res.status(500).json({ message: "Internal Server Error!" });
@@ -73,7 +73,7 @@ export const removeRequest = async (req: Request, res: Response) => {
   if (reqUserEmail == userEmail && userEmail == rideObj.originalPoster.email)
     return res
       .status(400)
-      .json({ message: "Cannot remove user from his own ride." });
+      .json({ message: "Cannot kick user from his own ride." });
 
   if (
     reqUserEmail !== rideObj.originalPoster.email &&
@@ -81,16 +81,16 @@ export const removeRequest = async (req: Request, res: Response) => {
   )
     return res
       .status(403)
-      .json({ message: "Unauthorized to remove users from this ride." });
+      .json({ message: "Unauthorized to kick users from this ride." });
 
-  const participantQueueEmails = new Set(
-    rideObj.participantQueue.map((user) => user.email)
+  const participantEmails = new Set(
+    rideObj.participants.map((user) => user.email)
   );
 
-  if (!participantQueueEmails.has(userEmail)) {
+  if (!participantEmails.has(userEmail)) {
     return res
       .status(400)
-      .json({ message: "User has not requested to join this ride." });
+      .json({ message: "User has not been accepted into this ride." });
   }
 
   try {
@@ -100,7 +100,7 @@ export const removeRequest = async (req: Request, res: Response) => {
       .getOne();
   } catch (err) {
     console.log(
-      "[removeRequest.ts] Error in selecting user from db: ",
+      "[kickUser.ts] Error in selecting user from db: ",
       err.message
     );
     return res.status(500).json({ message: "Internal Server Error!" });
@@ -112,19 +112,36 @@ export const removeRequest = async (req: Request, res: Response) => {
         async (transactionalEntityManager) => {
           await transactionalEntityManager
             .createQueryBuilder()
-            .relation(Ride, "participantQueue")
+            .relation(Ride, "participants")
             .of(rideObj)
             .remove(userObj);
         }
       );
     } catch (err) {
       console.log(
-        "[removeRequest.ts] Error in removing user from participantQueue in db: ",
+        "[kickUser.ts] Error in removing user from participants in db: ",
         err.message
       );
       return res.status(500).json({ message: "Internal Server Error!" });
     }
 
+    try {
+      await rideRepository
+        .createQueryBuilder("ride")
+        .update()
+        .set({
+          seats: rideObj.seats + 1,
+        })
+        .where("ride.id = :id", { id: rideId })
+        .execute();
+    } catch (err: any) {
+      console.log(
+        "[kickUser.ts] Error in updating seats in db: ",
+        err.message
+      );
+      return res.status(500).json({ message: "Internal Server Error!" });
+    }
+  
     try {
       deviceTokenObj = await deviceTokenRepository
         .createQueryBuilder("deviceToken")
@@ -133,7 +150,7 @@ export const removeRequest = async (req: Request, res: Response) => {
         .getMany();
     } catch (err) {
       console.log(
-        "[removeRequest.ts] Error in finding deviceTokens from db: ",
+        "[kickUser.ts] Error in finding deviceTokens from db: ",
         err.message
       );
       return res.status(500).json({ message: "Internal Server Error!" });
@@ -141,7 +158,7 @@ export const removeRequest = async (req: Request, res: Response) => {
 
     const payload = {
       notification: {
-        title: `${rideObj.originalPoster.name} Declined Your Request to Join Their Ride `,
+        title: `${rideObj.originalPoster.name} Removed You From Their Ride`,
         body: "View the ride for more details.",
       },
       data: {
@@ -157,7 +174,7 @@ export const removeRequest = async (req: Request, res: Response) => {
       messaging.sendEachForMulticast(payload);
     } catch (err) {
       console.log(
-        "[removeRequest.ts] Error in sending notifications: ",
+        "[kickUser.ts] Error in sending notifications: ",
         err.message
       );
       return res.status(500).json({ message: "Internal Server Error!" });
@@ -168,18 +185,35 @@ export const removeRequest = async (req: Request, res: Response) => {
         async (transactionalEntityManager) => {
           await transactionalEntityManager
             .createQueryBuilder()
-            .relation(Ride, "participantQueue")
+            .relation(Ride, "participants")
             .of(rideObj)
             .remove(userObj);
         }
       );
     } catch (err) {
       console.log(
-        "[removeRequest.ts] Error in removing user from participantQueue in db: ",
+        "[kickUser.ts] Error in removing user from participants in db: ",
         err.message
       );
       return res.status(500).json({ message: "Internal Server Error!" });
     }
+
+  try {
+    await rideRepository
+      .createQueryBuilder("ride")
+      .update()
+      .set({
+        seats: rideObj.seats + 1,
+      })
+      .where("ride.id = :id", { id: rideId })
+      .execute();
+  } catch (err: any) {
+    console.log(
+      "[kickUser.ts] Error in updating seats in db: ",
+      err.message
+    );
+    return res.status(500).json({ message: "Internal Server Error!" });
+  }
 
     try {
       deviceTokenObj = await deviceTokenRepository
@@ -191,7 +225,7 @@ export const removeRequest = async (req: Request, res: Response) => {
         .getMany();
     } catch (err) {
       console.log(
-        "[removeRequest.ts] Error in finding deviceTokens from db: ",
+        "[kickUser.ts] Error in finding deviceTokens from db: ",
         err.message
       );
       return res.status(500).json({ message: "Internal Server Error!" });
@@ -199,7 +233,7 @@ export const removeRequest = async (req: Request, res: Response) => {
 
     const payload = {
       notification: {
-        title: `${userObj.name} Revoked Their Request to Join Your Ride `,
+        title: `${userObj.name} Removed Themselves From Your Ride`,
         body: "View the ride for more details.",
       },
       data: {
@@ -215,12 +249,12 @@ export const removeRequest = async (req: Request, res: Response) => {
       messaging.sendEachForMulticast(payload);
     } catch (err) {
       console.log(
-        "[removeRequest.ts] Error in sending notifications: ",
+        "[kickUser.ts] Error in sending notifications: ",
         err.message
       );
       return res.status(500).json({ message: "Internal Server Error!" });
     }
   }
 
-  return res.status(200).json({ message: "Removed from request queue." });
+  return res.status(200).json({ message: "Removed from ride participants." });
 };

@@ -37,30 +37,62 @@ export const loginUserValidator = validate(dataSchema);
 
 export const loginUser = async (req: Request, res: Response) => {
   let userObj: User | null = null;
+  const payload = await verify(req.body.token);
 
   try {
-    const payload = await verify(req.body.token);
-
     userObj = await userRepository
       .createQueryBuilder("user")
       .where("user.email = :email", { email: payload["email"] })
       .getOne();
+  } catch (err) {
+    console.log(
+      "[loginUser.ts] Error in selecting user from db: ",
+      err.message
+    );
+    return res.status(500).json({ message: "Internal Server Error!" });
+  }
 
-    if (!userObj) {
-      return res.status(404).json({ message: "User not found in the DB." });
-    }
+  if (!userObj) {
+    return res.status(404).json({ message: "User not found in the DB." });
+  }
 
-    const deviceTokenVal = req.body.deviceToken;
+  const deviceTokenVal = req.body.deviceToken;
+  let existingDeviceToken: deviceToken;
 
-    const existingDeviceToken = await deviceTokenRepository
+  try {
+    existingDeviceToken = await deviceTokenRepository
       .createQueryBuilder("deviceToken")
       .where("deviceToken.tokenId = :tokenId", { tokenId: deviceTokenVal })
       .getOne();
+  } catch (err) {
+    console.log(
+      "[loginUser.ts] Error in searching for deviceToken in db: ",
+      err.message
+    );
+    return res.status(500).json({ message: "Internal Server Error!" });
+  }
 
-    if (existingDeviceToken) {
-      existingDeviceToken.user = userObj; // Device token already exists. Token assigned to new user.
-    } else {
-      const newDeviceToken = await deviceTokenRepository
+  if (existingDeviceToken !== null) {
+    try {
+      await deviceTokenRepository
+        .createQueryBuilder()
+        .update(deviceToken)
+        .set({
+          user: userObj,
+          tokenId: deviceTokenVal
+        })
+        .where("tokenId = :tokenId", { tokenId: deviceTokenVal })
+        .execute();
+    } catch (err) {
+      console.log(
+        "[loginUser.ts] Error updating user for deviceToken: ",
+        err.message
+      );
+      return res.status(500).json({ message: "Internal Server Error!" });
+    }
+  } else {
+    try {
+      const deviceTokenObj = await deviceTokenRepository
         .createQueryBuilder()
         .insert()
         .into(deviceToken)
@@ -72,18 +104,21 @@ export const loginUser = async (req: Request, res: Response) => {
         ])
         .returning("*")
         .execute();
+    } catch (err) {
+      console.log(
+        "[loginUser.ts] Error inserting deviceToken into db: ",
+        err.message
+      );
+      return res.status(500).json({ message: "Internal Server Error!" });
     }
-
-    const accessToken = generateAccessToken(userObj);
-    const refreshToken = generateRefreshToken(userObj);
-
-    return res.status(200).json({
-      message: "Logged in user.",
-      accessToken: accessToken,
-      refreshToken: refreshToken,
-    });
-  } catch (err: any) {
-    console.log("Error while logging User in. Error : ", err.message);
-    return res.status(500).json({ message: "Internal Server Error!" });
   }
+
+  const accessToken = generateAccessToken(userObj);
+  const refreshToken = generateRefreshToken(userObj);
+
+  return res.status(200).json({
+    message: "Logged in user.",
+    accessToken: accessToken,
+    refreshToken: refreshToken,
+  });
 };

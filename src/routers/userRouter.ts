@@ -10,26 +10,20 @@ import {
   updateUserValidator,
 } from "../controllers/user/updateUser";
 
-import {
-  findUser,
-  findUserValidator
-} from "../controllers/user/findUser";
+import { findUser, findUserValidator } from "../controllers/user/findUser";
+
+import { loginUser, loginUserValidator } from "../controllers/user/loginUser";
 
 import {
-  loginUser,
-  loginUserValidator
-} from "../controllers/user/loginUser";
-
-import { 
-  refreshUser, 
-  refreshUserValidator 
+  refreshUser,
+  refreshUserValidator,
 } from "../controllers/user/refreshUser";
 
 import { isLoggedIn } from "../middleware/auth";
 
 const userRouter = express.Router();
 
-userRouter.post("/refresh",refreshUserValidator,refreshUser)
+userRouter.post("/refresh", refreshUserValidator, refreshUser);
 userRouter.post("/create", createUserValidator, createUser);
 userRouter.put("/update", updateUserValidator, isLoggedIn, updateUser);
 userRouter.get("/find/:email", findUserValidator, isLoggedIn, findUser);

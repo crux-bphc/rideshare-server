@@ -1,12 +1,15 @@
-import jwt from 'jsonwebtoken';
-import { Request, Response, NextFunction } from 'express';
-
+import jwt from "jsonwebtoken";
+import { Request, Response, NextFunction } from "express";
 import "dotenv/config";
 import { env } from "../../config/server";
 
-export const isLoggedIn = async (req: Request, res: Response, next: NextFunction) => {
+export const isLoggedIn = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
+    const token = req.header("Authorization")?.replace("Bearer ", "");
     const accessSecretKey = env.ACCESS_JWT_SECRET;
 
     if (!token) {
@@ -18,6 +21,6 @@ export const isLoggedIn = async (req: Request, res: Response, next: NextFunction
 
     next();
   } catch (err) {
-    res.status(401).send('Token expired/User not logged in.');
+    res.status(401).send("Token expired/User not logged in.");
   }
-}
+};

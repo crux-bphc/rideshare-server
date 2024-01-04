@@ -162,7 +162,7 @@ export const kickUserRequest = async (req: Request, res: Response) => {
         body: "View the ride for more details.",
       },
       data: {
-        action: "requestDeclined",
+        action: "userKicked",
         userName: rideObj.originalPoster.name,
         userId: rideObj.originalPoster.id,
         rideId: rideId,
@@ -237,7 +237,7 @@ export const kickUserRequest = async (req: Request, res: Response) => {
         body: "View the ride for more details.",
       },
       data: {
-        action: "requestDeclined",
+        action: "userRemoved",
         userName: userObj.name,
         userId: userObj.id,
         rideId: rideId,

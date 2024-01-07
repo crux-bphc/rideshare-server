@@ -48,21 +48,23 @@ export const refreshUser = async (req: Request, res: Response) => {
   }
 
   try {
-    const accessToken = generateAccessToken(userObj);
+    accessToken = generateAccessToken(userObj);
   } catch (err: any) {
     console.log(
       "[refreshUser.ts] Error in generating access token:",
       err.message
     );
+    return res.status(500).json({ message: "Internal Server Error!" });
   }
 
   try {
-    const refreshToken = generateRefreshToken(userObj);
+    refreshToken = generateRefreshToken(userObj);
   } catch (err: any) {
     console.log(
       "[refreshUser.ts] Error in generating refresh token:",
       err.message
     );
+    return res.status(500).json({ message: "Internal Server Error!" });
   }
 
   return res.status(200).json({

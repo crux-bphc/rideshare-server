@@ -157,10 +157,11 @@ export const searchRides = async (req: Request, res: Response) => {
     req.query.startAtRide != null ? parseInt(req.query.startAtRide) : 1;
   let endAtRide: number =
     req.query.endAtRide != null ? parseInt(req.query.endAtRide) : 10;
+  let pagination: boolean = req.query.endAtRide != null ? true : false;
   // orderBy = 1 renders rides sorted by time of posting. orderBy = 2 renders rides sorted by time of departure. orderBy = 3 renders rides sorted by number of seats available.
   // the corresponding negative numbers renders rides in descending order
   let orderBy: number =
-    req.query.orderBy != null ? parseInt(req.query.orderBy) : 1;
+    req.query.orderBy != null ? parseInt(req.query.orderBy) : 2;
 
   let searchFilter: string = "";
   let searchObj: object = {};
@@ -202,18 +203,31 @@ export const searchRides = async (req: Request, res: Response) => {
   let rides: Ride[] = [];
 
   try {
-    rides = await rideRepository
-      .createQueryBuilder("ride")
-      .leftJoinAndSelect("ride.originalPoster", "originalPoster")
-      .leftJoinAndSelect("ride.participants", "participants")
-      .where(searchFilter, searchObj)
-      .orderBy(
-        orderingBy[Math.abs(orderBy)],
-        orderingAlong[Math.sign(orderBy) + 1]
-      )
-      .skip(startAtRide - 1)
-      .take(endAtRide - startAtRide + 1)
-      .getMany();
+    if (pagination) {
+      rides = await rideRepository
+        .createQueryBuilder("ride")
+        .leftJoinAndSelect("ride.originalPoster", "originalPoster")
+        .leftJoinAndSelect("ride.participants", "participants")
+        .where(searchFilter, searchObj)
+        .orderBy(
+          orderingBy[Math.abs(orderBy)],
+          orderingAlong[Math.sign(orderBy) + 1]
+        )
+        .skip(startAtRide - 1)
+        .take(endAtRide - startAtRide + 1)
+        .getMany();
+    } else {
+      rides = await rideRepository
+        .createQueryBuilder("ride")
+        .leftJoinAndSelect("ride.originalPoster", "originalPoster")
+        .leftJoinAndSelect("ride.participants", "participants")
+        .where(searchFilter, searchObj)
+        .orderBy(
+          orderingBy[Math.abs(orderBy)],
+          orderingAlong[Math.sign(orderBy) + 1]
+        )
+        .getMany();
+    }
   } catch (err: any) {
     console.log(
       "[searchRides.ts] Error in searching rides from db: ",

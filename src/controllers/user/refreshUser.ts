@@ -28,6 +28,8 @@ export const refreshUserValidator = validate(dataSchema);
 
 export const refreshUser = async (req: Request, res: Response) => {
   let userObj: User | null = null;
+  let accessToken: string;
+  let refreshToken: string;
 
   const refreshSecretKey = env.REFRESH_JWT_SECRET;
   const decoded = jwt.verify(req.body.refreshToken, refreshSecretKey);
@@ -45,8 +47,23 @@ export const refreshUser = async (req: Request, res: Response) => {
     return res.status(500).json({ message: "Internal Server Error!" });
   }
 
-  const accessToken = generateAccessToken(userObj);
-  const refreshToken = generateRefreshToken(userObj);
+  try {
+    const accessToken = generateAccessToken(userObj);
+  } catch (err: any) {
+    console.log(
+      "[refreshUser.ts] Error in generating access token:",
+      err.message
+    );
+  }
+
+  try {
+    const refreshToken = generateRefreshToken(userObj);
+  } catch (err: any) {
+    console.log(
+      "[refreshUser.ts] Error in generating refresh token:",
+      err.message
+    );
+  }
 
   return res.status(200).json({
     message: "New tokens generated",

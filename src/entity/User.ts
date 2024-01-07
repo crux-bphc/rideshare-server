@@ -46,6 +46,7 @@ export class User {
   @Column({
     type: "varchar",
     width: 200,
+    nullable: true,
   })
   profilePicture: string;
 

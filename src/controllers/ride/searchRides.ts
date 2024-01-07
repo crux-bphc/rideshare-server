@@ -161,7 +161,7 @@ export const searchRides = async (req: Request, res: Response) => {
   // orderBy = 1 renders rides sorted by time of posting. orderBy = 2 renders rides sorted by time of departure. orderBy = 3 renders rides sorted by number of seats available.
   // the corresponding negative numbers renders rides in descending order
   let orderBy: number =
-    req.query.orderBy != null ? parseInt(req.query.orderBy) : 2;
+    req.query.orderBy != null ? parseInt(req.query.orderBy) : -2;
 
   let searchFilter: string = "";
   let searchObj: object = {};

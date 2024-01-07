@@ -16,7 +16,17 @@ export const isLoggedIn = async (
       throw new Error();
     }
 
-    const decoded = jwt.verify(token, accessSecretKey);
+    let decoded: object;
+
+    try {
+      decoded = jwt.verify(token, accessSecretKey);
+    } catch (err) {
+      console.log(
+        "[auth.ts] Error verifying token: ",
+        err.message
+      );
+      return res.status(403).json({ message: "Invalid Token!" });
+    }
     req.token = decoded;
 
     next();

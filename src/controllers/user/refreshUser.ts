@@ -32,7 +32,17 @@ export const refreshUser = async (req: Request, res: Response) => {
   let refreshToken: string;
 
   const refreshSecretKey = env.REFRESH_JWT_SECRET;
-  const decoded = jwt.verify(req.body.refreshToken, refreshSecretKey);
+  let decoded: object;
+
+  try {
+    decoded = jwt.verify(req.body.refreshToken, refreshSecretKey);
+  } catch (err) {
+    console.log(
+      "[refreshUser.ts] Error verifying token: ",
+      err.message
+    );
+    return res.status(403).json({ message: "Invalid Token!" });
+  }
 
   try {
     userObj = await userRepository
@@ -51,7 +61,7 @@ export const refreshUser = async (req: Request, res: Response) => {
     accessToken = generateAccessToken(userObj);
   } catch (err: any) {
     console.log(
-      "[refreshUser.ts] Error in generating access token:",
+      "[refreshUser.ts] Error in generating access token: ",
       err.message
     );
     return res.status(500).json({ message: "Internal Server Error!" });
@@ -61,7 +71,7 @@ export const refreshUser = async (req: Request, res: Response) => {
     refreshToken = generateRefreshToken(userObj);
   } catch (err: any) {
     console.log(
-      "[refreshUser.ts] Error in generating refresh token:",
+      "[refreshUser.ts] Error in generating refresh token: ",
       err.message
     );
     return res.status(500).json({ message: "Internal Server Error!" });

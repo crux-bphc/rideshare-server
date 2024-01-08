@@ -139,7 +139,7 @@ export const searchRides = async (req: Request, res: Response) => {
   let toPlace: Place | null =
     req.query.toPlace != null ? parseInt(req.query.toPlace) : null;
   let startTime: Date | null =
-    req.query.startTime != null ? new Date(req.query.startTime) : null; // Renders trips whose timeRange is within or after startTime
+    req.query.startTime != null ? new Date(req.query.startTime) : new Date(); // Renders trips whose timeRange is within or after startTime
   let endTime: Date | null =
     req.query.endTime != null ? new Date(req.query.endTime) : null; // Renders trips whose timeRange is within or before endTime
   // Use 1 or more here, to show only those rides which have available seats. leaving empty renders all rides without checking seats

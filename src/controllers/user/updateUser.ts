@@ -3,15 +3,13 @@ import { userRepository } from "../../repositories/userRepository";
 import { validate } from "../../helpers/zodValidateRequest";
 import { z } from "zod";
 import { User } from "../../entity/User";
+import { verify } from "../../helpers/googleIdVerify";
 
 const dataSchema = z.object({
   body: z.object({
-    name: z
+    token: z
       .string({
-        invalid_type_error: "name should be a sting",
-      })
-      .min(0, {
-        message: "name cannot be empty",
+        invalid_type_error: "token should be a string",
       })
       .optional(),
 
@@ -30,18 +28,18 @@ const dataSchema = z.object({
       })
       .optional(),
 
-    batch: z
+    profilePicture: z
       .number({
-        invalid_type_error: "batch should be a number",
+        invalid_type_error: "phNo should be a number",
       })
       .int({
-        message: "batch must be an integer",
+        message: "phNo must be an integer",
       })
-      .min(0, {
-        message: "batch must be valid",
+      .gte(0, {
+        message: "phNo must be valid",
       })
-      .max(9999, {
-        message: "batch must be valid",
+      .lte(99999999999999, {
+        message: "phNo must be valid",
       })
       .optional(),
   }),
@@ -51,10 +49,11 @@ export const updateUserValidator = validate(dataSchema);
 
 export const updateUser = async (req: Request, res: Response) => {
   let userObj: User | null = null;
+  let payload: object | null;
 
-  let updateName: string | null = req.body.name;
-  let updatePhNo: number | null = req.body.phNo;
-  let updateBatch: number | null = req.body.batch;
+  if (!req.body.token) {
+    payload = await verify(req.body.token);
+  }
 
   try {
     userObj = await userRepository
@@ -73,16 +72,25 @@ export const updateUser = async (req: Request, res: Response) => {
     return res.status(404).json({ message: "User not found in the DB." });
   }
 
-  if (!updateName) {
+  let updateName: string;
+  let updateEmail: string;
+  let updatePhNo: number | null = req.body.phNo;
+  let updateProfilePicture: string | null;
+
+  if (payload !== null) {
+    updateName = payload["name"];
+    updateEmail = payload["email"];
+    updateProfilePicture = payload["picture"];
+  } else {
     updateName = userObj.name;
+    updateEmail = userObj.email;
+    updateProfilePicture = userObj.profilePicture;
   }
 
-  if (!updatePhNo) {
+  if (req.body.phNo !== null) {
+    updatePhNo = req.body.phNo;
+  } else {
     updatePhNo = userObj.phNo;
-  }
-
-  if (!updateBatch) {
-    updateBatch = userObj.batch;
   }
 
   try {
@@ -91,8 +99,9 @@ export const updateUser = async (req: Request, res: Response) => {
       .update(User)
       .set({
         name: updateName,
+        email: updateEmail,
         phNo: updatePhNo,
-        batch: updateBatch,
+        profilePicture: updateProfilePicture,
       })
       .where("id = :id", { id: req.token._id })
       .execute();

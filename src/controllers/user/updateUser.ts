@@ -49,11 +49,7 @@ export const updateUserValidator = validate(dataSchema);
 
 export const updateUser = async (req: Request, res: Response) => {
   let userObj: User | null = null;
-  let payload: object | null;
-
-  if (!req.body.token) {
-    payload = await verify(req.body.token);
-  }
+  let payload: object | null = req.body.token ? await verify(req.body.token) : null;
 
   try {
     userObj = await userRepository

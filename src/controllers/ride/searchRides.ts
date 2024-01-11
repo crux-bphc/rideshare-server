@@ -66,12 +66,6 @@ const dataSchema = z.object({
         })
         .optional(),
 
-      activeRides: z.coerce
-        .boolean({
-          invalid_type_error: "activeRides must be a boolean",
-        })
-        .optional(),
-
       startAtRide: z.coerce
         .number({
           invalid_type_error: "startAtRide must be an integer",
@@ -147,11 +141,6 @@ export const searchRides = async (req: Request, res: Response) => {
     req.query.availableSeats != null
       ? parseInt(req.query.availableSeats)
       : null;
-  // true renders rides whose trips are yet to start. false renders trips which have started/finished in the past. leaving empty renders all rides regardless.
-  let activeRides: boolean | null =
-    req.query.activeRides != null
-      ? Boolean(req.query.activeRides.toLowerCase() === "true")
-      : null;
   // Pagination - both numbers inclusive
   let startAtRide: number =
     req.query.startAtRide != null ? parseInt(req.query.startAtRide) : 1;
@@ -169,11 +158,6 @@ export const searchRides = async (req: Request, res: Response) => {
   if (availableSeats != null) {
     searchFilter = searchFilter + " AND (ride.seats >= :availableSeats)";
     searchObj["availableSeats"] = availableSeats;
-  }
-
-  if (activeRides != null) {
-    searchFilter = searchFilter + " AND ride.status = :activeRides";
-    searchObj["activeRides"] = activeRides;
   }
 
   if (fromPlace != null) {

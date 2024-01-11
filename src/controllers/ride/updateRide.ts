@@ -187,7 +187,6 @@ export const updateRide = async (req: Request, res: Response) => {
         seats: req.body.seats,
         timeRangeStart: req.body.timeRangeStart,
         timeRangeStop: req.body.timeRangeStop,
-        status: req.body.updateRide,
         updatedAt: currentDateTime,
         description: req.body.description,
       })

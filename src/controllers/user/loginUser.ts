@@ -64,7 +64,7 @@ export const loginUser = async (req: Request, res: Response) => {
         name: payload["name"],
         profilePicture: payload["picture"],
       })
-      .where("id = :id", { id: req.token._id })
+      .where("email = :email", { email: payload["email"] })
       .execute();
   } catch (err) {
     console.log(

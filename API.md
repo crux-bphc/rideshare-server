@@ -247,7 +247,6 @@ Bearer JWT Token
 > | startTime | no | string | `"YYYY-MM-DD hh:mm:ss"`-formatted timestamp of the start of a time range to search within |
 > | endTime | no | string | `"YYYY-MM-DD hh:mm:ss"`-formatted timestamp of the end of a time range to search within |
 > | availableSeats | no | number | Render only those rides with atleast this many free seats |
-> | activeRides | no | boolean | `true` render trips that are yet to start, `false` renders trips from history, and `null` returns all possible trips regardless |
 > | startAtRide | no | number | Starting index for pagination (inclusive) |
 > | endAtRide | no | number | Ending index for pagination (inclusive) |
 > | orderBy | no | number | `1` returns rides sorted by time of posting, `2` returns rides sorted by time of departure, `3` returns rides sorted by number of seats available. Use the corresponding negative numbers for descending order |

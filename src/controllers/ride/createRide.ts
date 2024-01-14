@@ -113,7 +113,6 @@ export const createRide = async (req: Request, res: Response) => {
           timeRangeStop: req.body.timeRangeStop,
           participants: [],
           participantQueue: [],
-          status: true,
           createdAt: currentDateTime,
           updatedAt: currentDateTime,
           description: description,

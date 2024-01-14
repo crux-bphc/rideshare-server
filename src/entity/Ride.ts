@@ -60,12 +60,6 @@ export class Ride {
   @ManyToMany(() => User, (user) => user.rideRequests)
   participantQueue: User[];
 
-  @Column({
-    type: "bool",
-    default: true,
-  })
-  status: Boolean;
-
   @Index()
   @Column({
     type: "timestamp",

@@ -56,6 +56,24 @@ export const loginUser = async (req: Request, res: Response) => {
     return res.status(404).json({ message: "User not found in the DB." });
   }
 
+  try {
+    await userRepository
+      .createQueryBuilder()
+      .update(User)
+      .set({
+        name: payload["name"],
+        profilePicture: payload["picture"],
+      })
+      .where("email = :email", { email: payload["email"] })
+      .execute();
+  } catch (err) {
+    console.log(
+      "[loginUser.ts] Error in updating name and pfp of user on db: ",
+      err.message
+    );
+    return res.status(500).json({ message: "Internal Server Error!" });
+  }
+
   const deviceTokenVal = req.body.deviceToken;
   let existingDeviceToken: deviceToken;
 
@@ -79,7 +97,7 @@ export const loginUser = async (req: Request, res: Response) => {
         .update(deviceToken)
         .set({
           user: userObj,
-          tokenId: deviceTokenVal
+          tokenId: deviceTokenVal,
         })
         .where("tokenId = :tokenId", { tokenId: deviceTokenVal })
         .execute();

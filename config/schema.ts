@@ -15,6 +15,11 @@ export const serverSchema = z.object({
   REFRESH_TOKEN_EXPIRY: z.string().min(1),
   REFRESH_JWT_SECRET: z.string().min(8),
   FIREBASE_PROJECT_ID: z.string().min(1),
-  GOOGLE_APPLICATION_CREDENTIALS: z.string().min(1),
+  // is optional only when running the dev container
+  GOOGLE_APPLICATION_CREDENTIALS: z.string().min(1).optional(),
   TEST_EMAIL: z.string().min(1),
-});
+}).refine(schema => {
+  if (schema.NODE_ENV !== 'development' && schema.GOOGLE_APPLICATION_CREDENTIALS === undefined)
+    return false;
+  return true;
+})

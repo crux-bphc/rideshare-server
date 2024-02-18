@@ -16,7 +16,9 @@ services:
       - ./data_rideshare:/var/lib/postgresql/data
 
   backend:
-     build: .
+     build:
+       context: .
+       dockerfile: ./docker/Dockerfile.prod
      env_file:
        - .env
      depends_on:
@@ -24,3 +26,24 @@ services:
          condition: service_healthy
      ports:
        - "${PORT}:${PORT}"
+     profiles: 
+       - "prod"
+
+  backend-dev:
+      build: 
+        context: .
+        dockerfile: ./docker/Dockerfile.dev
+      env_file:
+        - .env
+      depends_on:
+        db:
+          condition: service_healthy
+      volumes:
+        - ./src:/usr/src/app/src
+        - ./config:/usr/src/app/config
+        - ./tsconfig.json:/usr/src/app/tsconfig.json
+      ports:
+        - "${PORT}:${PORT}"
+      profiles:
+        - "dev"
+        

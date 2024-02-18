@@ -18,4 +18,4 @@ RUN pnpm install -r --offline
 
 USER node
 
-CMD ["pnpm", "tsx", "watch", "src/index.ts"]
+CMD ["pnpm", "tsx", "watch", "--clear-screen=false", "src/index.ts"]

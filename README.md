@@ -32,9 +32,7 @@ To stop the containers from running, use:
 
 `docker compose --profile PROFILE down -v` or just `docker compose --profile PROFILE down`
 
-To delete the database volume upon stopping the container, you may need root permissions. You can delete the folder by using:
-
-`sudo rm -rf data_rideshare/`
+To delete the database volume upon stopping the container, you may need root permissions to do so.
 
 
 

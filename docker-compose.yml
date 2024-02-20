@@ -8,7 +8,7 @@ services:
     ports:
       - "${PGPORT}:${PGPORT}"
     healthcheck:
-      test: ["CMD", "pg_isready", "-d", "${POSTGRES_DB}"]
+      test: [ "CMD", "pg_isready", "-d", "${POSTGRES_DB}" ]
       interval: 10s
       timeout: 30s
       retries: 3
@@ -16,11 +16,33 @@ services:
       - ./data_rideshare:/var/lib/postgresql/data
 
   backend:
-     build: .
-     env_file:
-       - .env
-     depends_on:
-       db:
-         condition: service_healthy
-     ports:
-       - "${PORT}:${PORT}"
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.prod
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${PORT}:${PORT}"
+    profiles:
+      - "prod"
+
+  backend-dev:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.dev
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./src:/usr/src/app/src
+      - ./config:/usr/src/app/config
+      - ./tsconfig.json:/usr/src/app/tsconfig.json
+    ports:
+      - "${PORT}:${PORT}"
+    profiles:
+      - "dev"

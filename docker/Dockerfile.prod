@@ -1,4 +1,4 @@
-FROM node:18.16.0-slim AS build-stage
+FROM node:20.11.1-slim AS build-stage
 ENV NODE_ENV production
 WORKDIR /usr/src/app
 
@@ -21,7 +21,7 @@ COPY --chown=node:node . .
 
 RUN pnpm tsc
 
-FROM node:18.16.0-slim
+FROM node:20.11.1-slim
 ENV NODE_ENV production
 WORKDIR /usr/src/app
 

@@ -5,6 +5,8 @@ build/
 tmp/
 temp/
 .env
+.env.dev
+.env.prod
 postgres/
 data_rideshare/
 rideshare-creds.json

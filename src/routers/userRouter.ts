@@ -42,12 +42,12 @@ const userRouter = express.Router();
 userRouter.post("/refresh", refreshUserValidator, refreshUser);
 
 // userRouter.post("/create", createUserValidator, createUser);
+// userRouter.post("/login", loginUserValidator, loginUser);
 userRouter.post("/create", createUserDevValidator, createUserDev);
+userRouter.post("/login", loginUserDevValidator, loginUserDev);
 
 userRouter.put("/update", updateUserValidator, isLoggedIn, updateUser);
 userRouter.get("/find/:email", findUserValidator, isLoggedIn, findUser);
 
-// userRouter.post("/login", loginUserValidator, loginUser);
-userRouter.post("/login", loginUserDevValidator, loginUserDev);
 
 export { userRouter };

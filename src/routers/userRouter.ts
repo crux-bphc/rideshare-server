@@ -41,10 +41,14 @@ const userRouter = express.Router();
 
 userRouter.post("/refresh", refreshUserValidator, refreshUser);
 
-// userRouter.post("/create", createUserValidator, createUser);
-// userRouter.post("/login", loginUserValidator, loginUser);
-userRouter.post("/create", createUserDevValidator, createUserDev);
-userRouter.post("/login", loginUserDevValidator, loginUserDev);
+if(process.env.NODE_ENV === "production") {
+userRouter.post("/create", createUserValidator, createUser);
+userRouter.post("/login", loginUserValidator, loginUser);
+}
+else if(process.env.NODE_ENV === "development") {
+  userRouter.post("/create", createUserDevValidator, createUserDev);
+  userRouter.post("/login", loginUserDevValidator, loginUserDev);
+}
 
 userRouter.put("/update", updateUserValidator, isLoggedIn, updateUser);
 userRouter.get("/find/:email", findUserValidator, isLoggedIn, findUser);

@@ -3,4 +3,6 @@
 node_modules/
 temp/
 .env
+.env.dev
+.env.prod
 API.md

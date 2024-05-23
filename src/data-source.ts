@@ -7,7 +7,7 @@ import { env } from "../config/server";
 
 export let AppDataSource: DataSource = null;
 
-if (env.NODE_ENV == "development") {
+if (env.NODE_ENV === "development") {
   AppDataSource = new DataSource({
     type: "postgres",
     url: `postgres://${env.POSTGRES_USER}:${env.POSTGRES_PASSWORD}@db-dev:${env.PGPORT}?db-dev=${env.POSTGRES_DB}`,
@@ -17,8 +17,7 @@ if (env.NODE_ENV == "development") {
     migrations: [],
     subscribers: [],
   });
-}
-else if (env.NODE_ENV == "production") {
+} else if (env.NODE_ENV === "production") {
   AppDataSource = new DataSource({
     type: "postgres",
     url: `postgres://${env.POSTGRES_USER}:${env.POSTGRES_PASSWORD}@db:${env.PGPORT}?db=${env.POSTGRES_DB}`,

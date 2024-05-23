@@ -15,14 +15,14 @@ import {
   updateUserValidator,
 } from "../controllers/user/updateUser";
 
-import { 
-  findUser, 
-  findUserValidator 
+import {
+  findUser,
+  findUserValidator
 } from "../controllers/user/findUser";
 
-import { 
-  loginUser, 
-  loginUserValidator 
+import {
+  loginUser,
+  loginUserValidator
 } from "../controllers/user/loginUser";
 
 import {
@@ -41,11 +41,10 @@ const userRouter = express.Router();
 
 userRouter.post("/refresh", refreshUserValidator, refreshUser);
 
-if(process.env.NODE_ENV === "production") {
-userRouter.post("/create", createUserValidator, createUser);
-userRouter.post("/login", loginUserValidator, loginUser);
-}
-else if(process.env.NODE_ENV === "development") {
+if (process.env.NODE_ENV === "production") {
+  userRouter.post("/create", createUserValidator, createUser);
+  userRouter.post("/login", loginUserValidator, loginUser);
+} else if (process.env.NODE_ENV === "development") {
   userRouter.post("/create", createUserDevValidator, createUserDev);
   userRouter.post("/login", loginUserDevValidator, loginUserDev);
 }

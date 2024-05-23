@@ -13,7 +13,6 @@
 > | name | yes | string | Name of the user |
 > | phNo | yes | number | Phone number of the user |
 > | email | yes | string | Email of the user |
-> | batch | yes | number | Year of admission of the user |
 
 ##### Response
 

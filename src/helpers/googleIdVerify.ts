@@ -1,21 +1,14 @@
 import "dotenv/config";
 import { env } from "../../config/server";
-import { OAuth2Client } from "google-auth-library";
+import { createRemoteJWKSet, jwtVerify } from "jose";
 
-const client = new OAuth2Client();
+const JWKS = createRemoteJWKSet(new URL("https://logto.local.crux-bphc.com/oidc/jwks"))
 
 export const verify = async (token: string) => {
   try {
-    const ticket = await client.verifyIdToken({
-      idToken: token,
-      audience: env.GOOGLE_CLIENT_ID,
-    });
+    const { payload } = await jwtVerify(token, JWKS)
 
-    const payload = ticket.getPayload();
-    const domain = payload["hd"];
-
-    if (domain === "hyderabad.bits-pilani.ac.in" || payload.email === env.TEST_EMAIL) return payload;
-    else throw new Error("Invalid domain");
+    return payload;
   } catch (err: any) {
     console.log("Error while verifying Google Token. Error : ", err.message);
   }

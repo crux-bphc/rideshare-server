@@ -31,12 +31,13 @@
       "dotenv": "^16.4.5",
       "express": "^4.18.2",
       "firebase-admin": "^11.11.1",
-      "google-auth-library": "^9.6.3",
+      "jose": "^5.9.6",
       "jsonwebtoken": "^9.0.2",
       "pg": "^8.11.3",
       "reflect-metadata": "^0.1.14",
       "typeorm": "0.3.17",
       "typescript": "4.5.2",
       "zod": "^3.22.4"
-   }
+   },
+   "packageManager": "pnpm@9.15.4+sha512.b2dc20e2fc72b3e18848459b37359a32064663e5627a51e4c74b2c29dd8e8e0491483c3abb40789cfd578bf362fb6ba8261b05f0387d76792ed6e23ea3b1b6a0"
 }

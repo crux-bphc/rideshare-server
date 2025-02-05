@@ -6,7 +6,12 @@ const JWKS = createRemoteJWKSet(new URL("https://logto.local.crux-bphc.com/oidc/
 
 export const verify = async (token: string) => {
   try {
-    const { payload } = await jwtVerify(token, JWKS)
+    interface AdditionalClaims {
+      email: string;
+      name: string;
+      picture: string;
+    }
+    const { payload } = await jwtVerify<AdditionalClaims>(token, JWKS)
 
     return payload;
   } catch (err: any) {

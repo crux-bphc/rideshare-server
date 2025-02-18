@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { Request, Response, NextFunction } from "express";
+import type { Request, Response, NextFunction } from "express";
 import "dotenv/config";
 import { env } from "../../config/server";
 
@@ -9,7 +9,7 @@ export const isLoggedIn = async (
   next: NextFunction
 ) => {
   try {
-    const token = req.header("Authorization")?.replace("Bearer ", "");
+    const token = req.headers.authorization.replace("Bearer ", "");
     const accessSecretKey = env.ACCESS_JWT_SECRET;
 
     if (!token) {

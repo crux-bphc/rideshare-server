@@ -1,10 +1,10 @@
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import { rideRepository } from "../../repositories/rideRepository";
 import { Ride } from "../../entity/Ride";
 import { userRepository } from "../../repositories/userRepository";
-import { User } from "../../entity/User";
+import type { User } from "../../entity/User";
 import { deviceTokenRepository } from "../../repositories/deviceTokenRepository";
-import { deviceToken } from "../../entity/deviceToken";
+import type { deviceToken } from "../../entity/deviceToken";
 import { messaging } from "../../helpers/firebaseMessaging";
 import { z } from "zod";
 import { validate } from "../../helpers/zodValidateRequest";
@@ -63,34 +63,42 @@ export const removeRequest = async (req: Request, res: Response) => {
       "[removeRequest.ts] Error in selecting ride from db: ",
       err.message
     );
-    return res.status(500).json({ message: "Internal Server Error!" });
+    res.status(500).json({ message: "Internal Server Error!" });
+    return;
   }
 
   if (!rideObj) {
-    return res.status(404).json({ message: "Ride not found in the DB." });
+    res.status(404).json({ message: "Ride not found in the DB." });
+    return;
   }
 
-  if (reqUserEmail == userEmail && userEmail == rideObj.originalPoster.email)
-    return res
-      .status(400)
-      .json({ message: "Cannot remove user from his own ride." });
+  if (
+    reqUserEmail === userEmail &&
+    userEmail === rideObj.originalPoster.email
+  ) {
+    res.status(400).json({ message: "Cannot remove user from his own ride." });
+    return;
+  }
 
   if (
     reqUserEmail !== rideObj.originalPoster.email &&
     reqUserEmail !== userEmail
-  )
-    return res
+  ) {
+    res
       .status(403)
       .json({ message: "Unauthorized to remove users from this ride." });
+    return;
+  }
 
   const participantQueueEmails = new Set(
     rideObj.participantQueue.map((user) => user.email)
   );
 
   if (!participantQueueEmails.has(userEmail)) {
-    return res
+    res
       .status(400)
       .json({ message: "User has not requested to join this ride." });
+    return;
   }
 
   try {
@@ -103,10 +111,11 @@ export const removeRequest = async (req: Request, res: Response) => {
       "[removeRequest.ts] Error in selecting user from db: ",
       err.message
     );
-    return res.status(500).json({ message: "Internal Server Error!" });
+    res.status(500).json({ message: "Internal Server Error!" });
+    return;
   }
 
-  if (reqUserEmail == rideObj.originalPoster.email) {
+  if (reqUserEmail === rideObj.originalPoster.email) {
     try {
       await rideRepository.manager.transaction(
         async (transactionalEntityManager) => {
@@ -122,7 +131,8 @@ export const removeRequest = async (req: Request, res: Response) => {
         "[removeRequest.ts] Error in removing user from participantQueue in db: ",
         err.message
       );
-      return res.status(500).json({ message: "Internal Server Error!" });
+      res.status(500).json({ message: "Internal Server Error!" });
+      return;
     }
 
     try {
@@ -136,7 +146,8 @@ export const removeRequest = async (req: Request, res: Response) => {
         "[removeRequest.ts] Error in finding deviceTokens from db: ",
         err.message
       );
-      return res.status(500).json({ message: "Internal Server Error!" });
+      res.status(500).json({ message: "Internal Server Error!" });
+      return;
     }
 
     const payload = {
@@ -160,7 +171,8 @@ export const removeRequest = async (req: Request, res: Response) => {
         "[removeRequest.ts] Error in sending notifications: ",
         err.message
       );
-      return res.status(500).json({ message: "Internal Server Error!" });
+      res.status(500).json({ message: "Internal Server Error!" });
+      return;
     }
   } else {
     try {
@@ -178,7 +190,8 @@ export const removeRequest = async (req: Request, res: Response) => {
         "[removeRequest.ts] Error in removing user from participantQueue in db: ",
         err.message
       );
-      return res.status(500).json({ message: "Internal Server Error!" });
+      res.status(500).json({ message: "Internal Server Error!" });
+      return;
     }
 
     try {
@@ -194,7 +207,8 @@ export const removeRequest = async (req: Request, res: Response) => {
         "[removeRequest.ts] Error in finding deviceTokens from db: ",
         err.message
       );
-      return res.status(500).json({ message: "Internal Server Error!" });
+      res.status(500).json({ message: "Internal Server Error!" });
+      return;
     }
 
     const payload = {
@@ -218,9 +232,11 @@ export const removeRequest = async (req: Request, res: Response) => {
         "[removeRequest.ts] Error in sending notifications: ",
         err.message
       );
-      return res.status(500).json({ message: "Internal Server Error!" });
+      res.status(500).json({ message: "Internal Server Error!" });
+      return;
     }
   }
 
-  return res.status(200).json({ message: "Removed from request queue." });
+  res.status(200).json({ message: "Removed from request queue." });
+  return;
 };

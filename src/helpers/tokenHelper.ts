@@ -1,7 +1,8 @@
 import jwt from "jsonwebtoken";
-import { User } from "../entity/User";
+import type { User } from "../entity/User";
 import "dotenv/config";
 import { env } from "../../config/server";
+import type { Token } from "../types/auth";
 
 export const generateAccessToken = (userObj: User) => {
   const accessSecretKey = env.ACCESS_JWT_SECRET;
@@ -12,13 +13,11 @@ export const generateAccessToken = (userObj: User) => {
     email: userObj.email,
     phNo: userObj.phNo,
     batch: userObj.batch,
-  };
+  } as Token;
 
-  const tokenOptions = {
+  const token = jwt.sign(tokenPayload, accessSecretKey, {
     expiresIn: env.ACCESS_TOKEN_EXPIRY,
-  };
-
-  const token = jwt.sign(tokenPayload, accessSecretKey, tokenOptions);
+  });
 
   return token;
 };
@@ -34,11 +33,9 @@ export const generateRefreshToken = (userObj: User) => {
     batch: userObj.batch,
   };
 
-  const tokenOptions = {
+  const token = jwt.sign(tokenPayload, refreshSecretKey, {
     expiresIn: env.REFRESH_TOKEN_EXPIRY,
-  };
-
-  const token = jwt.sign(tokenPayload, refreshSecretKey, tokenOptions);
+  });
 
   return token;
 };

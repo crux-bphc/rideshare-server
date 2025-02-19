@@ -1,8 +1,8 @@
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import { userRepository } from "../../repositories/userRepository";
 import { deviceTokenRepository } from "../../repositories/deviceTokenRepository";
 import { validate } from "../../helpers/zodValidateRequest";
-import { User } from "../../entity/User";
+import type { User } from "../../entity/User";
 import { deviceToken } from "../../entity/deviceToken";
 import { z } from "zod";
 import {
@@ -44,17 +44,19 @@ export const loginUserDev = async (req: Request, res: Response) => {
       "[loginUser.ts] Error in selecting user from db: ",
       err.message
     );
-    return res.status(500).json({ message: "Internal Server Error!" });
+    res.status(500).json({ message: "Internal Server Error!" });
+    return;
   }
 
   if (!userObj) {
-    return res.status(404).json({ message: "User not found in the DB." });
+    res.status(404).json({ message: "User not found in the DB." });
+    return;
   }
 
   const accessToken = generateAccessToken(userObj);
   const refreshToken = generateRefreshToken(userObj);
 
-  return res.status(200).json({
+  res.status(200).json({
     message: "Logged in user.",
     accessToken: accessToken,
     refreshToken: refreshToken,

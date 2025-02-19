@@ -1,10 +1,10 @@
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import { rideRepository } from "../../repositories/rideRepository";
 import { Ride } from "../../entity/Ride";
 import { userRepository } from "../../repositories/userRepository";
-import { User } from "../../entity/User";
+import type { User } from "../../entity/User";
 import { deviceTokenRepository } from "../../repositories/deviceTokenRepository";
-import { deviceToken } from "../../entity/deviceToken";
+import type { deviceToken } from "../../entity/deviceToken";
 import { messaging } from "../../helpers/firebaseMessaging";
 import { z } from "zod";
 import { validate } from "../../helpers/zodValidateRequest";
@@ -62,30 +62,36 @@ export const acceptRequest = async (req: Request, res: Response) => {
       "[acceptRequest.ts] Error in selecting ride from db: ",
       err.message
     );
-    return res.status(500).json({ message: "Internal Server Error!" });
+    res.status(500).json({ message: "Internal Server Error!" });
+    return;
   }
 
   if (!rideObj) {
-    return res.status(404).json({ message: "Ride not found in the DB." });
+    res.status(404).json({ message: "Ride not found in the DB." });
+    return;
   }
 
   if (rideObj.seats <= 0) {
-    return res.status(405).json({ message: "Ride is full." });
+    res.status(405).json({ message: "Ride is full." });
+    return;
   }
 
-  if (op_userId !== rideObj.originalPoster.id)
-    return res
+  if (op_userId !== rideObj.originalPoster.id) {
+    res
       .status(401)
       .json({ message: "Unauthorized to accept users into this ride." });
+    return;
+  }
 
   const participantQueueEmails = new Set(
     rideObj.participantQueue.map((user) => user.email)
   );
 
   if (!participantQueueEmails.has(userEmail)) {
-    return res
+    res
       .status(404)
       .json({ message: "User has not requested to join this ride." });
+    return;
   }
 
   try {
@@ -98,7 +104,8 @@ export const acceptRequest = async (req: Request, res: Response) => {
       "[acceptRequest.ts] Error in selecting user from db: ",
       err.message
     );
-    return res.status(500).json({ message: "Internal Server Error!" });
+    res.status(500).json({ message: "Internal Server Error!" });
+    return;
   }
 
   try {
@@ -116,7 +123,8 @@ export const acceptRequest = async (req: Request, res: Response) => {
       "[acceptRequest.ts] Error in removing user from participantQueue in db: ",
       err.message
     );
-    return res.status(500).json({ message: "Internal Server Error!" });
+    res.status(500).json({ message: "Internal Server Error!" });
+    return;
   }
 
   try {
@@ -134,7 +142,8 @@ export const acceptRequest = async (req: Request, res: Response) => {
       "[acceptRequest.ts] Error in adding user to participants in db: ",
       err.message
     );
-    return res.status(500).json({ message: "Internal Server Error!" });
+    res.status(500).json({ message: "Internal Server Error!" });
+    return;
   }
 
   try {
@@ -151,7 +160,8 @@ export const acceptRequest = async (req: Request, res: Response) => {
       "[acceptRequest.ts] Error in updating seats in db: ",
       err.message
     );
-    return res.status(500).json({ message: "Internal Server Error!" });
+    res.status(500).json({ message: "Internal Server Error!" });
+    return;
   }
 
   let deviceTokenObjs: deviceToken[];
@@ -167,7 +177,8 @@ export const acceptRequest = async (req: Request, res: Response) => {
       "[acceptRequest.ts] Error in selecting deviceTokens from db: ",
       err.message
     );
-    return res.status(500).json({ message: "Internal Server Error!" });
+    res.status(500).json({ message: "Internal Server Error!" });
+    return;
   }
 
   const payload = {
@@ -191,8 +202,10 @@ export const acceptRequest = async (req: Request, res: Response) => {
       "[acceptRequest.ts] Error in sending notifications: ",
       err.message
     );
-    return res.status(500).json({ message: "Internal Server Error!" });
+    res.status(500).json({ message: "Internal Server Error!" });
+    return;
   }
 
-  return res.status(200).json({ message: "Accepted into this ride." });
+  res.status(200).json({ message: "Accepted into this ride." });
+  return;
 };

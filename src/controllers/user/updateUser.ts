@@ -1,9 +1,10 @@
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import { userRepository } from "../../repositories/userRepository";
 import { validate } from "../../helpers/zodValidateRequest";
 import { z } from "zod";
 import { User } from "../../entity/User";
 import { verify } from "../../helpers/googleIdVerify";
+import type { AdditionalClaims } from "../../types/auth";
 
 const dataSchema = z.object({
   body: z.object({
@@ -49,7 +50,9 @@ export const updateUserValidator = validate(dataSchema);
 
 export const updateUser = async (req: Request, res: Response) => {
   let userObj: User | null = null;
-  let payload: object | null = req.body.token ? await verify(req.body.token) : null;
+  const payload: AdditionalClaims | null = req.body.token
+    ? await verify(req.body.token)
+    : null;
 
   try {
     userObj = await userRepository
@@ -61,11 +64,13 @@ export const updateUser = async (req: Request, res: Response) => {
       "[updateUser.ts] Error in selecting user from db: ",
       err.message
     );
-    return res.status(500).json({ message: "Internal Server Error!" });
+    res.status(500).json({ message: "Internal Server Error!" });
+    return;
   }
 
   if (!userObj) {
-    return res.status(404).json({ message: "User not found in the DB." });
+    res.status(404).json({ message: "User not found in the DB." });
+    return;
   }
 
   let updateName: string;
@@ -74,9 +79,9 @@ export const updateUser = async (req: Request, res: Response) => {
   let updateProfilePicture: string | null;
 
   if (payload !== null) {
-    updateName = payload["name"];
-    updateEmail = payload["email"];
-    updateProfilePicture = payload["picture"];
+    updateName = payload.name;
+    updateEmail = payload.email;
+    updateProfilePicture = payload.picture;
   } else {
     updateName = userObj.name;
     updateEmail = userObj.email;
@@ -102,14 +107,17 @@ export const updateUser = async (req: Request, res: Response) => {
       .where("id = :id", { id: req.token._id })
       .execute();
 
-    return res.status(200).json({ message: "Updated user." });
+    res.status(200).json({ message: "Updated user." });
+    return;
   } catch (err) {
-    if (err.code == "23505") {
-      return res
+    if (err.code === "23505") {
+      res
         .status(400)
         .json({ message: "Email or Phone Number already exists." });
+      return;
     }
     console.log("[updateUser.ts] Error in updating user on db: ", err.message);
-    return res.status(500).json({ message: "Internal Server Error!" });
+    res.status(500).json({ message: "Internal Server Error!" });
+    return;
   }
 };

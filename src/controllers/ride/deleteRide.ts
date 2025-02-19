@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import { rideRepository } from "../../repositories/rideRepository";
 import { Ride } from "../../entity/Ride";
 import { User } from "../../entity/User";
@@ -6,7 +6,7 @@ import { deviceTokenRepository } from "../../repositories/deviceTokenRepository"
 import { messaging } from "../../helpers/firebaseMessaging";
 import { z } from "zod";
 import { validate } from "../../helpers/zodValidateRequest";
-import { deviceToken } from "../../entity/deviceToken";
+import type { deviceToken } from "../../entity/deviceToken";
 
 const dataSchema = z.object({
   params: z.object({
@@ -43,17 +43,18 @@ export const deleteRide = async (req: Request, res: Response) => {
       "[deleteRide.ts] Error in selecting ride from db: ",
       err.message
     );
-    return res.status(500).json({ message: "Internal Server Error!" });
+    res.status(500).json({ message: "Internal Server Error!" });
+    return;
   }
 
   if (!rideObj) {
-    return res.status(404).json({ message: "Ride not found in the DB." });
+    res.status(404).json({ message: "Ride not found in the DB." });
+    return;
   }
 
-  if (userId != rideObj.originalPoster.id) {
-    return res
-      .status(401)
-      .json({ message: "Unauthorized to delete this ride." });
+  if (userId !== rideObj.originalPoster.id) {
+    res.status(401).json({ message: "Unauthorized to delete this ride." });
+    return;
   }
 
   try {
@@ -68,7 +69,8 @@ export const deleteRide = async (req: Request, res: Response) => {
       "[deleteRide.ts] Error in deleting ride from db: ",
       err.message
     );
-    return res.status(500).json({ message: "Internal Server Error!" });
+    res.status(500).json({ message: "Internal Server Error!" });
+    return;
   }
 
   const joinedUserIds = new Set(rideObj.participants.map((user) => user.id));
@@ -89,7 +91,8 @@ export const deleteRide = async (req: Request, res: Response) => {
         "[deleteRide.ts] Error in finding deviceTokens of participants from db: ",
         err.message
       );
-      return res.status(500).json({ message: "Internal Server Error!" });
+      res.status(500).json({ message: "Internal Server Error!" });
+      return;
     }
 
     const joinedUsersPayload = {
@@ -113,7 +116,8 @@ export const deleteRide = async (req: Request, res: Response) => {
         "[deleteRide.ts] Error in sending notifications to participants: ",
         err.message
       );
-      return res.status(500).json({ message: "Internal Server Error!" });
+      res.status(500).json({ message: "Internal Server Error!" });
+      return;
     }
   }
 
@@ -136,7 +140,8 @@ export const deleteRide = async (req: Request, res: Response) => {
         "[deleteRide.ts] Error in finding deviceTokens of participantQueue from db: ",
         err.message
       );
-      return res.status(500).json({ message: "Internal Server Error!" });
+      res.status(500).json({ message: "Internal Server Error!" });
+      return;
     }
 
     const requestedUsersPayload = {
@@ -160,9 +165,11 @@ export const deleteRide = async (req: Request, res: Response) => {
         "[deleteRide.ts] Error in sending notifications to participantQueue: ",
         err.message
       );
-      return res.status(500).json({ message: "Internal Server Error!" });
+      res.status(500).json({ message: "Internal Server Error!" });
+      return;
     }
   }
 
-  return res.status(200).json({ message: "Deleted ride." });
+  res.status(200).json({ message: "Deleted ride." });
+  return;
 };

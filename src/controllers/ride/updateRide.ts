@@ -1,12 +1,12 @@
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import { rideRepository } from "../../repositories/rideRepository";
-import { Ride } from "../../entity/Ride";
+import type { Ride } from "../../entity/Ride";
 import { userRepository } from "../../repositories/userRepository";
-import { User } from "../../entity/User";
+import type { User } from "../../entity/User";
 import { Place } from "../../helpers/places";
 import { z } from "zod";
 import { validate } from "../../helpers/zodValidateRequest";
-import { deviceToken } from "../../entity/deviceToken";
+import type { deviceToken } from "../../entity/deviceToken";
 import { deviceTokenRepository } from "../../repositories/deviceTokenRepository";
 import { messaging } from "../../helpers/firebaseMessaging";
 
@@ -89,7 +89,7 @@ const dataSchema = z.object({
         (data.fromPlace === null && data.toPlace === null) ||
         (data.fromPlace !== null &&
           data.toPlace !== null &&
-          data.fromPlace != data.toPlace),
+          data.fromPlace !== data.toPlace),
       "if one of fromPlace or toPlace is filled, the other must be filled too; fromPlace and toPlace cannot be the same"
     ),
 });
@@ -118,11 +118,13 @@ export const updateRide = async (req: Request, res: Response) => {
       "[updateRide.ts] Error in selecting user from db: ",
       err.message
     );
-    return res.status(500).json({ message: "Internal Server Error!" });
+    res.status(500).json({ message: "Internal Server Error!" });
+    return;
   }
 
   if (!userObj) {
-    return res.status(403).json({ message: "User not found in the DB." });
+    res.status(403).json({ message: "User not found in the DB." });
+    return;
   }
 
   let rideObj: Ride;
@@ -140,11 +142,13 @@ export const updateRide = async (req: Request, res: Response) => {
       "[updateRide.ts] Error in selecting ride from db: ",
       err.message
     );
-    return res.status(500).json({ message: "Internal Server Error!" });
+    res.status(500).json({ message: "Internal Server Error!" });
+    return;
   }
 
   if (!rideObj) {
-    return res.status(403).json({ message: "Ride not found in the DB." });
+    res.status(403).json({ message: "Ride not found in the DB." });
+    return;
   }
 
   if (fromPlace == null) {
@@ -171,8 +175,9 @@ export const updateRide = async (req: Request, res: Response) => {
     description = rideObj.description;
   }
 
-  if (userObj.id != rideObj.originalPoster.id) {
-    return res.status(401).json({ message: "Unauthorized to edit this ride." });
+  if (userObj.id !== rideObj.originalPoster.id) {
+    res.status(401).json({ message: "Unauthorized to edit this ride." });
+    return;
   }
 
   const currentDateTime: Date = new Date();
@@ -194,7 +199,8 @@ export const updateRide = async (req: Request, res: Response) => {
       .execute();
   } catch (err) {
     console.log("[updateRide.ts] Error in updating ride in db: ", err.message);
-    return res.send(500).json({ message: "Internal Server Error!" });
+    res.send(500).json({ message: "Internal Server Error!" });
+    return;
   }
 
   const joinedUserIds = new Set(rideObj.participants.map((user) => user.id));
@@ -215,7 +221,8 @@ export const updateRide = async (req: Request, res: Response) => {
         "[updateRide.ts] Error in finding deviceTokens of participants from db: ",
         err.message
       );
-      return res.status(500).json({ message: "Internal Server Error!" });
+      res.status(500).json({ message: "Internal Server Error!" });
+      return;
     }
 
     const joinedUsersPayload = {
@@ -239,7 +246,8 @@ export const updateRide = async (req: Request, res: Response) => {
         "[updateRide.ts] Error in sending notifications to participants: ",
         err.message
       );
-      return res.status(500).json({ message: "Internal Server Error!" });
+      res.status(500).json({ message: "Internal Server Error!" });
+      return;
     }
   }
 
@@ -262,7 +270,8 @@ export const updateRide = async (req: Request, res: Response) => {
         "[updateRide.ts] Error in finding deviceTokens of participantQueue from db: ",
         err.message
       );
-      return res.status(500).json({ message: "Internal Server Error!" });
+      res.status(500).json({ message: "Internal Server Error!" });
+      return;
     }
 
     const requestedUsersPayload = {
@@ -286,9 +295,11 @@ export const updateRide = async (req: Request, res: Response) => {
         "[updateRide.ts] Error in sending notifications to participantQueue: ",
         err.message
       );
-      return res.status(500).json({ message: "Internal Server Error!" });
+      res.status(500).json({ message: "Internal Server Error!" });
+      return;
     }
   }
 
-  return res.status(200).json({ message: "Updated ride." });
+  res.status(200).json({ message: "Updated ride." });
+  return;
 };

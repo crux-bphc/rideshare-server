@@ -1,10 +1,10 @@
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import { rideRepository } from "../../repositories/rideRepository";
 import { Ride } from "../../entity/Ride";
 import { userRepository } from "../../repositories/userRepository";
-import { User } from "../../entity/User";
+import type { User } from "../../entity/User";
 import { deviceTokenRepository } from "../../repositories/deviceTokenRepository";
-import { deviceToken } from "../../entity/deviceToken";
+import type { deviceToken } from "../../entity/deviceToken";
 import { messaging } from "../../helpers/firebaseMessaging";
 import { z } from "zod";
 import { validate } from "../../helpers/zodValidateRequest";
@@ -59,38 +59,43 @@ export const kickUserRequest = async (req: Request, res: Response) => {
       .where("ride.id = :id", { id: rideId })
       .getOne();
   } catch (err) {
-    console.log(
-      "[kickUser.ts] Error in selecting ride from db: ",
-      err.message
-    );
-    return res.status(500).json({ message: "Internal Server Error!" });
+    console.log("[kickUser.ts] Error in selecting ride from db: ", err.message);
+    res.status(500).json({ message: "Internal Server Error!" });
+    return;
   }
 
   if (!rideObj) {
-    return res.status(404).json({ message: "Ride not found in the DB." });
+    res.status(404).json({ message: "Ride not found in the DB." });
+    return;
   }
 
-  if (reqUserEmail == userEmail && userEmail == rideObj.originalPoster.email)
-    return res
-      .status(400)
-      .json({ message: "Cannot kick user from his own ride." });
+  if (
+    reqUserEmail === userEmail &&
+    userEmail === rideObj.originalPoster.email
+  ) {
+    res.status(400).json({ message: "Cannot kick user from his own ride." });
+    return;
+  }
 
   if (
     reqUserEmail !== rideObj.originalPoster.email &&
     reqUserEmail !== userEmail
-  )
-    return res
+  ) {
+    res
       .status(403)
       .json({ message: "Unauthorized to kick users from this ride." });
+    return;
+  }
 
   const participantEmails = new Set(
     rideObj.participants.map((user) => user.email)
   );
 
   if (!participantEmails.has(userEmail)) {
-    return res
+    res
       .status(400)
       .json({ message: "User has not been accepted into this ride." });
+    return;
   }
 
   try {
@@ -99,14 +104,12 @@ export const kickUserRequest = async (req: Request, res: Response) => {
       .where("user.email = :userEmail", { userEmail })
       .getOne();
   } catch (err) {
-    console.log(
-      "[kickUser.ts] Error in selecting user from db: ",
-      err.message
-    );
-    return res.status(500).json({ message: "Internal Server Error!" });
+    console.log("[kickUser.ts] Error in selecting user from db: ", err.message);
+    res.status(500).json({ message: "Internal Server Error!" });
+    return;
   }
 
-  if (reqUserEmail == rideObj.originalPoster.email) {
+  if (reqUserEmail === rideObj.originalPoster.email) {
     try {
       await rideRepository.manager.transaction(
         async (transactionalEntityManager) => {
@@ -122,7 +125,8 @@ export const kickUserRequest = async (req: Request, res: Response) => {
         "[kickUser.ts] Error in removing user from participants in db: ",
         err.message
       );
-      return res.status(500).json({ message: "Internal Server Error!" });
+      res.status(500).json({ message: "Internal Server Error!" });
+      return;
     }
 
     try {
@@ -135,13 +139,11 @@ export const kickUserRequest = async (req: Request, res: Response) => {
         .where("ride.id = :id", { id: rideId })
         .execute();
     } catch (err: any) {
-      console.log(
-        "[kickUser.ts] Error in updating seats in db: ",
-        err.message
-      );
-      return res.status(500).json({ message: "Internal Server Error!" });
+      console.log("[kickUser.ts] Error in updating seats in db: ", err.message);
+      res.status(500).json({ message: "Internal Server Error!" });
+      return;
     }
-  
+
     try {
       deviceTokenObj = await deviceTokenRepository
         .createQueryBuilder("deviceToken")
@@ -153,7 +155,8 @@ export const kickUserRequest = async (req: Request, res: Response) => {
         "[kickUser.ts] Error in finding deviceTokens from db: ",
         err.message
       );
-      return res.status(500).json({ message: "Internal Server Error!" });
+      res.status(500).json({ message: "Internal Server Error!" });
+      return;
     }
 
     const payload = {
@@ -177,7 +180,8 @@ export const kickUserRequest = async (req: Request, res: Response) => {
         "[kickUser.ts] Error in sending notifications: ",
         err.message
       );
-      return res.status(500).json({ message: "Internal Server Error!" });
+      res.status(500).json({ message: "Internal Server Error!" });
+      return;
     }
   } else {
     try {
@@ -195,25 +199,24 @@ export const kickUserRequest = async (req: Request, res: Response) => {
         "[kickUser.ts] Error in removing user from participants in db: ",
         err.message
       );
-      return res.status(500).json({ message: "Internal Server Error!" });
+      res.status(500).json({ message: "Internal Server Error!" });
+      return;
     }
 
-  try {
-    await rideRepository
-      .createQueryBuilder("ride")
-      .update()
-      .set({
-        seats: rideObj.seats + 1,
-      })
-      .where("ride.id = :id", { id: rideId })
-      .execute();
-  } catch (err: any) {
-    console.log(
-      "[kickUser.ts] Error in updating seats in db: ",
-      err.message
-    );
-    return res.status(500).json({ message: "Internal Server Error!" });
-  }
+    try {
+      await rideRepository
+        .createQueryBuilder("ride")
+        .update()
+        .set({
+          seats: rideObj.seats + 1,
+        })
+        .where("ride.id = :id", { id: rideId })
+        .execute();
+    } catch (err: any) {
+      console.log("[kickUser.ts] Error in updating seats in db: ", err.message);
+      res.status(500).json({ message: "Internal Server Error!" });
+      return;
+    }
 
     try {
       deviceTokenObj = await deviceTokenRepository
@@ -228,7 +231,8 @@ export const kickUserRequest = async (req: Request, res: Response) => {
         "[kickUser.ts] Error in finding deviceTokens from db: ",
         err.message
       );
-      return res.status(500).json({ message: "Internal Server Error!" });
+      res.status(500).json({ message: "Internal Server Error!" });
+      return;
     }
 
     const payload = {
@@ -252,9 +256,11 @@ export const kickUserRequest = async (req: Request, res: Response) => {
         "[kickUser.ts] Error in sending notifications: ",
         err.message
       );
-      return res.status(500).json({ message: "Internal Server Error!" });
+      res.status(500).json({ message: "Internal Server Error!" });
+      return;
     }
   }
 
-  return res.status(200).json({ message: "Removed from ride participants." });
+  res.status(200).json({ message: "Removed from ride participants." });
+  return;
 };

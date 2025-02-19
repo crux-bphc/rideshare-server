@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import { userRepository } from "../../repositories/userRepository";
 import { deviceTokenRepository } from "../../repositories/deviceTokenRepository";
 import { validate } from "../../helpers/zodValidateRequest";
@@ -42,18 +42,20 @@ export const loginUser = async (req: Request, res: Response) => {
   try {
     userObj = await userRepository
       .createQueryBuilder("user")
-      .where("user.email = :email", { email: payload["email"] })
+      .where("user.email = :email", { email: payload.email })
       .getOne();
   } catch (err) {
     console.log(
       "[loginUser.ts] Error in selecting user from db: ",
       err.message
     );
-    return res.status(500).json({ message: "Internal Server Error!" });
+    res.status(500).json({ message: "Internal Server Error!" });
+    return;
   }
 
   if (!userObj) {
-    return res.status(404).json({ message: "User not found in the DB." });
+    res.status(404).json({ message: "User not found in the DB." });
+    return;
   }
 
   try {
@@ -61,17 +63,18 @@ export const loginUser = async (req: Request, res: Response) => {
       .createQueryBuilder()
       .update(User)
       .set({
-        name: payload["name"],
-        profilePicture: payload["picture"],
+        name: payload.name,
+        profilePicture: payload.picture,
       })
-      .where("email = :email", { email: payload["email"] })
+      .where("email = :email", { email: payload.email })
       .execute();
   } catch (err) {
     console.log(
       "[loginUser.ts] Error in updating name and pfp of user on db: ",
       err.message
     );
-    return res.status(500).json({ message: "Internal Server Error!" });
+    res.status(500).json({ message: "Internal Server Error!" });
+    return;
   }
 
   const deviceTokenVal = req.body.deviceToken;
@@ -87,7 +90,8 @@ export const loginUser = async (req: Request, res: Response) => {
       "[loginUser.ts] Error in searching for deviceToken in db: ",
       err.message
     );
-    return res.status(500).json({ message: "Internal Server Error!" });
+    res.status(500).json({ message: "Internal Server Error!" });
+    return;
   }
 
   if (existingDeviceToken !== null) {
@@ -106,7 +110,8 @@ export const loginUser = async (req: Request, res: Response) => {
         "[loginUser.ts] Error updating user for deviceToken: ",
         err.message
       );
-      return res.status(500).json({ message: "Internal Server Error!" });
+      res.status(500).json({ message: "Internal Server Error!" });
+      return;
     }
   } else {
     try {
@@ -127,14 +132,15 @@ export const loginUser = async (req: Request, res: Response) => {
         "[loginUser.ts] Error inserting deviceToken into db: ",
         err.message
       );
-      return res.status(500).json({ message: "Internal Server Error!" });
+      res.status(500).json({ message: "Internal Server Error!" });
+      return;
     }
   }
 
   const accessToken = generateAccessToken(userObj);
   const refreshToken = generateRefreshToken(userObj);
 
-  return res.status(200).json({
+  res.status(200).json({
     message: "Logged in user.",
     accessToken: accessToken,
     refreshToken: refreshToken,

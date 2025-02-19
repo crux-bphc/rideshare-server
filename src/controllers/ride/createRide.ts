@@ -1,8 +1,8 @@
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import { rideRepository } from "../../repositories/rideRepository";
 import { Ride } from "../../entity/Ride";
 import { userRepository } from "../../repositories/userRepository";
-import { User } from "../../entity/User";
+import type { User } from "../../entity/User";
 import { Place } from "../../helpers/places";
 import { z } from "zod";
 import { validate } from "../../helpers/zodValidateRequest";
@@ -65,7 +65,7 @@ const dataSchema = z.object({
     .refine(
       (data) =>
         (data.fromPlace == null && data.toPlace == null) ||
-        data.fromPlace != data.toPlace,
+        data.fromPlace !== data.toPlace,
       "fromPlace and toPlace cannot be the same"
     ),
 });
@@ -88,11 +88,11 @@ export const createRide = async (req: Request, res: Response) => {
       "[createRide.ts] Error in selecting user from db: ",
       err.message
     );
-    return res.status(500).json({ message: "Internal Server Error!" });
+    res.status(500).json({ message: "Internal Server Error!" });
   }
 
   if (!userObj) {
-    return res.status(403).json({ message: "User not found in the DB." });
+    res.status(403).json({ message: "User not found in the DB." });
   }
 
   const currentDateTime: Date = new Date();
@@ -122,7 +122,7 @@ export const createRide = async (req: Request, res: Response) => {
       .execute();
   } catch (err) {
     console.log("[createRide.ts] Error in inserting ride to db: ", err.message);
-    return res.status(500).json({ message: "Internal Server Error!" });
+    res.status(500).json({ message: "Internal Server Error!" });
   }
 
   const ride = newRide.generatedMaps[0] as Ride;
@@ -142,8 +142,8 @@ export const createRide = async (req: Request, res: Response) => {
       "[createRide.ts] Error in adding relation to db: ",
       err.message
     );
-    return res.status(500).json({ message: "Internal Server Error!" });
+    res.status(500).json({ message: "Internal Server Error!" });
   }
 
-  return res.status(201).json({ message: "Posted ride.", id: ride.id });
+  res.status(201).json({ message: "Posted ride.", id: ride.id });
 };

@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import type { Request, Response, NextFunction } from "express";
 import "dotenv/config";
 import { env } from "../../config/server";
+import { tokenType } from "../types/auth";
 
 export const isLoggedIn = async (
   req: Request,
@@ -17,7 +18,11 @@ export const isLoggedIn = async (
     }
 
     const decoded = jwt.verify(token, accessSecretKey);
-    req.token = decoded;
+    const tokenValidateResult = tokenType.safeParse(decoded);
+    if (tokenValidateResult.success === false) {
+      throw new Error("Token is malformed.");
+    }
+    req.token = tokenValidateResult.data;
 
     next();
   } catch (err) {

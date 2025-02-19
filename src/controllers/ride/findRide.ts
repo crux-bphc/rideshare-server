@@ -1,6 +1,6 @@
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import { rideRepository } from "../../repositories/rideRepository";
-import { Ride } from "../../entity/Ride";
+import type { Ride } from "../../entity/Ride";
 import { z } from "zod";
 import { validate } from "../../helpers/zodValidateRequest";
 
@@ -23,7 +23,7 @@ export const findRideValidator = validate(dataSchema);
 export const findRide = async (req: Request, res: Response) => {
   const rideId = req.params.id;
 
-  let rideObj: Ride | null = null;
+  let rideObj: (Ride & { message?: string }) | null = null;
 
   try {
     rideObj = await rideRepository
@@ -35,17 +35,20 @@ export const findRide = async (req: Request, res: Response) => {
       .getOne();
   } catch (err) {
     console.log("[findRide.ts] Error in selecting ride from db: ", err.message);
-    return res.status(500).json({ message: "Internal Server Error!" });
+    res.status(500).json({ message: "Internal Server Error!" });
+    return;
   }
 
   if (!rideObj) {
-    return res.status(404).json({ message: "Ride not found in the DB." });
+    res.status(404).json({ message: "Ride not found in the DB." });
+    return;
   }
 
-  if (rideObj.originalPoster.id != req.token._id)
-    delete rideObj.participantQueue;
+  if (rideObj.originalPoster.id !== req.token._id)
+    rideObj.participantQueue = undefined;
 
-  rideObj["message"] = "Fetched ride.";
+  rideObj.message = "Fetched ride.";
 
-  return res.status(200).json(rideObj);
+  res.status(200).json(rideObj);
+  return;
 };

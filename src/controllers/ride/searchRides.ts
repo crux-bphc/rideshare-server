@@ -1,5 +1,5 @@
-import { Request, Response } from "express";
-import { Ride } from "../../entity/Ride";
+import type { Request, Response } from "express";
+import type { Ride } from "../../entity/Ride";
 import { rideRepository } from "../../repositories/rideRepository";
 import { Place } from "../../helpers/places";
 import { z } from "zod";
@@ -115,69 +115,76 @@ const dataSchema = z.object({
 
 export const searchRideValidator = validate(dataSchema);
 
-let orderingBy: object = {
+const orderingBy: object = {
   1: "ride.createdAt",
   2: "ride.timeRangeStart",
   3: "ride.seats",
 };
 
-let orderingAlong: object = {
+const orderingAlong: object = {
   0: "ASC",
   1: "DESC",
   2: "DESC",
 };
 
 export const searchRides = async (req: Request, res: Response) => {
-  let fromPlace: Place | null =
-    req.query.fromPlace != null ? parseInt(req.query.fromPlace) : null;
-  let toPlace: Place | null =
-    req.query.toPlace != null ? parseInt(req.query.toPlace) : null;
-  let startTime: Date | null =
-    req.query.startTime != null ? new Date(req.query.startTime) : new Date(); // Renders trips whose timeRange is within or after startTime
-  let endTime: Date | null =
-    req.query.endTime != null ? new Date(req.query.endTime) : null; // Renders trips whose timeRange is within or before endTime
+  const parsedQuery = dataSchema.parse(req);
+  const fromPlace: Place | null =
+    req.query.fromPlace != null ? parsedQuery.query.fromPlace : null;
+  const toPlace: Place | null =
+    req.query.toPlace != null ? parsedQuery.query.toPlace : null;
+  const startTime: Date | null =
+    req.query.startTime != null
+      ? new Date(parsedQuery.query.startTime)
+      : new Date(); // Renders trips whose timeRange is within or after startTime
+  const endTime: Date | null =
+    req.query.endTime != null ? new Date(parsedQuery.query.endTime) : null; // Renders trips whose timeRange is within or before endTime
   // Use 1 or more here, to show only those rides which have available seats. leaving empty renders all rides without checking seats
-  let availableSeats: number | null =
-    req.query.availableSeats != null
-      ? parseInt(req.query.availableSeats)
-      : null;
+  const availableSeats: number | null =
+    req.query.availableSeats != null ? parsedQuery.query.availableSeats : null;
   // Pagination - both numbers inclusive
-  let startAtRide: number =
-    req.query.startAtRide != null ? parseInt(req.query.startAtRide) : 1;
-  let endAtRide: number =
-    req.query.endAtRide != null ? parseInt(req.query.endAtRide) : 10;
-  let pagination: boolean = req.query.endAtRide != null ? true : false;
+  const startAtRide: number =
+    req.query.startAtRide != null ? parsedQuery.query.startAtRide : 1;
+  const endAtRide: number =
+    req.query.endAtRide != null ? parsedQuery.query.endAtRide : 10;
+  const pagination: boolean = parsedQuery.query.endAtRide != null;
   // orderBy = 1 renders rides sorted by time of posting. orderBy = 2 renders rides sorted by time of departure. orderBy = 3 renders rides sorted by number of seats available.
   // the corresponding negative numbers renders rides in descending order
-  let orderBy: number =
-    req.query.orderBy != null ? parseInt(req.query.orderBy) : -2;
+  const orderBy: number =
+    req.query.orderBy != null ? parsedQuery.query.orderBy : -2;
 
-  let searchFilter: string = "";
-  let searchObj: object = {};
+  let searchFilter = "";
+  const searchObj: {
+    availableSeats?: number;
+    fromPlace?: Place;
+    toPlace?: Place;
+    startTime?: Date;
+    endTime?: Date;
+  } = {};
 
   if (availableSeats != null) {
-    searchFilter = searchFilter + " AND (ride.seats >= :availableSeats)";
-    searchObj["availableSeats"] = availableSeats;
+    searchFilter = `${searchFilter} AND (ride.seats >= :availableSeats)`;
+    searchObj.availableSeats = availableSeats;
   }
 
   if (fromPlace != null) {
-    searchFilter = searchFilter + " AND ride.fromPlace = :fromPlace";
-    searchObj["fromPlace"] = fromPlace;
+    searchFilter = `${searchFilter} AND ride.fromPlace = :fromPlace`;
+    searchObj.fromPlace = fromPlace;
   }
 
   if (toPlace != null) {
-    searchFilter = searchFilter + " AND ride.toPlace = :toPlace";
-    searchObj["toPlace"] = toPlace;
+    searchFilter = `${searchFilter} AND ride.toPlace = :toPlace`;
+    searchObj.toPlace = toPlace;
   }
 
   if (startTime != null) {
-    searchFilter = searchFilter + " AND ride.timeRangeStop >= :startTime";
-    searchObj["startTime"] = startTime;
+    searchFilter = `${searchFilter} AND ride.timeRangeStop >= :startTime`;
+    searchObj.startTime = startTime;
   }
 
   if (endTime != null) {
-    searchFilter = searchFilter + " AND ride.timeRangeStart <= :endTime";
-    searchObj["endTime"] = endTime;
+    searchFilter = `${searchFilter} AND ride.timeRangeStart <= :endTime`;
+    searchObj.endTime = endTime;
   }
 
   if (searchFilter.length > 0) {
@@ -217,8 +224,10 @@ export const searchRides = async (req: Request, res: Response) => {
       "[searchRides.ts] Error in searching rides from db: ",
       err.message
     );
-    return res.status(500).json({ message: "Internal Server Error!" });
+    res.status(500).json({ message: "Internal Server Error!" });
+    return;
   }
 
-  return res.status(200).json({ message: "Fetched rides.", rides: rides });
+  res.status(200).json({ message: "Fetched rides.", rides: rides });
+  return;
 };

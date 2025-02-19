@@ -27,6 +27,7 @@
    "dependencies": {
       "@types/express": "^5.0.0",
       "@types/jsonwebtoken": "^9.0.8",
+      "@types/ms": "^2.1.0",
       "@types/node": "^16.18.83",
       "body-parser": "^1.20.2",
       "config": "^3.3.11",

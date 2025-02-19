@@ -4,7 +4,7 @@ export const tokenType = z.object({
   _id: z.string(),
   name: z.string(),
   email: z.string(),
-  phNo: z.number(),
+  phNo: z.coerce.number(),
   batch: z.number(),
 });
 
